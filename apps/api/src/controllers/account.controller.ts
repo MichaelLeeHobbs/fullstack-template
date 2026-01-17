@@ -1,0 +1,168 @@
+// ===========================================
+// Account Controller
+// ===========================================
+// Handles password recovery and email verification.
+
+import type { Request, Response } from 'express';
+import { z } from 'zod/v4';
+import { AccountService } from '../services/account.service.js';
+import { AuditService, type AuditContext } from '../services/audit.service.js';
+import { AUDIT_ACTIONS } from '../db/schema/audit.js';
+import {
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  verifyEmailSchema,
+} from '../schemas/account.schema.js';
+import logger from '../lib/logger.js';
+
+export class AccountController {
+  /**
+   * POST /api/v1/account/forgot-password
+   * Request password reset email
+   */
+  static async forgotPassword(req: Request, res: Response): Promise<void> {
+    const parseResult = forgotPasswordSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      return void res.status(400).json({
+        success: false,
+        error: z.prettifyError(parseResult.error),
+      });
+    }
+
+    const context: AuditContext = AuditService.getContextFromRequest(req);
+    const { email } = parseResult.data;
+
+    const result = await AccountService.requestPasswordReset(email);
+
+    // Log the request (but don't reveal if email exists)
+    await AuditService.log(
+      AUDIT_ACTIONS.PASSWORD_RESET_REQUEST,
+      context,
+      `Email: ${email}`,
+      result.ok
+    );
+
+    // Always return success to prevent email enumeration
+    res.json({
+      success: true,
+      data: { message: 'If an account with that email exists, a reset link has been sent.' },
+    });
+  }
+
+  /**
+   * POST /api/v1/account/reset-password
+   * Reset password with token
+   */
+  static async resetPassword(req: Request, res: Response): Promise<void> {
+    const parseResult = resetPasswordSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      return void res.status(400).json({
+        success: false,
+        error: z.prettifyError(parseResult.error),
+      });
+    }
+
+    const context: AuditContext = AuditService.getContextFromRequest(req);
+    const { token, password } = parseResult.data;
+
+    const result = await AccountService.resetPassword(token, password);
+
+    if (!result.ok) {
+      await AuditService.log(
+        AUDIT_ACTIONS.PASSWORD_RESET_SUCCESS,
+        context,
+        'Failed: Invalid or expired token',
+        false
+      );
+
+      return void res.status(400).json({
+        success: false,
+        error: 'Invalid or expired reset token',
+      });
+    }
+
+    await AuditService.log(AUDIT_ACTIONS.PASSWORD_RESET_SUCCESS, context);
+
+    res.json({
+      success: true,
+      data: { message: 'Password reset successful. You can now log in.' },
+    });
+  }
+
+  /**
+   * POST /api/v1/account/verify-email
+   * Verify email with token
+   */
+  static async verifyEmail(req: Request, res: Response): Promise<void> {
+    const parseResult = verifyEmailSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      return void res.status(400).json({
+        success: false,
+        error: z.prettifyError(parseResult.error),
+      });
+    }
+
+    const context: AuditContext = AuditService.getContextFromRequest(req);
+    const { token } = parseResult.data;
+
+    const result = await AccountService.verifyEmail(token);
+
+    if (!result.ok) {
+      await AuditService.log(
+        AUDIT_ACTIONS.EMAIL_VERIFIED,
+        context,
+        'Failed: Invalid or expired token',
+        false
+      );
+
+      return void res.status(400).json({
+        success: false,
+        error: 'Invalid or expired verification token',
+      });
+    }
+
+    await AuditService.log(
+      AUDIT_ACTIONS.EMAIL_VERIFIED,
+      { ...context, userId: result.value.userId }
+    );
+
+    res.json({
+      success: true,
+      data: { message: 'Email verified successfully.' },
+    });
+  }
+
+  /**
+   * POST /api/v1/account/resend-verification
+   * Resend email verification
+   */
+  static async resendVerification(req: Request, res: Response): Promise<void> {
+    const userId = req.user?.id;
+    const email = req.user?.email;
+
+    if (!userId || !email) {
+      return void res.status(401).json({
+        success: false,
+        error: 'Unauthorized',
+      });
+    }
+
+    const context: AuditContext = AuditService.getContextFromRequest(req);
+    const result = await AccountService.sendVerificationEmail(userId, email);
+
+    if (!result.ok) {
+      logger.error('Failed to resend verification', { error: result.error.toString() });
+      return void res.status(500).json({
+        success: false,
+        error: 'Failed to send verification email',
+      });
+    }
+
+    await AuditService.log(AUDIT_ACTIONS.EMAIL_VERIFICATION_SENT, context);
+
+    res.json({
+      success: true,
+      data: { message: 'Verification email sent.' },
+    });
+  }
+}

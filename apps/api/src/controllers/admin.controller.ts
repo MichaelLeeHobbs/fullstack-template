@@ -1,0 +1,222 @@
+// ===========================================
+// Admin Controller
+// ===========================================
+// Handles admin operations for user management.
+
+import type { Request, Response } from 'express';
+import { z } from 'zod/v4';
+import { AdminService } from '../services/admin.service.js';
+import { AuditService } from '../services/audit.service.js';
+import { AUDIT_ACTIONS } from '../db/schema/audit.js';
+import {
+  listUsersQuerySchema,
+  updateUserSchema,
+  listAuditLogsQuerySchema,
+} from '../schemas/admin.schema.js';
+import logger from '../lib/logger.js';
+
+export class AdminController {
+  /**
+   * GET /api/v1/admin/users
+   * List users with pagination and filtering
+   */
+  static async listUsers(req: Request, res: Response): Promise<void> {
+    const parseResult = listUsersQuerySchema.safeParse(req.query);
+    if (!parseResult.success) {
+      return void res.status(400).json({
+        success: false,
+        error: z.prettifyError(parseResult.error),
+      });
+    }
+
+    const result = await AdminService.listUsers(parseResult.data);
+
+    if (!result.ok) {
+      logger.error('Failed to list users', { error: result.error.toString() });
+      return void res.status(500).json({
+        success: false,
+        error: 'Failed to list users',
+      });
+    }
+
+    res.json({ success: true, data: result.value });
+  }
+
+  /**
+   * GET /api/v1/admin/users/:id
+   * Get single user details
+   */
+  static async getUser(req: Request, res: Response): Promise<void> {
+    const { id } = req.params;
+
+    if (!id) {
+      return void res.status(400).json({
+        success: false,
+        error: 'User ID is required',
+      });
+    }
+
+    const result = await AdminService.getUser(id);
+
+    if (!result.ok) {
+      if (result.error.message?.includes('not found')) {
+        return void res.status(404).json({
+          success: false,
+          error: 'User not found',
+        });
+      }
+      return void res.status(500).json({
+        success: false,
+        error: 'Failed to get user',
+      });
+    }
+
+    res.json({ success: true, data: result.value });
+  }
+
+  /**
+   * PATCH /api/v1/admin/users/:id
+   * Update user status (isActive, isAdmin)
+   */
+  static async updateUser(req: Request, res: Response): Promise<void> {
+    const { id } = req.params;
+    const adminId = req.user?.id;
+
+    if (!id) {
+      return void res.status(400).json({
+        success: false,
+        error: 'User ID is required',
+      });
+    }
+
+    const parseResult = updateUserSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      return void res.status(400).json({
+        success: false,
+        error: z.prettifyError(parseResult.error),
+      });
+    }
+
+    // Prevent self-demotion
+    if (id === adminId && parseResult.data.isAdmin === false) {
+      return void res.status(400).json({
+        success: false,
+        error: 'Cannot remove your own admin privileges',
+      });
+    }
+
+    const result = await AdminService.updateUser(id, parseResult.data);
+
+    if (!result.ok) {
+      if (result.error.message?.includes('not found')) {
+        return void res.status(404).json({
+          success: false,
+          error: 'User not found',
+        });
+      }
+      return void res.status(500).json({
+        success: false,
+        error: 'Failed to update user',
+      });
+    }
+
+    // Audit log - include email for better readability
+    const context = AuditService.getContextFromRequest(req);
+    const targetEmail = result.value.email;
+
+    if (parseResult.data.isActive === false) {
+      await AuditService.log(AUDIT_ACTIONS.USER_DEACTIVATED, context, `${targetEmail}`);
+    } else if (parseResult.data.isActive === true) {
+      await AuditService.log(AUDIT_ACTIONS.USER_ACTIVATED, context, `${targetEmail}`);
+    }
+
+    if (parseResult.data.isAdmin === true) {
+      await AuditService.log(AUDIT_ACTIONS.ADMIN_GRANTED, context, `${targetEmail}`);
+    } else if (parseResult.data.isAdmin === false) {
+      await AuditService.log(AUDIT_ACTIONS.ADMIN_REVOKED, context, `${targetEmail}`);
+    }
+
+    res.json({ success: true, data: result.value });
+  }
+
+  /**
+   * DELETE /api/v1/admin/users/:id
+   * Delete a user (cannot delete self)
+   */
+  static async deleteUser(req: Request, res: Response): Promise<void> {
+    const { id } = req.params;
+    const adminId = req.user?.id;
+
+    if (!id) {
+      return void res.status(400).json({
+        success: false,
+        error: 'User ID is required',
+      });
+    }
+
+    if (!adminId) {
+      return void res.status(401).json({
+        success: false,
+        error: 'Unauthorized',
+      });
+    }
+
+    // Get user email before deletion for audit log
+    const userResult = await AdminService.getUser(id);
+    const targetEmail = userResult.ok ? userResult.value.email : id;
+
+    const result = await AdminService.deleteUser(id, adminId);
+
+    if (!result.ok) {
+      if (result.error.message?.includes('Cannot delete your own')) {
+        return void res.status(400).json({
+          success: false,
+          error: result.error.message,
+        });
+      }
+      if (result.error.message?.includes('not found')) {
+        return void res.status(404).json({
+          success: false,
+          error: 'User not found',
+        });
+      }
+      return void res.status(500).json({
+        success: false,
+        error: 'Failed to delete user',
+      });
+    }
+
+    // Audit log
+    const context = AuditService.getContextFromRequest(req);
+    await AuditService.log(AUDIT_ACTIONS.USER_DELETED, context, `${targetEmail}`);
+
+    res.json({ success: true, data: result.value });
+  }
+
+  /**
+   * GET /api/v1/admin/audit-logs
+   * List audit logs with pagination
+   */
+  static async listAuditLogs(req: Request, res: Response): Promise<void> {
+    const parseResult = listAuditLogsQuerySchema.safeParse(req.query);
+    if (!parseResult.success) {
+      return void res.status(400).json({
+        success: false,
+        error: z.prettifyError(parseResult.error),
+      });
+    }
+
+    const { page, limit, userId } = parseResult.data;
+    const result = await AdminService.listAuditLogs(page, limit, userId);
+
+    if (!result.ok) {
+      logger.error('Failed to list audit logs', { error: result.error.toString() });
+      return void res.status(500).json({
+        success: false,
+        error: 'Failed to list audit logs',
+      });
+    }
+
+    res.json({ success: true, data: result.value });
+  }
+}

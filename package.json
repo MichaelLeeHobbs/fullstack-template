@@ -1,0 +1,40 @@
+{
+  "name": "fullstack-template",
+  "private": true,
+  "scripts": {
+    "docker:up": "docker compose -f docker-compose.yml up -d --build",
+    "docker:down": "docker compose -f docker-compose.yml down",
+    "docker:reset": "docker compose -f docker-compose.yml down -v",
+    "docker:logs": "docker compose -f docker-compose.yml logs -f",
+    "docker:db:psql": "docker exec -it app-db psql -U app -d app",
+    "dev": "pnpm run --parallel dev",
+    "dev:api": "pnpm --filter api dev",
+    "dev:web": "pnpm --filter web dev",
+    "build": "pnpm run -r build",
+    "lint": "eslint apps packages --ignore-pattern 'dist/**'",
+    "test": "pnpm run -r test",
+    "test:api": "pnpm --filter api test",
+    "test:web": "pnpm --filter web test",
+    "test:coverage": "pnpm run -r test:coverage",
+    "db:generate": "pnpm run build && pnpm --filter api db:generate",
+    "db:migrate": "pnpm run build && pnpm --filter api db:migrate",
+    "db:studio": "pnpm run build && pnpm --filter api db:studio",
+    "db:seed": "pnpm --filter api db:seed",
+    "clean": "pnpm run -r clean"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.17.0",
+    "@typescript-eslint/eslint-plugin": "8.18.2",
+    "@typescript-eslint/parser": "8.18.2",
+    "eslint": "9.17.0",
+    "prettier": "3.4.2",
+    "typescript": "5.7.2",
+    "typescript-eslint": "8.18.2"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.15.1"
+}
+
