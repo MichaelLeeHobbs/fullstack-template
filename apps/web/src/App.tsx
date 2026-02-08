@@ -18,10 +18,14 @@ import { AdminRoute } from './components/AdminRoute.js';
 import { LandingPage } from './pages/LandingPage.js';
 import { LoginPage } from './pages/LoginPage.js';
 import { RegisterPage } from './pages/RegisterPage.js';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage.js';
+import { ResetPasswordPage } from './pages/ResetPasswordPage.js';
+import { VerifyEmailPage } from './pages/VerifyEmailPage.js';
 import { HomePage } from './pages/HomePage.js';
 import { ProfilePage } from './pages/ProfilePage.js';
 import { SettingsPage } from './pages/admin/SettingsPage.js';
 import { UsersPage } from './pages/admin/UsersPage.js';
+import { RolesPage } from './pages/admin/RolesPage.js';
 import { AuditLogsPage } from './pages/admin/AuditLogsPage.js';
 import { NotFoundPage } from './pages/NotFoundPage.js';
 
@@ -47,6 +51,9 @@ function AppWithTheme() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/verify-email" element={<VerifyEmailPage />} />
           </Route>
 
           {/* Protected pages (with sidebar) */}
@@ -60,6 +67,7 @@ function AppWithTheme() {
             <Route element={<AdminRoute />}>
               <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
               <Route path="/admin/users" element={<UsersPage />} />
+              <Route path="/admin/roles" element={<RolesPage />} />
               <Route path="/admin/settings" element={<SettingsPage />} />
               <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
             </Route>

@@ -9,6 +9,7 @@ import { db } from '../lib/db.js';
 import { users } from '../db/schema/index.js';
 import { eq } from 'drizzle-orm';
 import logger from '../lib/logger.js';
+import { PermissionService } from '../services/permission.service.js';
 
 // Extend Express Request type
 declare global {
@@ -20,12 +21,17 @@ declare global {
         isAdmin: boolean;
         isActive: boolean;
         emailVerified: boolean;
+        permissions: string[];
       };
     }
   }
 }
 
-export async function authenticate(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function authenticate(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -60,16 +66,26 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
       return;
     }
 
-    req.user = user;
+    // Fetch user permissions (cached)
+    const permissions = await PermissionService.getUserPermissions(user.id);
+
+    req.user = {
+      ...user,
+      permissions: Array.from(permissions),
+    };
     next();
   } catch (error) {
-    logger.debug('Token verification failed', { error });
+    logger.debug({ error },'Token verification failed');
     res.status(401).json({ success: false, error: 'Invalid or expired token' });
   }
 }
 
 // Optional auth - attaches user if token present but doesn't require it
-export async function optionalAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function optionalAuth(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -94,7 +110,13 @@ export async function optionalAuth(req: Request, res: Response, next: NextFuncti
       .where(eq(users.id, payload.userId));
 
     if (user && user.isActive) {
-      req.user = user;
+      // Fetch user permissions (cached)
+      const permissions = await PermissionService.getUserPermissions(user.id);
+
+      req.user = {
+        ...user,
+        permissions: Array.from(permissions),
+      };
     }
   } catch {
     // Ignore invalid tokens for optional auth
@@ -102,4 +124,3 @@ export async function optionalAuth(req: Request, res: Response, next: NextFuncti
 
   next();
 }
-

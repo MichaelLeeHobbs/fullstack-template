@@ -10,6 +10,8 @@ import { db } from '../lib/db.js';
 import { users, sessions, type UserPreferences } from '../db/schema/index.js';
 import { eq } from 'drizzle-orm';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../lib/jwt.js';
+import { PermissionService } from './permission.service.js';
+import { AccountService } from './account.service.js';
 
 const SALT_ROUNDS = 12;
 const REFRESH_TOKEN_DAYS = 7;
@@ -24,6 +26,7 @@ export interface UserResponse {
   email: string;
   isAdmin: boolean;
   preferences: UserPreferences;
+  permissions: string[];
   createdAt: Date;
 }
 
@@ -39,14 +42,9 @@ export interface LoginResult {
   refreshToken: string;
 }
 
-// Helper to wrap async operations with tryCatch - properly typed
-async function tryAsync<T>(fn: () => Promise<T>): Promise<Result<T, StdError>> {
-  return await (tryCatch(fn) as unknown as Promise<Result<T, StdError>>);
-}
-
 export class AuthService {
   static async register(email: string, password: string): Promise<Result<RegisterResult>> {
-    return tryAsync(async () => {
+    return tryCatch(async () => {
       // Check if email exists
       const [existing] = await db.select().from(users).where(eq(users.email, email.toLowerCase()));
       if (existing) {
@@ -75,18 +73,27 @@ export class AuthService {
         throw new Error('Failed to create user');
       }
 
-      // Generate tokens
+      // Send verification email
+      await AccountService.sendVerificationEmail(user.id, user.email);
+
+      // Generate tokens (user can receive tokens but will be blocked from login until verified)
       const tokens = await this.createTokens(user.id);
 
+      // Get user permissions (will be empty for new users)
+      const permissions = await PermissionService.getUserPermissions(user.id);
+
       return {
-        user,
+        user: {
+          ...user,
+          permissions: Array.from(permissions),
+        },
         ...tokens,
       };
     });
   }
 
   static async login(email: string, password: string): Promise<Result<LoginResult>> {
-    return tryAsync(async () => {
+    return tryCatch(async () => {
       // Find user
       const [user] = await db.select().from(users).where(eq(users.email, email.toLowerCase()));
       if (!user) {
@@ -99,6 +106,16 @@ export class AuthService {
         throw new Error('Invalid credentials');
       }
 
+      // Check if email is verified
+      if (!user.emailVerified) {
+        throw new Error('EMAIL_NOT_VERIFIED');
+      }
+
+      // Check if account is active
+      if (!user.isActive) {
+        throw new Error('Account is deactivated');
+      }
+
       // Update lastLoginAt
       await db
         .update(users)
@@ -108,12 +125,16 @@ export class AuthService {
       // Generate tokens
       const tokens = await this.createTokens(user.id);
 
+      // Get user permissions
+      const permissions = await PermissionService.getUserPermissions(user.id);
+
       return {
         user: {
           id: user.id,
           email: user.email,
           isAdmin: user.isAdmin,
           preferences: user.preferences,
+          permissions: Array.from(permissions),
           createdAt: user.createdAt,
         },
         ...tokens,
@@ -122,7 +143,7 @@ export class AuthService {
   }
 
   static async refresh(refreshToken: string): Promise<Result<AuthTokens>> {
-    return tryAsync(async () => {
+    return tryCatch(async () => {
       // Verify token signature
       const payload = verifyRefreshToken(refreshToken);
 
@@ -145,13 +166,13 @@ export class AuthService {
   }
 
   static async logout(refreshToken: string): Promise<Result<void>> {
-    return tryAsync(async () => {
+    return tryCatch(async () => {
       await db.delete(sessions).where(eq(sessions.refreshToken, refreshToken));
     });
   }
 
   static async getUser(userId: string): Promise<Result<UserResponse>> {
-    return tryAsync(async () => {
+    return tryCatch(async () => {
       const [user] = await db
         .select({
           id: users.id,
@@ -167,7 +188,13 @@ export class AuthService {
         throw new Error('User not found');
       }
 
-      return user;
+      // Get user permissions
+      const permissions = await PermissionService.getUserPermissions(user.id);
+
+      return {
+        ...user,
+        permissions: Array.from(permissions),
+      };
     });
   }
 
@@ -188,4 +215,3 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 }
-

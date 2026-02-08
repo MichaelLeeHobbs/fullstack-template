@@ -32,7 +32,7 @@ export class AdminController {
     const result = await AdminService.listUsers(parseResult.data);
 
     if (!result.ok) {
-      logger.error('Failed to list users', { error: result.error.toString() });
+      logger.error({ error: result.error },'Failed to list users' );
       return void res.status(500).json({
         success: false,
         error: 'Failed to list users',
@@ -210,7 +210,7 @@ export class AdminController {
     const result = await AdminService.listAuditLogs(page, limit, userId);
 
     if (!result.ok) {
-      logger.error('Failed to list audit logs', { error: result.error.toString() });
+      logger.error({ error: result.error },'Failed to list audit logs');
       return void res.status(500).json({
         success: false,
         error: 'Failed to list audit logs',

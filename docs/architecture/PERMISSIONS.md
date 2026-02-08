@@ -1,268 +1,268 @@
 # Permissions & Authorization
 
-> Last Updated: 2024-12-28
+> Role-Based Access Control (RBAC) System
 
 ## Overview
 
-This project uses a layered permission system. For MVP (v1), we implement single-user ownership. The architecture is designed to support multi-user collaboration in v2.
+This project uses a granular RBAC system with the following principles:
+
+1. **Permissions are atomic** - Each permission represents a single action on a single resource
+2. **Permissions are code-defined** - Seeded from code, read-only in database
+3. **Roles group permissions** - Roles are configurable via admin UI
+4. **System roles are protected** - Cannot be deleted (e.g., Super Admin)
+5. **Permissions are cached** - User permissions cached in memory for performance
 
 ---
 
-## MVP (v1): Single-User Ownership
+## Permission Naming Convention
 
-### Principle
-- Every resource belongs to exactly one user
-- Users can only access their own resources
-- No sharing or collaboration
+Permissions follow the `resource:action` pattern:
 
-### Implementation
-
-All queries filter by `createdByUserId`:
-
-```typescript
-// Service layer - always filter by user
-import { tryCatch, type Result } from 'stderr-lib';
-import { db } from '../lib/db';
-import { worlds } from '../db/schema';
-import { eq } from 'drizzle-orm';
-
-export class WorldService {
-  static async getById(userId: string, worldId: string): Promise<Result<World>> {
-    return tryCatch(async () => {
-      const [world] = await db.select().from(worlds)
-        .where(eq(worlds.id, worldId));
-
-      if (!world || world.createdByUserId !== userId) {
-        throw new Error('World not found');
-      }
-
-      return world;
-    });
-  }
-}
+```
+users:read       # View user list
+users:create     # Create new users
+users:update     # Edit users
+users:delete     # Delete users
+settings:read    # View system settings
+settings:update  # Modify settings
+roles:read       # View roles
+roles:create     # Create roles
+roles:update     # Edit roles
+roles:delete     # Delete roles
+audit:read       # View audit logs
 ```
 
-### Database Schema (v1)
+### Standard Actions
 
-```typescript
-// src/db/schema/worlds.ts
-import { pgTable, uuid, varchar, timestamp } from 'drizzle-orm/pg-core';
-import { users } from './users';
-
-export const worlds = pgTable('worlds', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  name: varchar('name', { length: 255 }).notNull(),
-  createdByUserId: uuid('created_by_user_id').notNull().references(() => users.id),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
-```
+| Action   | Description                    |
+|----------|--------------------------------|
+| `read`   | View/list resources            |
+| `create` | Create new resources           |
+| `update` | Modify existing resources      |
+| `delete` | Remove resources               |
+| `manage` | Full control (used sparingly)  |
 
 ---
 
-## Future (v2): Role-Based Permissions
+## Database Schema
 
-### Roles
-
-| Role | Description |
-|------|-------------|
-| `owner` | Full access, can delete, can manage permissions |
-| `editor` | Can create/edit content, cannot delete world |
-| `viewer` | Read-only access |
-
-### Permission Table
+### Permissions Table (Seeded)
 
 ```typescript
 // src/db/schema/permissions.ts
-import { pgTable, uuid, varchar, timestamp, unique } from 'drizzle-orm/pg-core';
-import { worlds } from './worlds';
-import { users } from './users';
-
-export const worldPermissions = pgTable('world_permissions', {
+export const permissions = pgTable('permissions', {
   id: uuid('id').primaryKey().defaultRandom(),
-  worldId: uuid('world_id').notNull().references(() => worlds.id, { onDelete: 'cascade' }),
+  name: varchar('name', { length: 100 }).notNull().unique(),      // 'users:read'
+  description: varchar('description', { length: 255 }).notNull(), // 'View user list'
+  resource: varchar('resource', { length: 50 }).notNull(),        // 'users'
+  action: varchar('action', { length: 50 }).notNull(),            // 'read'
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+```
+
+### Roles Table (CRUD)
+
+```typescript
+// src/db/schema/roles.ts
+export const roles = pgTable('roles', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: varchar('name', { length: 100 }).notNull().unique(),
+  description: varchar('description', { length: 255 }),
+  isSystem: boolean('is_system').default(false).notNull(), // Protected roles
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const rolePermissions = pgTable('role_permissions', {
+  roleId: uuid('role_id').notNull().references(() => roles.id, { onDelete: 'cascade' }),
+  permissionId: uuid('permission_id').notNull().references(() => permissions.id, { onDelete: 'cascade' }),
+}, (table) => ({
+  pk: primaryKey({ columns: [table.roleId, table.permissionId] }),
+}));
+```
+
+### User Roles Junction
+
+```typescript
+// src/db/schema/user-roles.ts
+export const userRoles = pgTable('user_roles', {
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  role: varchar('role', { length: 50 }).default('viewer').notNull(), // owner, editor, viewer
+  roleId: uuid('role_id').notNull().references(() => roles.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => ({
-  worldUserUnique: unique('world_user_unique').on(table.worldId, table.userId),
+  pk: primaryKey({ columns: [table.userId, table.roleId] }),
 }));
-
-// Role type
-export const Role = {
-  Owner: 'owner',
-  Editor: 'editor',
-  Viewer: 'viewer',
-} as const;
-export type Role = typeof Role[keyof typeof Role];
-```
-
-### Permission Check Helper
-
-```typescript
-// src/lib/permissions.ts
-import { tryCatch, type Result } from 'stderr-lib';
-import { db } from './db';
-import { worldPermissions } from '../db/schema';
-import { eq, and } from 'drizzle-orm';
-
-export type Permission = 'read' | 'write' | 'delete' | 'manage';
-
-const ROLE_PERMISSIONS: Record<string, Permission[]> = {
-  owner: ['read', 'write', 'delete', 'manage'],
-  editor: ['read', 'write'],
-  viewer: ['read'],
-};
-
-export async function checkWorldPermission(
-  userId: string,
-  worldId: string,
-  requiredPermission: Permission
-): Promise<Result<void>> {
-  return tryCatch(async () => {
-    const [permission] = await db.select().from(worldPermissions)
-      .where(and(
-        eq(worldPermissions.worldId, worldId),
-        eq(worldPermissions.userId, userId)
-      ));
-
-    if (!permission) {
-      throw new Error('Access denied');
-    }
-
-    const allowedPermissions = ROLE_PERMISSIONS[permission.role];
-
-    if (!allowedPermissions.includes(requiredPermission)) {
-      throw new Error('Insufficient permissions');
-    }
-  });
-}
-```
-
-### Usage in Service
-
-```typescript
-// v2 service with permission checks
-export class WorldService {
-  static async update(userId: string, worldId: string, data: UpdateWorldDto): Promise<Result<World>> {
-    return tryCatch(async () => {
-      const permResult = await checkWorldPermission(userId, worldId, 'write');
-      if (!permResult.ok) {
-        throw new Error(permResult.error.message);
-      }
-
-      const [updated] = await db.update(worlds)
-        .set(data)
-        .where(eq(worlds.id, worldId))
-        .returning();
-
-      return updated;
-    });
-  }
-
-  static async delete(userId: string, worldId: string): Promise<Result<void>> {
-    return tryCatch(async () => {
-      const permResult = await checkWorldPermission(userId, worldId, 'delete');
-      if (!permResult.ok) {
-        throw new Error(permResult.error.message);
-      }
-
-      await db.delete(worlds).where(eq(worlds.id, worldId));
-    });
-  }
-}
 ```
 
 ---
 
-## Row-Level Security (RLS) - PostgreSQL
+## Entity Relationship
 
-For additional database-level protection (v2), enable RLS:
-
-```sql
--- Enable RLS on worlds table
-ALTER TABLE worlds ENABLE ROW LEVEL SECURITY;
-
--- Policy: Users can only see worlds they have permission to
-CREATE POLICY worlds_select_policy ON worlds
-  FOR SELECT
-  USING (
-    id IN (
-      SELECT world_id FROM world_permissions 
-      WHERE user_id = current_setting('app.current_user_id')::uuid
-    )
-  );
-
--- Set user context before queries
-SET app.current_user_id = 'user-uuid-here';
+```
+┌──────────┐       ┌──────────────────┐       ┌─────────────┐
+│  Users   │──────<│   user_roles     │>──────│    Roles    │
+└──────────┘       └──────────────────┘       └─────────────┘
+                                                     │
+                                                     │
+                                              ┌──────────────────┐
+                                              │ role_permissions │
+                                              └──────────────────┘
+                                                     │
+                                                     │
+                                              ┌─────────────┐
+                                              │ Permissions │
+                                              └─────────────┘
 ```
 
 ---
 
-## Resource Hierarchy
+## Default Roles (Seeded)
 
-Permissions cascade through the hierarchy:
+| Role         | System | Description                          |
+|--------------|--------|--------------------------------------|
+| Super Admin  | Yes    | All permissions, cannot be deleted   |
+| Admin        | No     | User and settings management         |
+| User         | No     | Basic authenticated user access      |
 
-```
-World (permission check here)
-  └── Epoch (inherits from World)
-        └── Entity Epoch State
-  └── Entity (inherits from World)
-  └── Narrative (inherits from World)
-        └── Arc
-              └── Chapter
-                    └── Scene
-```
+---
 
-### Cascade Logic
+## Seeded Permissions
 
 ```typescript
-// Check world permission for any nested resource
-export async function checkScenePermission(
-  userId: string,
-  sceneId: string,
-  permission: Permission
-): Promise<Result<void>> {
-  return tryCatch(async () => {
-    const [scene] = await db.select()
-      .from(scenes)
-      .leftJoin(chapters, eq(scenes.chapterId, chapters.id))
-      .leftJoin(narratives, eq(chapters.narrativeId, narratives.id))
-      .where(eq(scenes.id, sceneId));
+// src/db/seeds/permissions.seed.ts
+export const PERMISSIONS = [
+  // Users
+  { name: 'users:read', description: 'View user list', resource: 'users', action: 'read' },
+  { name: 'users:create', description: 'Create new users', resource: 'users', action: 'create' },
+  { name: 'users:update', description: 'Edit users', resource: 'users', action: 'update' },
+  { name: 'users:delete', description: 'Delete users', resource: 'users', action: 'delete' },
 
-    if (!scene) {
-      throw new Error('Scene not found');
+  // Settings
+  { name: 'settings:read', description: 'View system settings', resource: 'settings', action: 'read' },
+  { name: 'settings:update', description: 'Modify system settings', resource: 'settings', action: 'update' },
+
+  // Roles
+  { name: 'roles:read', description: 'View roles', resource: 'roles', action: 'read' },
+  { name: 'roles:create', description: 'Create new roles', resource: 'roles', action: 'create' },
+  { name: 'roles:update', description: 'Edit roles', resource: 'roles', action: 'update' },
+  { name: 'roles:delete', description: 'Delete non-system roles', resource: 'roles', action: 'delete' },
+
+  // Audit
+  { name: 'audit:read', description: 'View audit logs', resource: 'audit', action: 'read' },
+] as const;
+```
+
+---
+
+## Permission Middleware
+
+### Route Protection
+
+```typescript
+// src/middleware/permission.middleware.ts
+import { PermissionService } from '../services/permission.service.js';
+
+export function requirePermission(...permissions: string[]) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
     }
 
-    const permResult = await checkWorldPermission(userId, scene.narratives.worldId, permission);
-    if (!permResult.ok) {
-      throw new Error(permResult.error.message);
+    const hasPermission = await PermissionService.userHasAnyPermission(
+      req.user.id,
+      permissions
+    );
+
+    if (!hasPermission) {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
     }
-  });
+
+    next();
+  };
 }
 ```
+
+### Route Usage
+
+```typescript
+// src/routes/admin.routes.ts
+import { requirePermission } from '../middleware/permission.middleware.js';
+
+router.get('/users', requirePermission('users:read'), UserController.list);
+router.post('/users', requirePermission('users:create'), UserController.create);
+router.put('/users/:id', requirePermission('users:update'), UserController.update);
+router.delete('/users/:id', requirePermission('users:delete'), UserController.delete);
+
+// Multiple permissions (user needs ANY of these)
+router.get('/dashboard', requirePermission('dashboard:read', 'admin:read'), DashboardController.get);
+```
+
+---
+
+## Permission Caching
+
+User permissions are cached in memory to avoid repeated database queries:
+
+```typescript
+// src/services/permission.service.ts
+const permissionCache = new Map<string, { permissions: Set<string>; expiresAt: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+export class PermissionService {
+  static async getUserPermissions(userId: string): Promise<Set<string>> {
+    const cached = permissionCache.get(userId);
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.permissions;
+    }
+
+    const permissions = await this.fetchUserPermissions(userId);
+    permissionCache.set(userId, {
+      permissions,
+      expiresAt: Date.now() + CACHE_TTL,
+    });
+
+    return permissions;
+  }
+
+  static invalidateUserCache(userId: string): void {
+    permissionCache.delete(userId);
+  }
+
+  static invalidateAllCache(): void {
+    permissionCache.clear();
+  }
+}
+```
+
+### Cache Invalidation
+
+Invalidate cache when:
+- User roles are modified
+- Role permissions are modified
+- User logs out
 
 ---
 
 ## Authentication vs Authorization
 
-| Concern | Where | What |
-|---------|-------|------|
-| **Authentication** | `auth.middleware.ts` | Verify JWT, attach `req.user` |
-| **Authorization** | Service layer | Check permissions before action |
+| Concern           | Layer              | Responsibility                     |
+|-------------------|--------------------|------------------------------------|
+| **Authentication** | `auth.middleware`  | Verify JWT, attach `req.user`      |
+| **Authorization**  | `permission.middleware` | Check user has required permission |
 
 ```typescript
-// Authentication (middleware)
-router.use(authenticate);  // All routes require valid token
-
-// Authorization (service)
-const permResult = await checkWorldPermission(userId, worldId, 'write');
-if (!permResult.ok) { ... }
+// Route with both
+router.get(
+  '/admin/users',
+  authenticate,                      // Must be logged in
+  requirePermission('users:read'),   // Must have permission
+  UserController.list
+);
 ```
 
 ---
 
-## API Response for Permission Errors
+## API Responses
 
 ```json
 // 401 Unauthorized (not logged in)
@@ -274,31 +274,98 @@ if (!permResult.ok) { ... }
 // 403 Forbidden (logged in but no permission)
 {
   "success": false,
-  "error": "Access denied"
-}
-
-// 404 Not Found (resource doesn't exist OR user has no read access)
-{
-  "success": false,
-  "error": "World not found"
+  "error": "Forbidden"
 }
 ```
 
-**Security Note:** Return 404 instead of 403 when checking existence to prevent resource enumeration attacks.
+---
+
+## Frontend Integration
+
+### Permission Check Hook
+
+```typescript
+// src/hooks/usePermission.ts
+export function usePermission(permission: string): boolean {
+  const { user } = useAuthStore();
+  return user?.permissions?.includes(permission) ?? false;
+}
+
+export function useAnyPermission(permissions: string[]): boolean {
+  const { user } = useAuthStore();
+  return permissions.some(p => user?.permissions?.includes(p)) ?? false;
+}
+```
+
+### Conditional Rendering
+
+```tsx
+function AdminPanel() {
+  const canManageUsers = usePermission('users:read');
+  const canManageSettings = usePermission('settings:read');
+
+  return (
+    <div>
+      {canManageUsers && <UserManagement />}
+      {canManageSettings && <SettingsPanel />}
+    </div>
+  );
+}
+```
+
+### Protected Routes
+
+```tsx
+function ProtectedRoute({ permission, children }) {
+  const hasPermission = usePermission(permission);
+
+  if (!hasPermission) {
+    return <Navigate to="/unauthorized" />;
+  }
+
+  return children;
+}
+```
 
 ---
 
-## Migration Path: v1 → v2
+## Migration from isAdmin
 
-When enabling multi-user:
+The template previously used a simple `isAdmin` boolean. Migration steps:
 
-1. Create `world_permissions` table
-2. Run migration to create `owner` permission for all existing `createdByUserId` entries:
+1. Create new permission tables
+2. Seed permissions and roles
+3. Migrate existing admins to Admin role:
    ```sql
-   INSERT INTO world_permissions (id, world_id, user_id, role)
-   SELECT gen_random_uuid(), id, created_by_user_id, 'owner'
-   FROM worlds;
+   INSERT INTO user_roles (user_id, role_id)
+   SELECT u.id, r.id
+   FROM users u, roles r
+   WHERE u.is_admin = true AND r.name = 'Admin';
    ```
-3. Update services to use `checkWorldPermission()` instead of `createdByUserId` filter
-4. Enable `FEATURE_MULTI_USER` flag
+4. Update auth middleware to load permissions
+5. Replace `isAdmin` checks with permission checks
+6. Remove `isAdmin` column (optional, can keep for backwards compatibility)
 
+---
+
+## Adding New Permissions
+
+When adding a new feature:
+
+1. Define permissions in seed file:
+   ```typescript
+   { name: 'posts:read', description: 'View posts', resource: 'posts', action: 'read' },
+   { name: 'posts:create', description: 'Create posts', resource: 'posts', action: 'create' },
+   ```
+
+2. Run seed to add permissions:
+   ```bash
+   pnpm db:seed
+   ```
+
+3. Assign to appropriate roles via admin UI
+
+4. Add middleware to routes:
+   ```typescript
+   router.get('/posts', requirePermission('posts:read'), PostController.list);
+   ```

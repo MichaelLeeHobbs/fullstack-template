@@ -10,6 +10,7 @@ const mockUser = {
   email: 'test@example.com',
   isAdmin: false,
   preferences: { theme: 'system' as const },
+  permissions: [] as string[],
   createdAt: '2024-01-01T00:00:00Z',
 };
 

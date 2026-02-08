@@ -1,12 +1,22 @@
 // ===========================================
 // Email Service
 // ===========================================
-// Sends emails using mock (dev) or AWS SES (prod).
-// In development, emails are logged to console.
+// Facade over email providers. Callers use this service,
+// which delegates to the configured provider.
+//
+// Provider is selected via EMAIL_PROVIDER env var:
+// - 'mock' (default): Logs emails to console
+// - 'smtp': Uses nodemailer SMTP transport
+// - 'ses': Uses AWS SES
 
-import { tryCatch, type Result, type StdError } from 'stderr-lib';
+import { type Result } from 'stderr-lib';
 import { config } from '../config/index.js';
-import logger from '../lib/logger.js';
+import {
+  getEmailProvider,
+  resetEmailProvider,
+  type EmailResult,
+  type EmailProviderType,
+} from '../providers/email/index.js';
 
 interface EmailOptions {
   to: string;
@@ -15,75 +25,38 @@ interface EmailOptions {
   html?: string;
 }
 
-interface EmailResult {
-  messageId: string;
-}
-
-// Helper to wrap async operations with tryCatch - properly typed
-async function tryAsync<T>(fn: () => Promise<T>): Promise<Result<T, StdError>> {
-  return await (tryCatch(fn) as unknown as Promise<Result<T, StdError>>);
-}
-
 export class EmailService {
   /**
-   * Send an email. In development, logs to console.
-   * In production, uses AWS SES.
+   * Send an email using the configured provider.
+   * Provider is selected via EMAIL_PROVIDER env var.
    */
   static async send(options: EmailOptions): Promise<Result<EmailResult>> {
-    if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
-      return this.sendMock(options);
-    }
-    return this.sendSES(options);
+    const provider = getEmailProvider();
+    return provider.send(options);
   }
 
   /**
-   * Mock email - logs to console for development
+   * Test the email provider connection.
+   * Useful for health checks and admin diagnostics.
    */
-  private static async sendMock(options: EmailOptions): Promise<Result<EmailResult>> {
-    return tryAsync(async () => {
-      const messageId = `mock-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-
-      logger.info('📧 MOCK EMAIL SENT', {
-        messageId,
-        to: options.to,
-        subject: options.subject,
-      });
-
-      // Log full content at debug level for testing
-      logger.debug('Email content', {
-        text: options.text?.substring(0, 200),
-        htmlPreview: options.html?.substring(0, 300),
-      });
-
-      return { messageId };
-    });
+  static async testConnection(): Promise<Result<boolean>> {
+    const provider = getEmailProvider();
+    return provider.testConnection();
   }
 
   /**
-   * AWS SES email - for production
+   * Get the current provider type.
    */
-  private static async sendSES(options: EmailOptions): Promise<Result<EmailResult>> {
-    // TODO: Implement when deploying to production
-    // return tryAsync(async () => {
-    //   const { SESClient, SendEmailCommand } = await import('@aws-sdk/client-ses');
-    //   const client = new SESClient({ region: config.AWS_SES_REGION });
-    //   const command = new SendEmailCommand({
-    //     Source: config.EMAIL_FROM,
-    //     Destination: { ToAddresses: [options.to] },
-    //     Message: {
-    //       Subject: { Data: options.subject },
-    //       Body: {
-    //         Text: options.text ? { Data: options.text } : undefined,
-    //         Html: options.html ? { Data: options.html } : undefined,
-    //       },
-    //     },
-    //   });
-    //   const response = await client.send(command);
-    //   return { messageId: response.MessageId || 'unknown' };
-    // });
+  static getProviderType(): EmailProviderType {
+    const provider = getEmailProvider();
+    return provider.type;
+  }
 
-    logger.warn('SES not implemented, falling back to mock email');
-    return this.sendMock(options);
+  /**
+   * Reset the cached provider (useful for testing).
+   */
+  static resetProvider(): void {
+    resetEmailProvider();
   }
 
   // ===========================================
@@ -93,10 +66,7 @@ export class EmailService {
   /**
    * Send email verification link
    */
-  static async sendVerificationEmail(
-    email: string,
-    token: string
-  ): Promise<Result<EmailResult>> {
+  static async sendVerificationEmail(email: string, token: string): Promise<Result<EmailResult>> {
     const verifyUrl = `${config.FRONTEND_URL}/verify-email?token=${token}`;
 
     return this.send({
@@ -150,10 +120,7 @@ If you didn't create an account, you can ignore this email.`,
   /**
    * Send password reset link
    */
-  static async sendPasswordResetEmail(
-    email: string,
-    token: string
-  ): Promise<Result<EmailResult>> {
+  static async sendPasswordResetEmail(email: string, token: string): Promise<Result<EmailResult>> {
     const resetUrl = `${config.FRONTEND_URL}/reset-password?token=${token}`;
 
     return this.send({
@@ -204,4 +171,3 @@ If you didn't request this, you can safely ignore this email.`,
     });
   }
 }
-

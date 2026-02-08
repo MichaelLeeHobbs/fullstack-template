@@ -151,7 +151,7 @@ export class AccountController {
     const result = await AccountService.sendVerificationEmail(userId, email);
 
     if (!result.ok) {
-      logger.error('Failed to resend verification', { error: result.error.toString() });
+      logger.error({ error: result.error },'Failed to resend verification');
       return void res.status(500).json({
         success: false,
         error: 'Failed to send verification email',

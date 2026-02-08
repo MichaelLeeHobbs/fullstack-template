@@ -52,7 +52,7 @@ export class AccountService {
         throw new Error('Failed to send verification email');
       }
 
-      logger.info('Verification email sent', { userId, email });
+      logger.info({ userId, email }, 'Verification email sent');
     });
   }
 
@@ -87,7 +87,7 @@ export class AccountService {
         .delete(emailVerificationTokens)
         .where(eq(emailVerificationTokens.id, tokenRecord.id));
 
-      logger.info('Email verified', { userId: tokenRecord.userId });
+      logger.info({ userId: tokenRecord.userId }, 'Email verified');
 
       return { userId: tokenRecord.userId };
     });
@@ -110,7 +110,7 @@ export class AccountService {
 
       // Always return success to prevent email enumeration
       if (!user) {
-        logger.info('Password reset requested for non-existent email', { email });
+        logger.info({ email }, 'Password reset requested for non-existent email');
         return;
       }
 
@@ -136,7 +136,7 @@ export class AccountService {
         throw new Error('Failed to send password reset email');
       }
 
-      logger.info('Password reset email sent', { userId: user.id });
+      logger.info({ userId: user.id }, 'Password reset email sent');
     });
   }
 
@@ -177,7 +177,7 @@ export class AccountService {
       // Optionally: invalidate all sessions for this user
       // await db.delete(sessions).where(eq(sessions.userId, tokenRecord.userId));
 
-      logger.info('Password reset successful', { userId: tokenRecord.userId });
+      logger.info({ userId: tokenRecord.userId }, 'Password reset successful');
     });
   }
 
@@ -195,7 +195,7 @@ export class AccountService {
         .set({ isActive: false, updatedAt: new Date() })
         .where(eq(users.id, userId));
 
-      logger.info('User deactivated', { userId });
+      logger.info({ userId }, 'User deactivated');
     });
   }
 
@@ -209,7 +209,7 @@ export class AccountService {
         .set({ isActive: true, updatedAt: new Date() })
         .where(eq(users.id, userId));
 
-      logger.info('User activated', { userId });
+      logger.info({ userId }, 'User activated');
     });
   }
 }

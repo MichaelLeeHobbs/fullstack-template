@@ -15,9 +15,10 @@ import {
   Typography,
   Box,
 } from '@mui/material';
-import { Home, Settings, People, History } from '@mui/icons-material';
+import { Home, Settings, People, History, Security } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuthStore } from '../../stores/auth.store.js';
+import { useAnyPermission } from '../../hooks/usePermission.js';
+import { PERMISSIONS } from '../../types/role.js';
 
 const DRAWER_WIDTH = 240;
 
@@ -31,25 +32,30 @@ interface NavItem {
   text: string;
   icon: React.ReactNode;
   path: string;
+  permissions?: string[];
 }
 
 export function Sidebar({ open, onClose, variant }: SidebarProps) {
   const location = useLocation();
-  const { user } = useAuthStore();
+
+  // Check permissions for admin sections
+  const canViewUsers = useAnyPermission([PERMISSIONS.USERS_READ]);
+  const canViewRoles = useAnyPermission([PERMISSIONS.ROLES_READ]);
+  const canViewSettings = useAnyPermission([PERMISSIONS.SETTINGS_READ]);
+  const canViewAuditLogs = useAnyPermission([PERMISSIONS.AUDIT_READ]);
 
   // Main navigation items - expand as features are added
-  const navItems: NavItem[] = [
-    { text: 'Home', icon: <Home />, path: '/home' },
-  ];
+  const navItems: NavItem[] = [{ text: 'Home', icon: <Home />, path: '/home' }];
 
-  // Admin items - only shown to admins
-  const adminItems: NavItem[] = user?.isAdmin
-    ? [
-        { text: 'Users', icon: <People />, path: '/admin/users' },
-        { text: 'Settings', icon: <Settings />, path: '/admin/settings' },
-        { text: 'Audit Logs', icon: <History />, path: '/admin/audit-logs' },
-      ]
-    : [];
+  // Admin items - shown based on permissions
+  const adminItems: NavItem[] = [
+    ...(canViewUsers ? [{ text: 'Users', icon: <People />, path: '/admin/users' }] : []),
+    ...(canViewRoles ? [{ text: 'Roles', icon: <Security />, path: '/admin/roles' }] : []),
+    ...(canViewSettings ? [{ text: 'Settings', icon: <Settings />, path: '/admin/settings' }] : []),
+    ...(canViewAuditLogs
+      ? [{ text: 'Audit Logs', icon: <History />, path: '/admin/audit-logs' }]
+      : []),
+  ];
 
   const renderNavItem = (item: NavItem) => (
     <ListItem key={item.path} disablePadding>
@@ -88,9 +94,7 @@ export function Sidebar({ open, onClose, variant }: SidebarProps) {
       }}
     >
       <Toolbar /> {/* Spacer for AppBar */}
-
       <List>{navItems.map(renderNavItem)}</List>
-
       {adminItems.length > 0 && (
         <>
           <Divider />

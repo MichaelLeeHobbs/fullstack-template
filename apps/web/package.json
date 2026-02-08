@@ -14,17 +14,20 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@fullstack-template/shared": "workspace:*",
     "@emotion/react": "11.14.0",
     "@emotion/styled": "11.14.0",
+    "@fullstack-template/shared": "workspace:*",
+    "@hookform/resolvers": "^5.2.2",
     "@mui/icons-material": "6.3.0",
     "@mui/material": "6.3.0",
     "@tanstack/react-query": "5.62.8",
     "notistack": "^3.0.2",
     "react": "18.3.1",
     "react-dom": "18.3.1",
+    "react-hook-form": "^7.71.1",
     "react-router-dom": "6.28.0",
     "stderr-lib": "2.1.0",
+    "zod": "^4.3.4",
     "zustand": "5.0.2"
   },
   "devDependencies": {

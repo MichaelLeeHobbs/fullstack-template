@@ -21,7 +21,7 @@ export class SettingsController {
     const result = await SettingsService.getAll();
 
     if (!result.ok) {
-      logger.error('Failed to list settings', { error: result.error.toString() });
+      logger.error({ error: result.error }, 'Failed to list settings');
       return void res.status(500).json({
         success: false,
         error: 'Failed to retrieve settings',
@@ -108,10 +108,7 @@ export class SettingsController {
         });
       }
 
-      logger.error('Failed to update setting', {
-        key,
-        error: result.error.toString(),
-      });
+      logger.error({ key, error: result.error }, 'Failed to update setting');
       return void res.status(500).json({
         success: false,
         error: 'Failed to update setting',
@@ -124,4 +121,3 @@ export class SettingsController {
     });
   }
 }
-

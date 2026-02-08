@@ -27,7 +27,7 @@ export class UserController {
     const result = await UserService.getProfile(userId);
 
     if (!result.ok) {
-      logger.error('Failed to get profile', { error: result.error.toString() });
+      logger.error({ error: result.error },'Failed to get profile');
       return void res.status(404).json({
         success: false,
         error: 'User not found',
@@ -72,7 +72,7 @@ export class UserController {
         });
       }
 
-      logger.error('Failed to change password', { error: result.error.toString() });
+      logger.error({ error: result.error },'Failed to change password');
       return void res.status(500).json({
         success: false,
         error: 'Failed to change password',
@@ -136,7 +136,7 @@ export class UserController {
     const result = await UserService.updatePreferences(userId, parseResult.data);
 
     if (!result.ok) {
-      logger.error('Failed to update preferences', { error: result.error.toString() });
+      logger.error({ error: result.error },'Failed to update preferences');
       return void res.status(500).json({
         success: false,
         error: 'Failed to update preferences',

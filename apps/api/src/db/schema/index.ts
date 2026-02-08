@@ -8,4 +8,7 @@ export * from './sessions.js';
 export * from './settings.js';
 export * from './tokens.js';
 export * from './audit.js';
+export * from './permissions.js';
+export * from './roles.js';
+export * from './user-roles.js';
 

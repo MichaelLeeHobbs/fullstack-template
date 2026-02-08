@@ -3,6 +3,8 @@
 // ===========================================
 
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Box,
   Card,
@@ -13,56 +15,44 @@ import {
   Alert,
   Link,
 } from '@mui/material';
-import { Link as RouterLink, Navigate, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, Navigate } from 'react-router-dom';
+import { registerSchema, type RegisterInput } from '@fullstack-template/shared';
 import { useRegister } from '../hooks/useAuth.js';
 import { useAuthStore } from '../stores/auth.store.js';
 import { useNotification } from '../hooks/useNotification.js';
 
 export function RegisterPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [validationError, setValidationError] = useState('');
-  const register = useRegister();
-  const navigate = useNavigate();
+  const [registrationComplete, setRegistrationComplete] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
+  const registerMutation = useRegister();
   const notify = useNotification();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterInput>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
+  });
 
   // Redirect if already logged in
   if (isAuthenticated) {
     return <Navigate to="/home" replace />;
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setValidationError('');
-
-    if (password !== confirmPassword) {
-      setValidationError('Passwords do not match');
-      return;
-    }
-
-    if (password.length < 8) {
-      setValidationError('Password must be at least 8 characters');
-      return;
-    }
-
-    if (!/[A-Z]/.test(password)) {
-      setValidationError('Password must contain at least one uppercase letter');
-      return;
-    }
-
-    if (!/[0-9]/.test(password)) {
-      setValidationError('Password must contain at least one number');
-      return;
-    }
-
-    register.mutate(
-      { email, password },
+  const onSubmit = (data: RegisterInput) => {
+    registerMutation.mutate(
+      { email: data.email, password: data.password },
       {
         onSuccess: () => {
-          notify.success('Account created successfully!');
-          navigate('/home', { replace: true });
+          setRegisteredEmail(data.email);
+          setRegistrationComplete(true);
         },
         onError: (error) => {
           notify.error(error.message || 'Registration failed');
@@ -71,7 +61,44 @@ export function RegisterPage() {
     );
   };
 
-  const error = validationError || (register.isError ? register.error?.message : '');
+  // Show verification message after successful registration
+  if (registrationComplete) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: 'calc(100vh - 200px)',
+        }}
+      >
+        <Card sx={{ width: '100%', maxWidth: 400 }}>
+          <CardContent sx={{ p: 4 }}>
+            <Typography variant="h5" gutterBottom align="center">
+              Check your email
+            </Typography>
+
+            <Alert severity="success" sx={{ mb: 2 }}>
+              Account created successfully!
+            </Alert>
+
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+              We've sent a verification link to <strong>{registeredEmail}</strong>. Please click the
+              link in the email to verify your account before logging in.
+            </Typography>
+
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              The link will expire in 24 hours. If you don't see the email, check your spam folder.
+            </Typography>
+
+            <Button variant="contained" fullWidth component={RouterLink} to="/login">
+              Go to Login
+            </Button>
+          </CardContent>
+        </Card>
+      </Box>
+    );
+  }
 
   return (
     <Box
@@ -88,43 +115,42 @@ export function RegisterPage() {
             Create Account
           </Typography>
 
-          {error && (
+          {registerMutation.isError && (
             <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
+              {registerMutation.error?.message || 'Registration failed'}
             </Alert>
           )}
 
-          <Box component="form" onSubmit={handleSubmit}>
+          <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
             <TextField
+              {...register('email')}
               label="Email"
               type="email"
               fullWidth
               margin="normal"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+              error={!!errors.email}
+              helperText={errors.email?.message}
               autoComplete="email"
               autoFocus
             />
             <TextField
+              {...register('password')}
               label="Password"
               type="password"
               fullWidth
               margin="normal"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
+              error={!!errors.password}
+              helperText={errors.password?.message || 'At least 8 characters, one uppercase, one number'}
               autoComplete="new-password"
-              helperText="At least 8 characters, one uppercase, one number"
             />
             <TextField
+              {...register('confirmPassword')}
               label="Confirm Password"
               type="password"
               fullWidth
               margin="normal"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
+              error={!!errors.confirmPassword}
+              helperText={errors.confirmPassword?.message}
               autoComplete="new-password"
             />
             <Button
@@ -133,9 +159,9 @@ export function RegisterPage() {
               fullWidth
               size="large"
               sx={{ mt: 3 }}
-              disabled={register.isPending}
+              disabled={registerMutation.isPending}
             >
-              {register.isPending ? 'Creating account...' : 'Register'}
+              {registerMutation.isPending ? 'Creating account...' : 'Register'}
             </Button>
           </Box>
 
@@ -150,4 +176,3 @@ export function RegisterPage() {
     </Box>
   );
 }
-

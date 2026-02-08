@@ -8,6 +8,7 @@ import authRoutes from './auth.routes.js';
 import adminRoutes from './admin.routes.js';
 import userRoutes from './user.routes.js';
 import accountRoutes from './account.routes.js';
+import roleRoutes from './role.routes.js';
 
 const router: IRouter = Router();
 
@@ -16,6 +17,7 @@ router.use('/auth', authRoutes);
 router.use('/admin', adminRoutes);
 router.use('/users', userRoutes);
 router.use('/account', accountRoutes);
+router.use('/roles', roleRoutes);
 
 export default router;
 

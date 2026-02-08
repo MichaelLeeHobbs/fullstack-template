@@ -4,7 +4,9 @@
       "Bash(Remove-Item -Recurse -Force \"C:\\\\Users\\\\mhobb\\\\WebstormProjects\\\\fullstack-template\\\\docs\\\\tasks\\\\02_world-epochs\", \"C:\\\\Users\\\\mhobb\\\\WebstormProjects\\\\fullstack-template\\\\docs\\\\tasks\\\\03_entities\", \"C:\\\\Users\\\\mhobb\\\\WebstormProjects\\\\fullstack-template\\\\docs\\\\tasks\\\\04_facts\")",
       "Bash(Remove-Item -Force \"C:\\\\Users\\\\mhobb\\\\WebstormProjects\\\\fullstack-template\\\\docs\\\\features\\\\02_world-epochs.md\", \"C:\\\\Users\\\\mhobb\\\\WebstormProjects\\\\fullstack-template\\\\docs\\\\features\\\\03_entities.md\", \"C:\\\\Users\\\\mhobb\\\\WebstormProjects\\\\fullstack-template\\\\docs\\\\features\\\\04_facts.md\", \"C:\\\\Users\\\\mhobb\\\\WebstormProjects\\\\fullstack-template\\\\docs\\\\features\\\\05_narratives.md\", \"C:\\\\Users\\\\mhobb\\\\WebstormProjects\\\\fullstack-template\\\\docs\\\\features\\\\06_scene-editor.md\")",
       "Bash(pnpm build:*)",
-      "Bash(pnpm test:*)"
+      "Bash(pnpm test:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm:*)"
     ]
   }
 }

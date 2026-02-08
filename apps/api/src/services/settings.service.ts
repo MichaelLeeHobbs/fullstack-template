@@ -51,10 +51,10 @@ export class SettingsService {
     });
 
     if (!result.ok) {
-      logger.error('Failed to get setting', {
+      logger.error({
         key,
         error: result.error.toString(),
-      });
+      }, 'Failed to get setting');
       return defaultValue as T;
     }
 
@@ -87,7 +87,7 @@ export class SettingsService {
       // Invalidate cache
       cache.delete(key);
 
-      logger.info('Setting updated', { key });
+      logger.info({ key }, 'Setting updated');
     });
   }
 
@@ -137,7 +137,7 @@ export class SettingsService {
         try {
           return JSON.parse(value);
         } catch {
-          logger.warn('Failed to parse JSON setting', { value });
+          logger.warn( { value }, 'Failed to parse JSON setting');
           return null;
         }
       default:

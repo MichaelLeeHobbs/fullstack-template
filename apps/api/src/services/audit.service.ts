@@ -37,12 +37,12 @@ export class AuditService {
       await db.insert(auditLogs).values(entry);
 
       // Also log to console for immediate visibility
-      logger.info('Audit event', {
+      logger.info({
         action,
         userId: context.userId,
         success,
         details,
-      });
+      }, 'Audit event');
     });
   }
 

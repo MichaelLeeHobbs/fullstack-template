@@ -38,9 +38,24 @@ const configSchema = z.object({
   S3_BUCKET: z.string().min(1),
   S3_REGION: z.string().default('us-east-1'),
 
-  // AWS SES (optional - for production email)
-  AWS_SES_REGION: z.string().optional(),
+  // Email Provider Configuration
+  EMAIL_PROVIDER: z.enum(['mock', 'smtp', 'ses']).default('mock'),
   EMAIL_FROM: z.string().email().optional(),
+
+  // SMTP Configuration (for EMAIL_PROVIDER=smtp)
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_SECURE: z
+    .enum(['true', 'false'])
+    .default('true')
+    .transform((v) => v === 'true'),
+
+  // AWS SES Configuration (for EMAIL_PROVIDER=ses)
+  AWS_SES_REGION: z.string().optional(),
+  AWS_ACCESS_KEY_ID: z.string().optional(),
+  AWS_SECRET_ACCESS_KEY: z.string().optional(),
 
   // AI Provider API Keys (optional - secrets stay in env)
   ANTHROPIC_API_KEY: z.string().optional(),

@@ -2,10 +2,20 @@
 // Admin Route Component
 // ===========================================
 // Protects routes that require admin access.
+// Uses permission-based access control.
 
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from '../stores/auth.store.js';
 import { CircularProgress, Container } from '@mui/material';
+import { PERMISSIONS } from '../types/role.js';
+
+// Admin permissions - user needs at least one to access admin routes
+const ADMIN_PERMISSIONS = [
+  PERMISSIONS.USERS_READ,
+  PERMISSIONS.ROLES_READ,
+  PERMISSIONS.SETTINGS_READ,
+  PERMISSIONS.AUDIT_READ,
+];
 
 export function AdminRoute() {
   const { isAuthenticated, user, isLoading } = useAuthStore();
@@ -22,7 +32,11 @@ export function AdminRoute() {
     return <Navigate to="/login" replace />;
   }
 
-  if (!user?.isAdmin) {
+  // Check if user has any admin permission
+  const hasAdminAccess =
+    user?.isAdmin || user?.permissions?.some((p) => (ADMIN_PERMISSIONS as readonly string[]).includes(p));
+
+  if (!hasAdminAccess) {
     return <Navigate to="/" replace />;
   }
 
@@ -30,4 +44,3 @@ export function AdminRoute() {
 }
 
 export default AdminRoute;
-

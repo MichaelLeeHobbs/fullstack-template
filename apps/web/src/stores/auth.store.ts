@@ -15,6 +15,7 @@ export interface User {
   email: string;
   isAdmin: boolean;
   preferences: UserPreferences;
+  permissions: string[];
   createdAt: string;
 }
 
@@ -30,6 +31,7 @@ interface AuthState {
   setLoading: (isLoading: boolean) => void;
   setIntendedDestination: (path: string | null) => void;
   updatePreferences: (preferences: UserPreferences) => void;
+  updatePermissions: (permissions: string[]) => void;
   clearAuth: () => void;
 }
 
@@ -50,6 +52,10 @@ export const useAuthStore = create<AuthState>()(
       updatePreferences: (preferences) =>
         set((state) => ({
           user: state.user ? { ...state.user, preferences } : null,
+        })),
+      updatePermissions: (permissions) =>
+        set((state) => ({
+          user: state.user ? { ...state.user, permissions } : null,
         })),
       clearAuth: () =>
         set({
@@ -73,4 +79,3 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 );
-

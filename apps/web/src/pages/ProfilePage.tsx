@@ -3,7 +3,8 @@
 // ===========================================
 // User profile with info, change password, and preferences.
 
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Container,
   Typography,
@@ -21,6 +22,7 @@ import {
 } from '@mui/material';
 import { LightMode, DarkMode, SettingsBrightness } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { changePasswordSchema, type ChangePasswordInput } from '@fullstack-template/shared';
 import { userApi } from '../api/user.api.js';
 import { useNotification } from '../hooks/useNotification.js';
 import { useThemeStore } from '../stores/theme.store.js';
@@ -38,20 +40,28 @@ export function ProfilePage() {
     queryFn: userApi.getProfile,
   });
 
-  // Change password state
-  const [passwords, setPasswords] = useState({
-    current: '',
-    new: '',
-    confirm: '',
+  // Change password form
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isValid },
+  } = useForm<ChangePasswordInput>({
+    resolver: zodResolver(changePasswordSchema),
+    mode: 'onChange',
+    defaultValues: {
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+    },
   });
-  const [passwordError, setPasswordError] = useState('');
 
   const changePasswordMutation = useMutation({
-    mutationFn: () =>
-      userApi.changePassword(passwords.current, passwords.new),
+    mutationFn: (data: ChangePasswordInput) =>
+      userApi.changePassword(data.currentPassword, data.newPassword),
     onSuccess: () => {
       notify.success('Password changed successfully');
-      setPasswords({ current: '', new: '', confirm: '' });
+      reset();
     },
     onError: (error: Error) => {
       notify.error(error.message || 'Failed to change password');
@@ -71,19 +81,8 @@ export function ProfilePage() {
     },
   });
 
-  const handleChangePassword = () => {
-    setPasswordError('');
-
-    if (passwords.new !== passwords.confirm) {
-      setPasswordError('Passwords do not match');
-      return;
-    }
-    if (passwords.new.length < 8) {
-      setPasswordError('Password must be at least 8 characters');
-      return;
-    }
-
-    changePasswordMutation.mutate();
+  const onChangePassword = (data: ChangePasswordInput) => {
+    changePasswordMutation.mutate(data);
   };
 
   const handleThemeChange = (
@@ -178,12 +177,15 @@ export function ProfilePage() {
         <CardHeader title="Change Password" />
         <Divider />
         <CardContent>
-          {passwordError && (
+          {changePasswordMutation.isError && (
             <Alert severity="error" sx={{ mb: 2 }}>
-              {passwordError}
+              {changePasswordMutation.error?.message || 'Failed to change password'}
             </Alert>
           )}
           <Box
+            component="form"
+            onSubmit={handleSubmit(onChangePassword)}
+            noValidate
             sx={{
               display: 'flex',
               flexDirection: 'column',
@@ -192,45 +194,35 @@ export function ProfilePage() {
             }}
           >
             <TextField
+              {...register('currentPassword')}
               type="password"
               label="Current Password"
-              value={passwords.current}
-              onChange={(e) =>
-                setPasswords({ ...passwords, current: e.target.value })
-              }
+              error={!!errors.currentPassword}
+              helperText={errors.currentPassword?.message}
               autoComplete="current-password"
             />
             <TextField
+              {...register('newPassword')}
               type="password"
               label="New Password"
-              value={passwords.new}
-              onChange={(e) =>
-                setPasswords({ ...passwords, new: e.target.value })
-              }
+              error={!!errors.newPassword}
+              helperText={errors.newPassword?.message || 'At least 8 characters, one uppercase, one number'}
               autoComplete="new-password"
             />
             <TextField
+              {...register('confirmPassword')}
               type="password"
               label="Confirm New Password"
-              value={passwords.confirm}
-              onChange={(e) =>
-                setPasswords({ ...passwords, confirm: e.target.value })
-              }
+              error={!!errors.confirmPassword}
+              helperText={errors.confirmPassword?.message}
               autoComplete="new-password"
             />
             <Button
+              type="submit"
               variant="contained"
-              onClick={handleChangePassword}
-              disabled={
-                changePasswordMutation.isPending ||
-                !passwords.current ||
-                !passwords.new ||
-                !passwords.confirm
-              }
+              disabled={changePasswordMutation.isPending || !isValid}
             >
-              {changePasswordMutation.isPending
-                ? 'Changing...'
-                : 'Change Password'}
+              {changePasswordMutation.isPending ? 'Changing...' : 'Change Password'}
             </Button>
           </Box>
         </CardContent>

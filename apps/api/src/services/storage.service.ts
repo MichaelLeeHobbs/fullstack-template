@@ -80,11 +80,11 @@ export class StorageService {
 
       await this.getClient().send(command);
 
-      logger.info('File uploaded', {
+      logger.info({
         key,
         size: buffer.length,
         contentType,
-      });
+      }, 'File uploaded');
 
       return {
         key,
@@ -147,7 +147,7 @@ export class StorageService {
       });
 
       await this.getClient().send(command);
-      logger.info('File deleted', { key });
+      logger.info({ key }, 'File deleted');
     });
   }
 
