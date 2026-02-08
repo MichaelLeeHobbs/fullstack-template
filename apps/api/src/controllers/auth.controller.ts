@@ -13,7 +13,8 @@ export class AuthController {
   static async register(req: Request, res: Response): Promise<void> {
     const { email, password } = req.body as RegisterInput;
 
-    const result = await AuthService.register(email, password);
+    const metadata = { userAgent: req.headers['user-agent'], ipAddress: req.ip };
+    const result = await AuthService.register(email, password, metadata);
 
     if (!result.ok) {
       logger.warn({ error: result.error }, 'Registration failed');
@@ -34,10 +35,38 @@ export class AuthController {
   static async login(req: Request, res: Response): Promise<void> {
     const { email, password } = req.body as LoginInput;
 
-    const result = await AuthService.login(email, password);
+    const metadata = { userAgent: req.headers['user-agent'], ipAddress: req.ip };
+    const result = await AuthService.login(email, password, metadata);
 
     if (!result.ok) {
       logger.warn({ email, error: result.error.toString() }, 'Login failed');
+
+      // Handle account lockout
+      if (result.error.message?.startsWith('ACCOUNT_LOCKED:')) {
+        const minutes = result.error.message.split(':')[1];
+        res.status(429).json({
+          success: false,
+          error: `Account is locked. Try again in ${minutes} minute(s).`,
+        });
+        return;
+      }
+      if (result.error.message === 'ACCOUNT_LOCKED_NOW') {
+        res.status(429).json({
+          success: false,
+          error: 'Too many failed attempts. Account has been temporarily locked.',
+        });
+        return;
+      }
+
+      // Handle invalid credentials with remaining attempts
+      if (result.error.message?.startsWith('INVALID_CREDENTIALS:')) {
+        const remaining = result.error.message.split(':')[1];
+        const msg = remaining
+          ? `Invalid email or password. ${remaining} attempt(s) remaining.`
+          : 'Invalid email or password';
+        res.status(401).json({ success: false, error: msg });
+        return;
+      }
 
       // Handle email not verified error
       if (result.error.message === 'EMAIL_NOT_VERIFIED') {
@@ -55,6 +84,11 @@ export class AuthController {
       return;
     }
 
+    if ('mfaRequired' in result.value && result.value.mfaRequired) {
+      res.json({ success: true, data: result.value });
+      return;
+    }
+
     logger.info({ userId: result.value.user.id }, 'User logged in');
     res.json({ success: true, data: result.value });
   }
@@ -62,7 +96,8 @@ export class AuthController {
   static async refresh(req: Request, res: Response): Promise<void> {
     const { refreshToken } = req.body as RefreshInput;
 
-    const result = await AuthService.refresh(refreshToken);
+    const metadata = { userAgent: req.headers['user-agent'], ipAddress: req.ip };
+    const result = await AuthService.refresh(refreshToken, metadata);
 
     if (!result.ok) {
       res.status(401).json({ success: false, error: 'Invalid refresh token' });

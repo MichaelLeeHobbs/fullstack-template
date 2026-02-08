@@ -6,16 +6,24 @@
 
 import { randomBytes } from 'crypto';
 import bcrypt from 'bcrypt';
-import { tryCatch, type Result, type StdError } from 'stderr-lib';
+import { tryCatch, type Result } from 'stderr-lib';
 import { db } from '../lib/db.js';
 import { users, sessions, emailVerificationTokens, type UserPreferences, ACCOUNT_TYPES } from '../db/schema/index.js';
 import { eq } from 'drizzle-orm';
-import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../lib/jwt.js';
+import { signAccessToken, signRefreshToken, verifyRefreshToken, signMfaTempToken, verifyMfaTempToken } from '../lib/jwt.js';
 import { PermissionService } from './permission.service.js';
 import { EmailService } from './email.service.js';
+import { AccountLockoutService } from './account-lockout.service.js';
+import { MfaService } from './mfa.service.js';
+import type { MfaMethod } from '../db/schema/index.js';
 
 const SALT_ROUNDS = 12;
 const REFRESH_TOKEN_DAYS = 7;
+
+export interface SessionMetadata {
+  userAgent?: string;
+  ipAddress?: string;
+}
 
 export interface AuthTokens {
   accessToken: string;
@@ -37,14 +45,23 @@ export interface RegisterResult {
   refreshToken: string;
 }
 
-export interface LoginResult {
+export interface LoginSuccessResult {
+  mfaRequired?: false;
   user: UserResponse;
   accessToken: string;
   refreshToken: string;
 }
 
+export interface MfaRequiredResult {
+  mfaRequired: true;
+  mfaMethods: MfaMethod[];
+  tempToken: string;
+}
+
+export type LoginResult = LoginSuccessResult | MfaRequiredResult;
+
 export class AuthService {
-  static async register(email: string, password: string): Promise<Result<RegisterResult>> {
+  static async register(email: string, password: string, metadata?: SessionMetadata): Promise<Result<RegisterResult>> {
     return tryCatch(async () => {
       // Check + hash outside transaction (read-only + CPU-bound)
       const [existing] = await db.select().from(users).where(eq(users.email, email.toLowerCase()));
@@ -84,7 +101,7 @@ export class AuthService {
 
       // External calls after transaction commits
       await EmailService.sendVerificationEmail(user.email, verificationToken);
-      const tokens = await this.createTokens(user.id);
+      const tokens = await this.createTokens(user.id, metadata);
       const permissions = await PermissionService.getUserPermissions(user.id);
 
       return {
@@ -97,7 +114,7 @@ export class AuthService {
     });
   }
 
-  static async login(email: string, password: string): Promise<Result<LoginResult>> {
+  static async login(email: string, password: string, metadata?: SessionMetadata): Promise<Result<LoginResult>> {
     return tryCatch(async () => {
       // Find user
       const [user] = await db.select().from(users).where(eq(users.email, email.toLowerCase()));
@@ -110,10 +127,21 @@ export class AuthService {
         throw new Error('Service accounts cannot log in');
       }
 
+      // Check account lockout
+      const lockResult = await AccountLockoutService.isLocked(user.id);
+      if (lockResult.ok && lockResult.value.locked) {
+        throw new Error(`ACCOUNT_LOCKED:${lockResult.value.minutesRemaining}`);
+      }
+
       // Verify password
       const valid = await bcrypt.compare(password, user.passwordHash);
       if (!valid) {
-        throw new Error('Invalid credentials');
+        const attemptResult = await AccountLockoutService.recordFailedAttempt(user.id);
+        if (attemptResult.ok && attemptResult.value.locked) {
+          throw new Error('ACCOUNT_LOCKED_NOW');
+        }
+        const remaining = attemptResult.ok ? attemptResult.value.attemptsRemaining : undefined;
+        throw new Error(`INVALID_CREDENTIALS:${remaining ?? ''}`);
       }
 
       // Check if email is verified
@@ -126,6 +154,20 @@ export class AuthService {
         throw new Error('Account is deactivated');
       }
 
+      // Reset lockout on successful login
+      await AccountLockoutService.resetAttempts(user.id);
+
+      // Check MFA
+      const mfaResult = await MfaService.getEnabledMethods(user.id);
+      if (mfaResult.ok && mfaResult.value.length > 0) {
+        const tempToken = signMfaTempToken({ userId: user.id, purpose: 'mfa' });
+        return {
+          mfaRequired: true as const,
+          mfaMethods: mfaResult.value,
+          tempToken,
+        };
+      }
+
       // Update lastLoginAt
       await db
         .update(users)
@@ -133,7 +175,7 @@ export class AuthService {
         .where(eq(users.id, user.id));
 
       // Generate tokens
-      const tokens = await this.createTokens(user.id);
+      const tokens = await this.createTokens(user.id, metadata);
 
       // Get user permissions
       const permissions = await PermissionService.getUserPermissions(user.id);
@@ -152,7 +194,54 @@ export class AuthService {
     });
   }
 
-  static async refresh(refreshToken: string): Promise<Result<AuthTokens>> {
+  static async verifyMfaAndLogin(
+    tempToken: string,
+    method: string,
+    code: string,
+    metadata?: SessionMetadata,
+  ): Promise<Result<LoginSuccessResult>> {
+    return tryCatch(async () => {
+      // Verify temp token
+      const { userId } = verifyMfaTempToken(tempToken);
+
+      // Verify MFA code
+      const verifyResult = await MfaService.verify(userId, method, code);
+      if (!verifyResult.ok) {
+        throw new Error('MFA verification failed');
+      }
+      if (!verifyResult.value.valid) {
+        throw new Error('Invalid MFA code');
+      }
+
+      // Get user
+      const [user] = await db.select().from(users).where(eq(users.id, userId));
+      if (!user) throw new Error('User not found');
+
+      // Update lastLoginAt
+      await db
+        .update(users)
+        .set({ lastLoginAt: new Date() })
+        .where(eq(users.id, userId));
+
+      // Create tokens
+      const tokens = await this.createTokens(userId, metadata);
+      const permissions = await PermissionService.getUserPermissions(userId);
+
+      return {
+        user: {
+          id: user.id,
+          email: user.email,
+          isAdmin: user.isAdmin,
+          preferences: user.preferences,
+          permissions: Array.from(permissions),
+          createdAt: user.createdAt,
+        },
+        ...tokens,
+      };
+    });
+  }
+
+  static async refresh(refreshToken: string, metadata?: SessionMetadata): Promise<Result<AuthTokens>> {
     return tryCatch(async () => {
       // Verify token signature
       const payload = verifyRefreshToken(refreshToken);
@@ -171,7 +260,7 @@ export class AuthService {
       await db.delete(sessions).where(eq(sessions.id, session.id));
 
       // Create new tokens
-      return await this.createTokens(payload.userId);
+      return await this.createTokens(payload.userId, metadata);
     });
   }
 
@@ -208,19 +297,23 @@ export class AuthService {
     });
   }
 
-  private static async createTokens(userId: string): Promise<AuthTokens> {
-    const accessToken = signAccessToken({ userId });
+  private static async createTokens(userId: string, metadata?: SessionMetadata): Promise<AuthTokens> {
     const refreshToken = signRefreshToken({ userId });
 
-    // Store refresh token in database
+    // Store refresh token in database with metadata
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + REFRESH_TOKEN_DAYS);
 
-    await db.insert(sessions).values({
+    const [session] = await db.insert(sessions).values({
       userId,
       refreshToken,
+      userAgent: metadata?.userAgent,
+      ipAddress: metadata?.ipAddress,
+      lastUsedAt: new Date(),
       expiresAt,
-    });
+    }).returning({ id: sessions.id });
+
+    const accessToken = signAccessToken({ userId, sessionId: session!.id });
 
     return { accessToken, refreshToken };
   }

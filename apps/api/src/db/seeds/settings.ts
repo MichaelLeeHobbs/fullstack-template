@@ -68,6 +68,24 @@ export const defaultSettings: NewSystemSetting[] = [
   },
 
   // ===========================================
+  // Security Settings
+  // ===========================================
+  {
+    key: 'security.max_login_attempts',
+    value: '5',
+    type: 'number',
+    category: 'security',
+    description: 'Maximum consecutive failed login attempts before account lockout',
+  },
+  {
+    key: 'security.lockout_duration_minutes',
+    value: '15',
+    type: 'number',
+    category: 'security',
+    description: 'Minutes an account stays locked after exceeding max login attempts',
+  },
+
+  // ===========================================
   // Application Settings
   // ===========================================
   {

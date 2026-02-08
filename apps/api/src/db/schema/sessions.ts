@@ -11,6 +11,9 @@ export const sessions = pgTable('sessions', {
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
   refreshToken: varchar('refresh_token', { length: 500 }).notNull().unique(),
+  userAgent: varchar('user_agent', { length: 500 }),
+  ipAddress: varchar('ip_address', { length: 45 }),
+  lastUsedAt: timestamp('last_used_at'),
   expiresAt: timestamp('expires_at').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => [

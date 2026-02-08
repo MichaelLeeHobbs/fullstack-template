@@ -22,13 +22,25 @@ import { useLogin } from '../hooks/useAuth.js';
 import { useAuthStore } from '../stores/auth.store.js';
 import { useNotification } from '../hooks/useNotification.js';
 import { accountApi } from '../api/account.api.js';
+import { mfaApi } from '../api/mfa.api.js';
 
 export function LoginPage() {
   const [showVerificationMessage, setShowVerificationMessage] = useState(false);
+  const [mfaCode, setMfaCode] = useState('');
+  const [mfaError, setMfaError] = useState('');
+  const [mfaLoading, setMfaLoading] = useState(false);
   const login = useLogin();
   const navigate = useNavigate();
   const notify = useNotification();
-  const { isAuthenticated, intendedDestination, setIntendedDestination } = useAuthStore();
+  const {
+    isAuthenticated,
+    intendedDestination,
+    setIntendedDestination,
+    mfaTempToken,
+    mfaMethods,
+    clearMfa,
+    setAuth,
+  } = useAuthStore();
 
   const {
     register,
@@ -62,10 +74,14 @@ export function LoginPage() {
     setShowVerificationMessage(false);
     login.mutate(data, {
       onSuccess: () => {
-        notify.success('Welcome back!');
-        const destination = intendedDestination || '/home';
-        setIntendedDestination(null);
-        navigate(destination, { replace: true });
+        // If MFA is required, the hook sets mfaTempToken/mfaMethods
+        // and does NOT navigate. We stay on this page to show MFA input.
+        if (!useAuthStore.getState().mfaTempToken) {
+          notify.success('Welcome back!');
+          const destination = intendedDestination || '/home';
+          setIntendedDestination(null);
+          navigate(destination, { replace: true });
+        }
       },
       onError: (error) => {
         if (error.message === 'EMAIL_NOT_VERIFIED') {
@@ -76,6 +92,99 @@ export function LoginPage() {
       },
     });
   };
+
+  const handleMfaSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mfaTempToken || !mfaCode) return;
+
+    setMfaError('');
+    setMfaLoading(true);
+
+    try {
+      const data = await mfaApi.verifyLogin({
+        tempToken: mfaTempToken,
+        method: mfaMethods[0] || 'totp',
+        code: mfaCode,
+      });
+      setAuth(data.user, data.accessToken, data.refreshToken);
+      clearMfa();
+      notify.success('Welcome back!');
+      const destination = intendedDestination || '/home';
+      setIntendedDestination(null);
+      navigate(destination, { replace: true });
+    } catch (error) {
+      setMfaError(error instanceof Error ? error.message : 'MFA verification failed');
+    } finally {
+      setMfaLoading(false);
+    }
+  };
+
+  const handleBackToLogin = () => {
+    clearMfa();
+    setMfaCode('');
+    setMfaError('');
+  };
+
+  // MFA code input view
+  if (mfaTempToken) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: 'calc(100vh - 200px)',
+        }}
+      >
+        <Card sx={{ width: '100%', maxWidth: 400 }}>
+          <CardContent sx={{ p: 4 }}>
+            <Typography variant="h5" gutterBottom align="center">
+              Two-Factor Authentication
+            </Typography>
+            <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 3 }}>
+              Enter the 6-digit code from your authenticator app, or use a backup code.
+            </Typography>
+
+            {mfaError && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {mfaError}
+              </Alert>
+            )}
+
+            <Box component="form" onSubmit={handleMfaSubmit} noValidate>
+              <TextField
+                value={mfaCode}
+                onChange={(e) => setMfaCode(e.target.value)}
+                label="Authentication Code"
+                fullWidth
+                margin="normal"
+                autoFocus
+                autoComplete="one-time-code"
+                inputProps={{ inputMode: 'text' }}
+              />
+              <Button
+                type="submit"
+                variant="contained"
+                fullWidth
+                size="large"
+                sx={{ mt: 2 }}
+                disabled={mfaLoading || !mfaCode}
+              >
+                {mfaLoading ? 'Verifying...' : 'Verify'}
+              </Button>
+              <Button
+                fullWidth
+                sx={{ mt: 1 }}
+                onClick={handleBackToLogin}
+              >
+                Back to Login
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      </Box>
+    );
+  }
 
   return (
     <Box

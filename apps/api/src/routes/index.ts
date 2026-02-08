@@ -10,6 +10,8 @@ import userRoutes from './user.routes.js';
 import accountRoutes from './account.routes.js';
 import roleRoutes from './role.routes.js';
 import apiKeyRoutes from './api-key.routes.js';
+import sessionRoutes from './session.routes.js';
+import mfaRoutes from './mfa.routes.js';
 
 const router: IRouter = Router();
 
@@ -20,6 +22,8 @@ router.use('/users', userRoutes);
 router.use('/account', accountRoutes);
 router.use('/roles', roleRoutes);
 router.use('/api-keys', apiKeyRoutes);
+router.use('/sessions', sessionRoutes);
+router.use('/mfa', mfaRoutes);
 
 export default router;
 

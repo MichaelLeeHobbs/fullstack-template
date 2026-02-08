@@ -2,7 +2,7 @@
 // Users Table Schema
 // ===========================================
 
-import { pgTable, uuid, varchar, timestamp, boolean, jsonb, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, timestamp, boolean, jsonb, index, integer } from 'drizzle-orm/pg-core';
 
 // ===========================================
 // User Preferences Type
@@ -42,6 +42,10 @@ export const users = pgTable('users', {
 
   // Preferences (JSONB for extensibility)
   preferences: jsonb('preferences').$type<UserPreferences>().default(defaultPreferences).notNull(),
+
+  // Lockout
+  failedLoginAttempts: integer('failed_login_attempts').default(0).notNull(),
+  lockedUntil: timestamp('locked_until'),
 
   // Timestamps
   lastLoginAt: timestamp('last_login_at'),

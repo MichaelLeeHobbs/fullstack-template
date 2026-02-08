@@ -36,7 +36,7 @@ import {
   InputAdornment,
   Stack,
 } from '@mui/material';
-import { LightMode, DarkMode, SettingsBrightness, ContentCopy, Block, Warning, Add } from '@mui/icons-material';
+import { LightMode, DarkMode, SettingsBrightness, ContentCopy, Block, Warning, Add, Devices, Security } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { changePasswordSchema, type ChangePasswordInput } from '@fullstack-template/shared';
 import { userApi } from '../api/user.api.js';
@@ -45,12 +45,15 @@ import { useThemeStore } from '../stores/theme.store.js';
 import { useAuthStore } from '../stores/auth.store.js';
 import { useMyApiKeys, useCreateApiKey, useRevokeApiKey } from '../hooks/useApiKeys.js';
 import type { ApiKey, CreateApiKeyInput } from '../types/api-key.js';
+import { useNavigate } from 'react-router-dom';
+import { useMfaMethods, useSetupTotp, useVerifyTotpSetup, useDisableMfa, useRegenerateBackupCodes } from '../hooks/useMfa.js';
 
 export function ProfilePage() {
   const notify = useNotification();
   const queryClient = useQueryClient();
   const { setMode } = useThemeStore();
   const { updatePreferences } = useAuthStore();
+  const navigate = useNavigate();
 
   // API Keys
   const { data: myKeys } = useMyApiKeys();
@@ -60,6 +63,23 @@ export function ProfilePage() {
   const [keyName, setKeyName] = useState('');
   const [rawKeyDialog, setRawKeyDialog] = useState<string | null>(null);
   const [revokeKeyTarget, setRevokeKeyTarget] = useState<ApiKey | null>(null);
+
+  // MFA
+  const { data: mfaMethods } = useMfaMethods();
+  const setupTotpMutation = useSetupTotp();
+  const verifyTotpSetupMutation = useVerifyTotpSetup();
+  const disableMfaMutation = useDisableMfa();
+  const regenerateBackupCodesMutation = useRegenerateBackupCodes();
+  const [mfaSetupOpen, setMfaSetupOpen] = useState(false);
+  const [mfaSetupData, setMfaSetupData] = useState<{ secret: string; qrCodeDataUrl: string } | null>(null);
+  const [mfaSetupCode, setMfaSetupCode] = useState('');
+  const [mfaBackupCodes, setMfaBackupCodes] = useState<string[] | null>(null);
+  const [mfaDisableOpen, setMfaDisableOpen] = useState(false);
+  const [mfaDisableCode, setMfaDisableCode] = useState('');
+  const [mfaRegenOpen, setMfaRegenOpen] = useState(false);
+  const [mfaRegenCode, setMfaRegenCode] = useState('');
+
+  const isMfaEnabled = mfaMethods && mfaMethods.length > 0;
 
   // Fetch profile
   const { data: profile, isLoading } = useQuery({
@@ -198,6 +218,269 @@ export function ProfilePage() {
           </ToggleButtonGroup>
         </CardContent>
       </Card>
+
+      {/* Sessions */}
+      <Card sx={{ mb: 3 }}>
+        <CardHeader title="Sessions" />
+        <Divider />
+        <CardContent>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            View and manage your active sessions across devices.
+          </Typography>
+          <Button
+            variant="outlined"
+            startIcon={<Devices />}
+            onClick={() => navigate('/sessions')}
+          >
+            Manage Sessions
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Multi-Factor Authentication */}
+      <Card sx={{ mb: 3 }}>
+        <CardHeader
+          title="Multi-Factor Authentication"
+          avatar={<Security />}
+        />
+        <Divider />
+        <CardContent>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+            <Typography variant="body2">
+              Status: {isMfaEnabled ? (
+                <Chip label="Enabled" size="small" color="success" />
+              ) : (
+                <Chip label="Disabled" size="small" color="default" />
+              )}
+            </Typography>
+          </Box>
+
+          {!isMfaEnabled ? (
+            <Button
+              variant="outlined"
+              onClick={() => {
+                setMfaSetupOpen(true);
+                setMfaSetupData(null);
+                setMfaSetupCode('');
+                setMfaBackupCodes(null);
+                setupTotpMutation.mutate(undefined, {
+                  onSuccess: (data) => setMfaSetupData(data),
+                  onError: (error: Error) => notify.error(error.message || 'Failed to start TOTP setup'),
+                });
+              }}
+            >
+              Set Up TOTP
+            </Button>
+          ) : (
+            <Stack direction="row" spacing={2}>
+              <Button
+                variant="outlined"
+                color="warning"
+                onClick={() => { setMfaDisableOpen(true); setMfaDisableCode(''); }}
+              >
+                Disable TOTP
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => { setMfaRegenOpen(true); setMfaRegenCode(''); setMfaBackupCodes(null); }}
+              >
+                Regenerate Backup Codes
+              </Button>
+            </Stack>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* TOTP Setup Dialog */}
+      <Dialog open={mfaSetupOpen} onClose={() => { if (!mfaBackupCodes) setMfaSetupOpen(false); }} maxWidth="sm" fullWidth>
+        <DialogTitle>{mfaBackupCodes ? 'Save Your Backup Codes' : 'Set Up TOTP'}</DialogTitle>
+        <DialogContent>
+          {mfaBackupCodes ? (
+            <>
+              <Alert severity="warning" sx={{ mb: 2 }}>
+                Save these backup codes securely. They will not be shown again.
+              </Alert>
+              <Box sx={{ fontFamily: 'monospace', bgcolor: 'action.hover', p: 2, borderRadius: 1 }}>
+                {mfaBackupCodes.map((code, i) => (
+                  <Typography key={i} variant="body2" sx={{ fontFamily: 'monospace' }}>
+                    {code}
+                  </Typography>
+                ))}
+              </Box>
+              <Button
+                sx={{ mt: 1 }}
+                size="small"
+                startIcon={<ContentCopy />}
+                onClick={() => {
+                  navigator.clipboard.writeText(mfaBackupCodes.join('\n'));
+                  notify.success('Copied to clipboard');
+                }}
+              >
+                Copy All
+              </Button>
+            </>
+          ) : mfaSetupData ? (
+            <>
+              <Typography variant="body2" sx={{ mb: 2 }}>
+                Scan this QR code with your authenticator app, then enter the 6-digit code to verify.
+              </Typography>
+              <Box sx={{ textAlign: 'center', mb: 2 }}>
+                <img src={mfaSetupData.qrCodeDataUrl} alt="TOTP QR Code" width={200} height={200} />
+              </Box>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+                Manual entry: <code>{mfaSetupData.secret}</code>
+              </Typography>
+              <TextField
+                value={mfaSetupCode}
+                onChange={(e) => setMfaSetupCode(e.target.value)}
+                label="Verification Code"
+                fullWidth
+                autoFocus
+                inputProps={{ maxLength: 6, inputMode: 'numeric' }}
+              />
+            </>
+          ) : (
+            <Typography>Loading...</Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          {mfaBackupCodes ? (
+            <Button variant="contained" onClick={() => { setMfaSetupOpen(false); setMfaBackupCodes(null); }}>
+              Done
+            </Button>
+          ) : (
+            <>
+              <Button onClick={() => setMfaSetupOpen(false)}>Cancel</Button>
+              <Button
+                variant="contained"
+                disabled={mfaSetupCode.length !== 6 || verifyTotpSetupMutation.isPending}
+                onClick={() => {
+                  verifyTotpSetupMutation.mutate(mfaSetupCode, {
+                    onSuccess: (data) => {
+                      setMfaBackupCodes(data.backupCodes);
+                      setMfaSetupCode('');
+                      notify.success('TOTP enabled');
+                    },
+                    onError: (error: Error) => notify.error(error.message || 'Verification failed'),
+                  });
+                }}
+              >
+                {verifyTotpSetupMutation.isPending ? 'Verifying...' : 'Verify & Enable'}
+              </Button>
+            </>
+          )}
+        </DialogActions>
+      </Dialog>
+
+      {/* Disable MFA Dialog */}
+      <Dialog open={mfaDisableOpen} onClose={() => setMfaDisableOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Disable TOTP</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            Enter your current TOTP code to confirm disabling two-factor authentication.
+          </Typography>
+          <TextField
+            value={mfaDisableCode}
+            onChange={(e) => setMfaDisableCode(e.target.value)}
+            label="TOTP Code"
+            fullWidth
+            autoFocus
+            inputProps={{ maxLength: 6, inputMode: 'numeric' }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setMfaDisableOpen(false)}>Cancel</Button>
+          <Button
+            color="warning"
+            variant="contained"
+            disabled={!mfaDisableCode || disableMfaMutation.isPending}
+            onClick={() => {
+              disableMfaMutation.mutate({ method: 'totp', code: mfaDisableCode }, {
+                onSuccess: () => {
+                  setMfaDisableOpen(false);
+                  notify.success('TOTP disabled');
+                },
+                onError: (error: Error) => notify.error(error.message || 'Failed to disable'),
+              });
+            }}
+          >
+            {disableMfaMutation.isPending ? 'Disabling...' : 'Disable'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Regenerate Backup Codes Dialog */}
+      <Dialog open={mfaRegenOpen} onClose={() => { if (!mfaBackupCodes) setMfaRegenOpen(false); }} maxWidth="sm" fullWidth>
+        <DialogTitle>{mfaBackupCodes ? 'New Backup Codes' : 'Regenerate Backup Codes'}</DialogTitle>
+        <DialogContent>
+          {mfaBackupCodes ? (
+            <>
+              <Alert severity="warning" sx={{ mb: 2 }}>
+                Your old backup codes are now invalid. Save these new codes securely.
+              </Alert>
+              <Box sx={{ fontFamily: 'monospace', bgcolor: 'action.hover', p: 2, borderRadius: 1 }}>
+                {mfaBackupCodes.map((code, i) => (
+                  <Typography key={i} variant="body2" sx={{ fontFamily: 'monospace' }}>
+                    {code}
+                  </Typography>
+                ))}
+              </Box>
+              <Button
+                sx={{ mt: 1 }}
+                size="small"
+                startIcon={<ContentCopy />}
+                onClick={() => {
+                  navigator.clipboard.writeText(mfaBackupCodes.join('\n'));
+                  notify.success('Copied to clipboard');
+                }}
+              >
+                Copy All
+              </Button>
+            </>
+          ) : (
+            <>
+              <Typography variant="body2" sx={{ mb: 2 }}>
+                Enter your current TOTP code to regenerate backup codes. Your old codes will be invalidated.
+              </Typography>
+              <TextField
+                value={mfaRegenCode}
+                onChange={(e) => setMfaRegenCode(e.target.value)}
+                label="TOTP Code"
+                fullWidth
+                autoFocus
+                inputProps={{ maxLength: 6, inputMode: 'numeric' }}
+              />
+            </>
+          )}
+        </DialogContent>
+        <DialogActions>
+          {mfaBackupCodes ? (
+            <Button variant="contained" onClick={() => { setMfaRegenOpen(false); setMfaBackupCodes(null); }}>
+              Done
+            </Button>
+          ) : (
+            <>
+              <Button onClick={() => setMfaRegenOpen(false)}>Cancel</Button>
+              <Button
+                variant="contained"
+                disabled={mfaRegenCode.length !== 6 || regenerateBackupCodesMutation.isPending}
+                onClick={() => {
+                  regenerateBackupCodesMutation.mutate({ method: 'totp', code: mfaRegenCode }, {
+                    onSuccess: (data) => {
+                      setMfaBackupCodes(data.backupCodes);
+                      setMfaRegenCode('');
+                      notify.success('Backup codes regenerated');
+                    },
+                    onError: (error: Error) => notify.error(error.message || 'Failed to regenerate'),
+                  });
+                }}
+              >
+                {regenerateBackupCodesMutation.isPending ? 'Regenerating...' : 'Regenerate'}
+              </Button>
+            </>
+          )}
+        </DialogActions>
+      </Dialog>
 
       {/* API Keys */}
       <Card sx={{ mb: 3 }}>

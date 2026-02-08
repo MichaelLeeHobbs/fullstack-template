@@ -26,6 +26,7 @@ declare global {
         permissions: string[];
       };
       apiKeyId?: string;
+      sessionId?: string;
     }
   }
 }
@@ -83,6 +84,7 @@ export async function authenticate(
       ...user,
       permissions: Array.from(permissions),
     };
+    req.sessionId = payload.sessionId;
     next();
   } catch (error) {
     logger.debug({ error },'Token verification failed');

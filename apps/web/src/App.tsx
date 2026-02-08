@@ -29,6 +29,7 @@ import { RolesPage } from './pages/admin/RolesPage.js';
 import { AuditLogsPage } from './pages/admin/AuditLogsPage.js';
 import { ApiKeysPage } from './pages/admin/ApiKeysPage.js';
 import { ServiceAccountsPage } from './pages/admin/ServiceAccountsPage.js';
+import { SessionsPage } from './pages/SessionsPage.js';
 import { NotFoundPage } from './pages/NotFoundPage.js';
 
 const queryClient = new QueryClient({
@@ -63,6 +64,7 @@ function AppWithTheme() {
             <Route element={<ProtectedRoute />}>
               <Route path="/home" element={<HomePage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/sessions" element={<SessionsPage />} />
             </Route>
 
             {/* Admin pages */}
