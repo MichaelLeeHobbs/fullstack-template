@@ -57,10 +57,6 @@ const configSchema = z.object({
   AWS_ACCESS_KEY_ID: z.string().optional(),
   AWS_SECRET_ACCESS_KEY: z.string().optional(),
 
-  // AI Provider API Keys (optional - secrets stay in env)
-  ANTHROPIC_API_KEY: z.string().optional(),
-  OPENAI_API_KEY: z.string().optional(),
-  GOOGLE_AI_API_KEY: z.string().optional(),
 });
 
 const result = configSchema.safeParse(process.env);

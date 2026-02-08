@@ -300,15 +300,15 @@ WebStorm's formatter can break Drizzle SQL template literals. Use formatter comm
 ```typescript
 // ❌ BAD - Formatter may break these
 const conditions = [
-  sql`${epochs.dateRangeStart} IS NOT NULL`,
-  sql`${epochs.dateRangeEnd} IS NOT NULL`,
+  sql`${users.emailVerifiedAt} IS NOT NULL`,
+  sql`${users.lockedUntil} IS NOT NULL`,
 ];
 
 // ✅ GOOD - Disable formatter for SQL template literals
 const conditions = [
   //@formatter:off
-  sql`${epochs.dateRangeStart} IS NOT NULL`,
-  sql`${epochs.dateRangeEnd} IS NOT NULL`,
+  sql`${users.emailVerifiedAt} IS NOT NULL`,
+  sql`${users.lockedUntil} IS NOT NULL`,
   //@formatter:on
 ];
 

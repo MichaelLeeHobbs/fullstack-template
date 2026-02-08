@@ -271,11 +271,6 @@ JWT_SECRET=your-super-secret-key-at-least-32-characters-long
 JWT_EXPIRES_IN=7d
 
 LOG_LEVEL=debug
-
-# AI Providers (optional for MVP)
-ANTHROPIC_API_KEY=
-GOOGLE_AI_API_KEY=
-OPENAI_API_KEY=
 ```
 
 ---

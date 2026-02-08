@@ -98,20 +98,36 @@ export const userRoles = pgTable('user_roles', {
 
 ## Entity Relationship
 
-```
-┌──────────┐       ┌──────────────────┐       ┌─────────────┐
-│  Users   │──────<│   user_roles     │>──────│    Roles    │
-└──────────┘       └──────────────────┘       └─────────────┘
-                                                     │
-                                                     │
-                                              ┌──────────────────┐
-                                              │ role_permissions │
-                                              └──────────────────┘
-                                                     │
-                                                     │
-                                              ┌─────────────┐
-                                              │ Permissions │
-                                              └─────────────┘
+```mermaid
+erDiagram
+    users ||--o{ user_roles : has
+    roles ||--o{ user_roles : has
+    roles ||--o{ role_permissions : has
+    permissions ||--o{ role_permissions : has
+
+    users {
+        uuid id PK
+        varchar email
+    }
+    roles {
+        uuid id PK
+        varchar name
+        boolean is_system
+    }
+    user_roles {
+        uuid user_id FK
+        uuid role_id FK
+    }
+    role_permissions {
+        uuid role_id FK
+        uuid permission_id FK
+    }
+    permissions {
+        uuid id PK
+        varchar name
+        varchar resource
+        varchar action
+    }
 ```
 
 ---

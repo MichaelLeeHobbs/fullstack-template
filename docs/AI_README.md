@@ -49,34 +49,12 @@ Read these documents before starting work:
 
 | Document                               | Purpose                                              |
 |----------------------------------------|------------------------------------------------------|
-| `docs/tasks/README.md`                 | Task lifecycle: how to create, execute, and close tasks |
-| `docs/features/_MVP_SCOPE.md`          | What we're building, feature order                   |
+| `docs/features/README.md`             | What's included in the template                      |
 | `docs/architecture/DEV_ENVIRONMENT.md` | Local development setup                              |
 | `docs/architecture/CODING_STANDARD.md` | Code conventions, patterns                           |
 | `docs/architecture/CORE_PATTERNS.md`   | Architecture (Router → Controller → Service → Model) |
 | `docs/architecture/TECH_STACK.md`      | Libraries and frameworks                             |
 | `docs/architecture/DATA_MODEL.md`      | Database schema (Drizzle)                            |
-
----
-
-## Task Workflow
-
-We track implementation progress in `docs/tasks/`. See `docs/tasks/README.md` for the full task lifecycle.
-
-### Task Lifecycle (Summary)
-
-1. **Research** — Read the code you'll change, trace the request flow, check the schema, map cross-package dependencies
-2. **Write the task** — Create a file in `docs/tasks/` with Status, Context, Phases, and Verification steps
-3. **Execute** — Work through phases in order (Database → Shared → Service → Controller → API Client → Hook → Component), verifying after each phase
-4. **Close** — Run final checks (`pnpm build`, `pnpm lint`, `pnpm test`), update status to Complete, move file to `docs/tasks/completed/`
-
-### Working on a Task
-
-1. Read `docs/tasks/README.md` for the full lifecycle guide
-2. Research the problem space before writing any code
-3. Work through phases in order, running verification after each
-4. Do not accumulate regressions — fix breakage before moving to the next phase
-5. When complete, move the task file to `docs/tasks/completed/`
 
 ---
 
@@ -169,7 +147,7 @@ apps/
 │   ├── services/       # Business logic (return Result<T>, no HTTP concerns)
 │   ├── routes/         # Route definitions
 │   ├── middleware/     # Auth, validation, error handling
-│   ├── providers/      # External APIs (Anthropic, S3, email)
+│   ├── providers/      # External APIs (S3, email)
 │   ├── jobs/           # Background tasks
 │   ├── db/schema/      # Drizzle schema
 │   ├── schemas/        # Zod validation
@@ -216,7 +194,7 @@ apps/
 |----------------|---------------------------------------|
 | Runtime        | Node.js 20+, TypeScript 5.x           |
 | Backend        | Express 4.x                           |
-| Database       | PostgreSQL 15+, Drizzle ORM           |
+| Database       | PostgreSQL 17, Drizzle ORM            |
 | Frontend       | React 18, Vite, MUI 6, TanStack Query |
 | Validation     | Zod v4 (`zod/v4`)                     |
 | Error Handling | stderr-lib (`tryCatch`, `stderr`)     |
@@ -233,7 +211,7 @@ If this is a continuation from a previous chat:
 1. Ask what was accomplished in the previous session
 2. Ask what the current task/goal is
 3. Review any files mentioned as recently modified
-4. Check `docs/features/_MVP_SCOPE.md` for current status
+4. Check `docs/features/README.md` for current status
 
 ---
 

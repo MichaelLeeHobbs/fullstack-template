@@ -9,11 +9,11 @@
 ### Getting Started
 - **[Getting Started Guide](./GETTING_STARTED.md)** - Start here! Setup and first steps
 - [Dev Environment](./architecture/DEV_ENVIRONMENT.md) - Detailed local setup
-- [MVP Scope](./features/_MVP_SCOPE.md) - Template features
+- [Template Features](./features/README.md) - What's included
 - [AI Agent Instructions](./AI_README.md) - Instructions for AI assistants
 
 ### API
-- **[API Reference](./API_REFERENCE.md)** - Complete endpoint documentation
+- Interactive API docs available at `/api/docs` (Swagger/OpenAPI)
 
 ### Deployment
 - **[Deployment Guide](./DEPLOYMENT.md)** - Build, configure, and deploy to production
@@ -47,6 +47,9 @@
 docs/
 ├── README.md              # This file
 ├── AI_README.md           # Instructions for AI agents
+├── DEPLOYMENT.md          # Deployment guide
+├── GETTING_STARTED.md     # Quick start guide
+├── PRODUCTION_CHECKLIST.md# Pre-launch checklist
 │
 ├── architecture/          # System design & patterns
 │   ├── TECH_STACK.md
@@ -57,18 +60,14 @@ docs/
 │   ├── PERMISSIONS.md
 │   └── CONFIG.md
 │
-├── features/              # Feature specifications
-│   ├── _MVP_SCOPE.md      # Master feature list
-│   ├── 00_project-setup.md
-│   ├── 00b_core-services.md
-│   ├── 00c_core-frontend.md
-│   ├── 00d_system-settings.md
-│   ├── 01a_user-auth.md
-│   └── 01b_user-admin.md
-│
-└── tasks/                 # Task tracking
-    ├── README.md          # Task lifecycle guide
-    └── completed/         # Completed task files
+└── features/              # Feature specifications
+    ├── README.md          # Template feature list
+    ├── 000_setup.md
+    ├── 001_core-services.md
+    ├── 002_core-frontend.md
+    ├── 003_system-settings.md
+    ├── 004_user-auth.md
+    └── 005_user-admin.md
 ```
 
 ---
@@ -77,10 +76,8 @@ docs/
 
 ### Status Indicators
 
-| Status         | Meaning                |
-|----------------|------------------------|
-| 📋 Planned     | Not started            |
-| 🚧 In Progress | Currently implementing |
-| ✅ Complete     | Done and tested        |
-| ⏸️ Deferred    | Moved to future        |
-
+| Status      | Meaning     |
+|-------------|-------------|
+| Complete    | Done and tested |
+| In Progress | Currently implementing |
+| Planned     | Not started |

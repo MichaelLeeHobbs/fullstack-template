@@ -10,13 +10,6 @@ export const defaultSettings: NewSystemSetting[] = [
   // Feature Flags
   // ===========================================
   {
-    key: 'feature.ai_enabled',
-    value: 'false',
-    type: 'boolean',
-    category: 'features',
-    description: 'Enable AI-powered features (requires API keys in .env)',
-  },
-  {
     key: 'feature.registration_enabled',
     value: 'true',
     type: 'boolean',
@@ -40,31 +33,6 @@ export const defaultSettings: NewSystemSetting[] = [
     type: 'string',
     category: 'email',
     description: 'Sender name for system emails',
-  },
-
-  // ===========================================
-  // AI Settings
-  // ===========================================
-  {
-    key: 'ai.default_model',
-    value: 'claude-3-sonnet-20240229',
-    type: 'string',
-    category: 'ai',
-    description: 'Default AI model for text generation',
-  },
-  {
-    key: 'ai.max_tokens',
-    value: '4096',
-    type: 'number',
-    category: 'ai',
-    description: 'Maximum tokens per AI request',
-  },
-  {
-    key: 'ai.temperature',
-    value: '0.7',
-    type: 'number',
-    category: 'ai',
-    description: 'AI creativity setting (0.0 - 1.0)',
   },
 
   // ===========================================

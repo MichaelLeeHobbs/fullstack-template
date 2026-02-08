@@ -399,7 +399,6 @@ When contributing new features to the template itself:
 2. Follow existing patterns in `docs/architecture/`
 3. Add documentation to `docs/features/`
 4. Include tests for new functionality
-5. Update `CLAUDE.md` if adding new patterns
 
 ---
 

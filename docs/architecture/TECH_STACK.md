@@ -18,10 +18,7 @@ React frontend and Node.js backend.
 | Vite                        | 5.x     | Build tool & dev server          |
 | React Router                | 6.x     | Client-side routing              |
 | Zustand                     | 4.x     | State management                 |
-| TipTap                      | 2.x     | Block editor (ProseMirror-based) |
-| React Flow                  | 11.x    | Canvas/graph visualization       |
 | Material UI (MUI)           | 6.x     | Component library                |
-| react-diff-viewer-continued | 3.x     | Version diffing                  |
 | TanStack Query              | 5.x     | Server state & caching           |
 
 ---
@@ -42,16 +39,6 @@ React frontend and Node.js backend.
 | Zod                | 3.24.x  | Request validation (`zod/v4`)   |
 | stderr-lib         | 2.x     | Error handling & Result pattern |
 | node-cron          | 3.x     | Job scheduling                  |
-
----
-
-## AI Integration
-
-| Provider  | Models                              | Use Case                         |
-|-----------|-------------------------------------|----------------------------------|
-| Anthropic | Claude Sonnet 4.5, Claude Haiku 3.5 | Prose writing, editing           |
-| Google    | Gemini 2.0 Flash                    | Entity generation, brainstorming |
-| OpenAI    | GPT-4o-mini, DALL-E 3               | Fallback, image generation       |
 
 ---
 
@@ -87,16 +74,6 @@ React frontend and Node.js backend.
 | Docker Compose      | Local container orchestration |
 | PostgreSQL (Docker) | Local database                |
 | MinIO (Docker)      | Local S3-compatible storage   |
-
----
-
-## Monitoring & Observability
-
-| Technology        | Purpose                    |
-|-------------------|----------------------------|
-| Sentry            | Error tracking             |
-| Pino → CloudWatch | Structured logging         |
-| Plausible         | Privacy-friendly analytics |
 
 ---
 

@@ -1,6 +1,6 @@
 # Configuration Management
 
-> Last Updated: 2026-01-03
+> Last Updated: 2026-02-08
 
 ## Overview
 
@@ -57,10 +57,11 @@ This split follows security best practices and 12-factor app principles.
 
 ### Authentication
 
-| Variable         | Required | Default | Description                            |
-|------------------|----------|---------|----------------------------------------|
-| `JWT_SECRET`     | **Yes**  | -       | Secret for signing JWTs (min 32 chars) |
-| `JWT_EXPIRES_IN` | No       | `7d`    | Refresh token expiration               |
+| Variable                 | Required | Default | Description                            |
+|--------------------------|----------|---------|----------------------------------------|
+| `JWT_SECRET`             | **Yes**  | -       | Secret for signing JWTs (min 32 chars) |
+| `JWT_ACCESS_EXPIRES_IN`  | No       | `15m`   | Access token expiration                |
+| `JWT_REFRESH_EXPIRES_IN` | No       | `7d`    | Refresh token expiration               |
 
 ### Logging
 
@@ -78,20 +79,25 @@ This split follows security best practices and 12-factor app principles.
 | `S3_BUCKET`     | **Yes**  | -           | Bucket name           |
 | `S3_REGION`     | No       | `us-east-1` | AWS region            |
 
-### AI Providers
+### Email
 
-| Variable            | Required | Default | Description    |
-|---------------------|----------|---------|----------------|
-| `ANTHROPIC_API_KEY` | No       | -       | Claude API key |
-| `GOOGLE_AI_API_KEY` | No       | -       | Gemini API key |
-| `OPENAI_API_KEY`    | No       | -       | OpenAI API key |
+| Variable         | Required | Default | Description                                |
+|------------------|----------|---------|--------------------------------------------|
+| `EMAIL_PROVIDER` | No       | `mock`  | Email provider (`mock`, `smtp`, `ses`)     |
+| `EMAIL_FROM`     | No       | -       | Sender email address                       |
+| `SMTP_HOST`      | No       | -       | SMTP host (for `smtp` provider)            |
+| `SMTP_PORT`      | No       | -       | SMTP port (for `smtp` provider)            |
+| `SMTP_USER`      | No       | -       | SMTP username                              |
+| `SMTP_PASS`      | No       | -       | SMTP password                              |
+| `SMTP_SECURE`    | No       | `true`  | Use TLS for SMTP                           |
 
-### Production Only
+### Production Only (AWS SES)
 
-| Variable         | Required | Default | Description               |
-|------------------|----------|---------|---------------------------|
-| `AWS_SES_REGION` | No       | -       | AWS SES region for emails |
-| `EMAIL_FROM`     | No       | -       | Sender email address      |
+| Variable                | Required | Default | Description               |
+|-------------------------|----------|---------|---------------------------|
+| `AWS_SES_REGION`        | No       | -       | AWS SES region for emails |
+| `AWS_ACCESS_KEY_ID`     | No       | -       | AWS access key            |
+| `AWS_SECRET_ACCESS_KEY` | No       | -       | AWS secret access key     |
 
 ---
 
@@ -101,17 +107,15 @@ Runtime settings are stored in the `system_settings` table and managed via Admin
 
 ### Default Settings
 
-| Key                                   | Type    | Default                    | Description                |
-|---------------------------------------|---------|----------------------------|----------------------------|
-| `feature.ai_enabled`                  | boolean | `false`                    | Enable AI features         |
-| `feature.registration_enabled`        | boolean | `true`                     | Allow new registrations    |
-| `feature.email_verification_required` | boolean | `false`                    | Require email verification |
-| `email.from_name`                     | string  | `App Name`                 | Sender name for emails     |
-| `ai.default_model`                    | string  | `claude-3-sonnet-20240229` | Default AI model           |
-| `ai.max_tokens`                       | number  | `4096`                     | Max tokens per request     |
-| `ai.temperature`                      | number  | `0.7`                      | AI creativity (0-1)        |
-| `app.maintenance_mode`                | boolean | `false`                    | Block non-admin access     |
-| `app.max_worlds_per_user`             | number  | `10`                       | World limit per user       |
+| Key                                   | Type    | Default    | Description                       |
+|---------------------------------------|---------|------------|-----------------------------------|
+| `feature.registration_enabled`        | boolean | `true`     | Allow new registrations           |
+| `feature.email_verification_required` | boolean | `false`    | Require email verification        |
+| `email.from_name`                     | string  | `App Name` | Sender name for emails            |
+| `security.max_login_attempts`         | number  | `5`        | Max failed logins before lockout  |
+| `security.lockout_duration_minutes`   | number  | `15`       | Minutes account stays locked      |
+| `app.maintenance_mode`                | boolean | `false`    | Block non-admin access            |
+| `app.max_items_per_user`              | number  | `100`      | Item limit per user               |
 
 ### Accessing System Settings
 
@@ -119,11 +123,11 @@ Runtime settings are stored in the `system_settings` table and managed via Admin
 import { SettingsService } from '../services/settings.service';
 
 // Get with default fallback
-const aiEnabled = await SettingsService.get<boolean>('feature.ai_enabled', false);
-const maxTokens = await SettingsService.get<number>('ai.max_tokens', 4096);
+const registrationEnabled = await SettingsService.get<boolean>('feature.registration_enabled', true);
+const maxItems = await SettingsService.get<number>('app.max_items_per_user', 100);
 
 // Update setting
-await SettingsService.set('feature.ai_enabled', true);
+await SettingsService.set('feature.registration_enabled', false);
 ```
 
 ### Caching
@@ -143,32 +147,40 @@ const configSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().default(3000),
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
-  
+
   // Database
-  DATABASE_URL: z.string().min(1),
-  
-  // Auth
+  DATABASE_URL: z.string().url(),
+
+  // Authentication
   JWT_SECRET: z.string().min(32),
-  JWT_EXPIRES_IN: z.string().default('7d'),
-  
+  JWT_ACCESS_EXPIRES_IN: z.string().default('15m'),
+  JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
+
   // Logging
-  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
-  
+  LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+
   // S3/MinIO
   S3_ENDPOINT: z.string().url(),
   S3_ACCESS_KEY: z.string().min(1),
   S3_SECRET_KEY: z.string().min(1),
   S3_BUCKET: z.string().min(1),
   S3_REGION: z.string().default('us-east-1'),
-  
-  // AI Providers (optional)
-  ANTHROPIC_API_KEY: z.string().optional(),
-  GOOGLE_AI_API_KEY: z.string().optional(),
-  OPENAI_API_KEY: z.string().optional(),
-  
-  // Production Email
-  AWS_SES_REGION: z.string().optional(),
+
+  // Email
+  EMAIL_PROVIDER: z.enum(['mock', 'smtp', 'ses']).default('mock'),
   EMAIL_FROM: z.string().email().optional(),
+
+  // SMTP (for EMAIL_PROVIDER=smtp)
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_SECURE: z.enum(['true', 'false']).default('true').transform((v) => v === 'true'),
+
+  // AWS SES (for EMAIL_PROVIDER=ses)
+  AWS_SES_REGION: z.string().optional(),
+  AWS_ACCESS_KEY_ID: z.string().optional(),
+  AWS_SECRET_ACCESS_KEY: z.string().optional(),
 });
 
 const result = configSchema.safeParse(process.env);
@@ -206,7 +218,6 @@ DATABASE_URL=postgresql://app:app_dev@localhost:5432/app
 # Authentication
 # ===================
 JWT_SECRET=your-super-secret-key-change-in-production-minimum-32-chars
-JWT_EXPIRES_IN=7d
 
 # ===================
 # Logging
@@ -223,11 +234,9 @@ S3_BUCKET=app-assets
 S3_REGION=us-east-1
 
 # ===================
-# AI Providers (Optional)
+# Email Configuration
 # ===================
-ANTHROPIC_API_KEY=
-GOOGLE_AI_API_KEY=
-OPENAI_API_KEY=
+EMAIL_PROVIDER=mock
 ```
 
 ---

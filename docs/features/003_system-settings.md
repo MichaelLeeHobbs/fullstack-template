@@ -48,7 +48,7 @@ export const settingTypeEnum = pgEnum('setting_type', [
 export const systemSettings = pgTable('system_settings', {
   id: uuid('id').primaryKey().defaultRandom(),
   
-  // Key uses dot notation: 'feature.ai_enabled', 'email.from_name'
+  // Key uses dot notation: 'feature.registration_enabled', 'email.from_name'
   key: varchar('key', { length: 255 }).notNull().unique(),
   
   // Value stored as string, parsed based on type
@@ -80,20 +80,13 @@ export type SystemSetting = typeof systemSettings.$inferSelect;
 export const defaultSettings = [
   // Feature Flags
   {
-    key: 'feature.ai_enabled',
-    value: 'false',
-    type: 'boolean',
-    category: 'features',
-    description: 'Enable AI-powered features',
-  },
-  {
     key: 'feature.registration_enabled',
     value: 'true',
     type: 'boolean',
     category: 'features',
     description: 'Allow new user registrations',
   },
-  
+
   // Email Settings
   {
     key: 'email.from_name',
@@ -102,23 +95,7 @@ export const defaultSettings = [
     category: 'email',
     description: 'Sender name for system emails',
   },
-  
-  // AI Settings
-  {
-    key: 'ai.default_model',
-    value: 'claude-3-sonnet',
-    type: 'string',
-    category: 'ai',
-    description: 'Default AI model for generation',
-  },
-  {
-    key: 'ai.max_tokens',
-    value: '4096',
-    type: 'number',
-    category: 'ai',
-    description: 'Maximum tokens per AI request',
-  },
-  
+
   // Application Settings
   {
     key: 'app.maintenance_mode',
@@ -245,14 +222,11 @@ export class SettingsService {
 ## Usage Examples
 
 ```typescript
-// Check if AI is enabled
-const aiEnabled = await SettingsService.get<boolean>('feature.ai_enabled', false);
-if (!aiEnabled) {
-  return res.status(403).json({ error: 'AI features are disabled' });
+// Check if registration is enabled
+const registrationEnabled = await SettingsService.get<boolean>('feature.registration_enabled', true);
+if (!registrationEnabled) {
+  return res.status(403).json({ error: 'Registration is disabled' });
 }
-
-// Get AI model preference
-const model = await SettingsService.get<string>('ai.default_model', 'claude-3-sonnet');
 
 // Check maintenance mode in middleware
 export async function maintenanceCheck(req, res, next) {
@@ -278,11 +252,11 @@ List all settings.
   "success": true,
   "data": [
     {
-      "key": "feature.ai_enabled",
+      "key": "feature.registration_enabled",
       "value": "true",
       "type": "boolean",
       "category": "features",
-      "description": "Enable AI-powered features"
+      "description": "Allow new user registrations"
     }
   ]
 }

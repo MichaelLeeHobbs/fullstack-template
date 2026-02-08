@@ -231,11 +231,6 @@ S3_ACCESS_KEY=app
 S3_SECRET_KEY=app_dev
 S3_BUCKET=app-assets
 S3_REGION=us-east-1
-
-# AI (Optional for development)
-ANTHROPIC_API_KEY=
-GOOGLE_AI_API_KEY=
-OPENAI_API_KEY=
 ```
 
 ---

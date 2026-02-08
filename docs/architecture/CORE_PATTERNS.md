@@ -12,33 +12,19 @@ This document defines the architectural patterns used throughout this project. F
 
 ### Request Flow (4-Layer Pattern)
 
-```
-HTTP Request
-    │
-    ▼
-┌─────────────────┐
-│     Router      │  Route definitions, middleware attachment
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│   Middleware    │  Auth, validation, rate limiting
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│   Controller    │  Request parsing, response formatting
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│    Service      │  Business logic, orchestration
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│     Model       │  Data access (Drizzle)
-└─────────────────┘
+```mermaid
+flowchart TD
+    A[HTTP Request] --> B[Router]
+    B --> C[Middleware]
+    C --> D[Controller]
+    D --> E[Service]
+    E --> F[Model / Drizzle]
+
+    B -.- B1[Route definitions, middleware attachment]
+    C -.- C1[Auth, validation, rate limiting]
+    D -.- D1[Request parsing, response formatting]
+    E -.- E1[Business logic, orchestration]
+    F -.- F1[Data access]
 ```
 
 ---
@@ -53,19 +39,19 @@ HTTP Request
 - **No business logic**
 
 ```typescript
-// src/routes/world.routes.ts
+// src/routes/post.routes.ts
 import { Router } from 'express';
-import { WorldController } from '../controllers/world.controller';
+import { PostController } from '../controllers/post.controller';
 import { authenticate } from '../middleware/auth.middleware';
 import { validate } from '../middleware/validate.middleware';
-import { createWorldSchema } from '../schemas/world.schema';
+import { createPostSchema } from '../schemas/post.schema';
 
 const router = Router();
 
 router.use(authenticate);
 
-router.get('/', WorldController.list);
-router.post('/', validate(createWorldSchema), WorldController.create);
+router.get('/', PostController.list);
+router.post('/', validate(createPostSchema), PostController.create);
 
 export default router;
 ```
@@ -81,19 +67,19 @@ export default router;
 - **No direct database access**
 
 ```typescript
-// src/controllers/world.controller.ts
+// src/controllers/post.controller.ts
 import { Request, Response } from 'express';
 import { z } from 'zod/v4';
-import { WorldService } from '../services/world.service';
-import { createWorldSchema } from '../schemas/world.schema';
+import { PostService } from '../services/post.service';
+import { createPostSchema } from '../schemas/post.schema';
 import logger from '../lib/logger';
 
-export class WorldController {
+export class PostController {
   static async list(req: Request, res: Response): Promise<void> {
-    const result = await WorldService.listByUser(req.user!.id);
+    const result = await PostService.listByUser(req.user!.id);
 
     if (!result.ok) {
-      logger.error('Failed to list worlds', { error: result.error.toString() });
+      logger.error({ error: result.error.toString() }, 'Failed to list posts');
       return void res.status(500).json({ success: false, error: 'Internal error' });
     }
 
@@ -101,7 +87,7 @@ export class WorldController {
   }
 
   static async create(req: Request, res: Response): Promise<void> {
-    const parseResult = createWorldSchema.safeParse(req.body);
+    const parseResult = createPostSchema.safeParse(req.body);
     if (!parseResult.success) {
       return void res.status(400).json({
         success: false,
@@ -109,10 +95,10 @@ export class WorldController {
       });
     }
 
-    const result = await WorldService.create(req.user!.id, parseResult.data);
+    const result = await PostService.create(req.user!.id, parseResult.data);
 
     if (!result.ok) {
-      logger.error('Failed to create world', { error: result.error.toString() });
+      logger.error({ error: result.error.toString() }, 'Failed to create post');
       return void res.status(500).json({ success: false, error: 'Internal error' });
     }
 
@@ -133,53 +119,42 @@ export class WorldController {
 - **No HTTP concerns (no req/res)**
 
 ```typescript
-// src/services/world.service.ts
+// src/services/post.service.ts
 import { tryCatch, type Result } from 'stderr-lib';
 import { db } from '../lib/db';
-import { worlds, epochs } from '../db/schema';
+import { posts } from '../db/schema';
 import { eq } from 'drizzle-orm';
-import type { World, Epoch } from '../db/schema';
+import type { Post } from '../db/schema';
 
-interface WorldWithEpochs extends World {
-  epochs: Epoch[];
-}
-
-export class WorldService {
-  static async listByUser(userId: string): Promise<Result<World[]>> {
+export class PostService {
+  static async listByUser(userId: string): Promise<Result<Post[]>> {
     return tryCatch(async () => {
-      return db.select().from(worlds).where(eq(worlds.createdByUserId, userId));
+      return db.select().from(posts).where(eq(posts.authorId, userId));
     });
   }
 
-  static async create(userId: string, data: { name: string }): Promise<Result<WorldWithEpochs>> {
+  static async create(userId: string, data: { title: string; content?: string }): Promise<Result<Post>> {
     return tryCatch(async () => {
-      return db.transaction(async (tx) => {
-        const [world] = await tx.insert(worlds).values({
-          name: data.name,
-          createdByUserId: userId,
-        }).returning();
+      const [post] = await db.insert(posts).values({
+        title: data.title,
+        content: data.content,
+        authorId: userId,
+      }).returning();
 
-        const [epochNul] = await tx.insert(epochs).values({
-          worldId: world.id,
-          name: 'Epoch NUL',
-          order: 0,
-        }).returning();
-
-        return { ...world, epochs: [epochNul] };
-      });
+      return post;
     });
   }
 
-  static async getById(userId: string, worldId: string): Promise<Result<World>> {
+  static async getById(userId: string, postId: string): Promise<Result<Post>> {
     return tryCatch(async () => {
-      const [world] = await db.select().from(worlds)
-        .where(eq(worlds.id, worldId));
+      const [post] = await db.select().from(posts)
+        .where(eq(posts.id, postId));
 
-      if (!world || world.createdByUserId !== userId) {
-        throw new Error('World not found');
+      if (!post || post.authorId !== userId) {
+        throw new Error('Post not found');
       }
 
-      return world;
+      return post;
     });
   }
 }
@@ -194,19 +169,23 @@ export class WorldService {
 - **No business logic**
 
 ```typescript
-// src/db/schema.ts
-import { pgTable, uuid, varchar, timestamp } from 'drizzle-orm/pg-core';
+// src/db/schema/posts.ts
+import { pgTable, uuid, varchar, text, timestamp } from 'drizzle-orm/pg-core';
+import { users } from './users.js';
 
-export const worlds = pgTable('worlds', {
+export const posts = pgTable('posts', {
   id: uuid('id').primaryKey().defaultRandom(),
-  name: varchar('name', { length: 255 }).notNull(),
-  createdByUserId: uuid('created_by_user_id').notNull(),
+  title: varchar('title', { length: 255 }).notNull(),
+  content: text('content'),
+  authorId: uuid('author_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-export type World = typeof worlds.$inferSelect;
-export type NewWorld = typeof worlds.$inferInsert;
+export type Post = typeof posts.$inferSelect;
+export type NewPost = typeof posts.$inferInsert;
 ```
 
 ---
@@ -263,47 +242,6 @@ static async register(email: string, password: string): Promise<Result<RegisterR
 External service integrations (APIs, storage, email).
 
 ```typescript
-// src/providers/anthropic.provider.ts
-import Anthropic from '@anthropic-ai/sdk';
-import { tryCatch, type Result } from 'stderr-lib';
-import { config } from '../config';
-import logger from '../lib/logger';
-
-const client = new Anthropic({ apiKey: config.ANTHROPIC_API_KEY });
-
-export interface GenerateOptions {
-  prompt: string;
-  maxTokens?: number;
-  timeoutMs?: number;
-}
-
-export async function generateText(options: GenerateOptions): Promise<Result<string>> {
-  const controller = new AbortController();
-  const timeout = setTimeout(
-    () => controller.abort(), 
-    options.timeoutMs ?? 30000
-  );
-
-  const result = await tryCatch(async () => {
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: options.maxTokens ?? 1024,
-      messages: [{ role: 'user', content: options.prompt }],
-    });
-    return response.content[0].type === 'text' ? response.content[0].text : '';
-  });
-
-  clearTimeout(timeout);
-  
-  if (!result.ok) {
-    logger.error('Anthropic API failed', { error: result.error.toString() });
-  }
-  
-  return result;
-}
-```
-
-```typescript
 // src/providers/s3.provider.ts
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { tryCatch, type Result } from 'stderr-lib';
@@ -337,50 +275,45 @@ Background tasks, scheduled work, async processing.
 ```typescript
 // src/jobs/cleanup.job.ts
 import { db } from '../lib/db';
-import { versions } from '../db/schema';
-import { lt, eq, and } from 'drizzle-orm';
+import { sessions } from '../db/schema';
+import { lt } from 'drizzle-orm';
+import { tryCatch } from 'stderr-lib';
 import logger from '../lib/logger';
 
 /**
- * Cleanup old auto-save versions (keep last 50 per entity).
+ * Cleanup expired sessions.
  * Run via cron or task scheduler.
  */
-export async function cleanupOldVersions(): Promise<void> {
-  logger.info('Starting version cleanup job');
+export async function cleanupExpiredSessions(): Promise<void> {
+  logger.info('Starting session cleanup job');
 
   const result = await tryCatch(async () => {
-    // Delete auto-saves older than 50 per entity
-    const deleted = await db.delete(versions)
-      .where(
-        and(
-          eq(versions.versionType, 'auto'),
-          lt(versions.createdAt, getCleanupCutoff())
-        )
-      )
+    const deleted = await db.delete(sessions)
+      .where(lt(sessions.expiresAt, new Date()))
       .returning();
-    
+
     return deleted.length;
   });
 
   if (!result.ok) {
-    logger.error('Cleanup job failed', { error: result.error.toString() });
+    logger.error({ error: result.error.toString() }, 'Cleanup job failed');
     return;
   }
 
-  logger.info('Cleanup job completed', { deletedCount: result.value });
+  logger.info({ deletedCount: result.value }, 'Cleanup job completed');
 }
 ```
 
 ```typescript
 // src/jobs/index.ts
 import cron from 'node-cron';
-import { cleanupOldVersions } from './cleanup.job';
+import { cleanupExpiredSessions } from './cleanup.job';
 import logger from '../lib/logger';
 
 export function initializeJobs(): void {
   // Run cleanup daily at 3am
   cron.schedule('0 3 * * *', () => {
-    void cleanupOldVersions();
+    void cleanupExpiredSessions();
   });
 
   logger.info('Background jobs initialized');
@@ -449,14 +382,19 @@ export function verifyToken(token: string): TokenPayload {
 ```
 apps/api/src/
 ├── controllers/        # HTTP request handlers
-│   └── world.controller.ts
+│   ├── auth.controller.ts
+│   ├── account.controller.ts
+│   └── admin/
 │
 ├── services/           # Business logic
-│   └── world.service.ts
+│   ├── auth.service.ts
+│   ├── account.service.ts
+│   └── email.service.ts
 │
 ├── routes/             # Route definitions
 │   ├── index.ts
-│   └── world.routes.ts
+│   ├── auth.routes.ts
+│   └── admin.routes.ts
 │
 ├── middleware/         # Express middleware
 │   ├── auth.middleware.ts
@@ -464,21 +402,19 @@ apps/api/src/
 │   └── error.middleware.ts
 │
 ├── providers/          # External integrations
-│   ├── anthropic.provider.ts
 │   ├── s3.provider.ts
 │   └── email.provider.ts
 │
 ├── jobs/               # Background tasks
 │   ├── index.ts
-│   ├── cleanup.job.ts
-│   └── export.job.ts
+│   └── cleanup.job.ts
 │
 ├── db/                 # Drizzle schema
-│   ├── schema.ts
+│   ├── schema/
 │   └── migrations/
 │
 ├── schemas/            # Zod validation
-│   └── world.schema.ts
+│   └── auth.schema.ts
 │
 ├── lib/                # Shared utilities
 │   ├── db.ts
@@ -498,25 +434,15 @@ apps/api/src/
 
 ### Component Flow
 
-```
-┌─────────────────┐
-│    Component    │  UI rendering, user events
-└────────┬────────┘
-         │ uses
-         ▼
-┌─────────────────┐
-│      Hook       │  State management, side effects
-└────────┬────────┘
-         │ calls
-         ▼
-┌─────────────────┐
-│   API Client    │  HTTP requests, response handling
-└────────┬────────┘
-         │ fetches
-         ▼
-┌─────────────────┐
-│   Backend API   │
-└─────────────────┘
+```mermaid
+flowchart TD
+    A[Component] -->|uses| B[Hook]
+    B -->|calls| C[API Client]
+    C -->|fetches| D[Backend API]
+
+    A -.- A1[UI rendering, user events]
+    B -.- B1[State management, side effects]
+    C -.- C1[HTTP requests, response handling]
 ```
 
 ---
@@ -529,23 +455,24 @@ apps/api/src/
 - **No direct API calls**
 
 ```typescript
-// src/components/WorldList.tsx
-import { useWorlds } from '../hooks/useWorlds';
-import { WorldCard } from './WorldCard';
-import { Spinner } from './ui/Spinner';
+// src/components/PostList.tsx
+import { usePosts } from '../hooks/usePosts';
+import { CircularProgress, Alert, List, ListItem, ListItemText } from '@mui/material';
 
-export function WorldList() {
-  const { data: worlds, isLoading, error } = useWorlds();
+export function PostList() {
+  const { data: posts, isLoading, error } = usePosts();
 
-  if (isLoading) return <Spinner />;
-  if (error) return <div>Error loading worlds</div>;
+  if (isLoading) return <CircularProgress />;
+  if (error) return <Alert severity="error">Error loading posts</Alert>;
 
   return (
-    <div className="grid grid-cols-3 gap-4">
-      {worlds?.map((world) => (
-        <WorldCard key={world.id} world={world} />
+    <List>
+      {posts?.map((post) => (
+        <ListItem key={post.id}>
+          <ListItemText primary={post.title} secondary={post.content} />
+        </ListItem>
       ))}
-    </div>
+    </List>
   );
 }
 ```
@@ -560,33 +487,33 @@ export function WorldList() {
 - **Reusable logic**
 
 ```typescript
-// src/hooks/useWorlds.ts
+// src/hooks/usePosts.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { worldsApi } from '../api/worlds.api';
-import type { World, CreateWorldInput } from '../types';
+import { postsApi } from '../api/posts.api';
+import type { Post, CreatePostInput } from '../types';
 
-export function useWorlds() {
+export function usePosts() {
   return useQuery({
-    queryKey: ['worlds'],
-    queryFn: worldsApi.list,
+    queryKey: ['posts'],
+    queryFn: postsApi.list,
   });
 }
 
-export function useCreateWorld() {
+export function useCreatePost() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateWorldInput) => worldsApi.create(data),
+    mutationFn: (data: CreatePostInput) => postsApi.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['worlds'] });
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
     },
   });
 }
 
-export function useWorld(id: string) {
+export function usePost(id: string) {
   return useQuery({
-    queryKey: ['worlds', id],
-    queryFn: () => worldsApi.getById(id),
+    queryKey: ['posts', id],
+    queryFn: () => postsApi.getById(id),
     enabled: !!id,
   });
 }
@@ -633,29 +560,29 @@ export async function apiFetch<T>(
 ```
 
 ```typescript
-// src/api/worlds.api.ts
+// src/api/posts.api.ts
 import { apiFetch } from './client';
-import type { World, CreateWorldInput } from '../types';
+import type { Post, CreatePostInput } from '../types';
 
-export const worldsApi = {
-  list: () => apiFetch<World[]>('/worlds'),
-  
-  getById: (id: string) => apiFetch<World>(`/worlds/${id}`),
-  
-  create: (data: CreateWorldInput) => 
-    apiFetch<World>('/worlds', {
+export const postsApi = {
+  list: () => apiFetch<Post[]>('/posts'),
+
+  getById: (id: string) => apiFetch<Post>(`/posts/${id}`),
+
+  create: (data: CreatePostInput) =>
+    apiFetch<Post>('/posts', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
-  
-  update: (id: string, data: Partial<CreateWorldInput>) =>
-    apiFetch<World>(`/worlds/${id}`, {
+
+  update: (id: string, data: Partial<CreatePostInput>) =>
+    apiFetch<Post>(`/posts/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     }),
-  
+
   delete: (id: string) =>
-    apiFetch<void>(`/worlds/${id}`, { method: 'DELETE' }),
+    apiFetch<void>(`/posts/${id}`, { method: 'DELETE' }),
 };
 ```
 
@@ -702,28 +629,21 @@ export const useAuthStore = create<AuthState>()(
 apps/web/src/
 ├── components/         # UI components
 │   ├── ui/            # Reusable primitives
-│   │   ├── Button.tsx
-│   │   ├── Input.tsx
-│   │   └── Spinner.tsx
 │   ├── layout/        # Layout components
 │   │   ├── Header.tsx
 │   │   └── Sidebar.tsx
 │   └── features/      # Feature-specific
-│       ├── WorldCard.tsx
-│       └── EntityList.tsx
 │
 ├── pages/              # Route pages
 │   ├── HomePage.tsx
 │   ├── LoginPage.tsx
-│   └── WorldPage.tsx
+│   └── ProfilePage.tsx
 │
 ├── hooks/              # Custom hooks
-│   ├── useWorlds.ts
 │   └── useAuth.ts
 │
 ├── api/                # API client
-│   ├── client.ts
-│   └── worlds.api.ts
+│   └── client.ts
 │
 ├── stores/             # Zustand stores
 │   ├── auth.store.ts
@@ -817,16 +737,16 @@ function App() {
 
 ## Naming Conventions
 
-| Type             | Convention            | Example               |
-|------------------|-----------------------|-----------------------|
-| Files (backend)  | kebab-case            | `world.controller.ts` |
-| Files (frontend) | PascalCase components | `WorldCard.tsx`       |
-| Classes          | PascalCase            | `WorldController`     |
-| Functions        | camelCase             | `getWorldById`        |
-| Constants        | UPPER_SNAKE           | `MAX_RETRY_COUNT`     |
-| Database tables  | snake_case            | `entity_epoch_states` |
-| API routes       | kebab-case            | `/api/v1/worlds/:id`  |
-| Types/Interfaces | PascalCase            | `CreateWorldInput`    |
+| Type             | Convention            | Example                |
+|------------------|-----------------------|------------------------|
+| Files (backend)  | kebab-case            | `post.controller.ts`   |
+| Files (frontend) | PascalCase components | `PostList.tsx`         |
+| Classes          | PascalCase            | `PostController`       |
+| Functions        | camelCase             | `getPostById`          |
+| Constants        | UPPER_SNAKE           | `MAX_RETRY_COUNT`      |
+| Database tables  | snake_case            | `user_roles`           |
+| API routes       | kebab-case            | `/api/v1/posts/:id`    |
+| Types/Interfaces | PascalCase            | `CreatePostInput`      |
 
 ---
 
