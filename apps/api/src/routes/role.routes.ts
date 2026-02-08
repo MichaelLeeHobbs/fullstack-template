@@ -10,6 +10,7 @@ import { validate } from '../middleware/validate.middleware.js';
 import { RoleController } from '../controllers/role.controller.js';
 import { PERMISSIONS } from '../db/seeds/permissions.js';
 import { createRoleSchema, updateRoleSchema, setPermissionsSchema, setUserRolesSchema } from '../schemas/role.schema.js';
+import { cacheControl } from '../middleware/cache.middleware.js';
 
 const router: IRouter = Router();
 
@@ -45,6 +46,7 @@ router.use(authenticate);
 router.get(
   '/permissions',
   requirePermission(PERMISSIONS.ROLES_READ),
+  cacheControl({ maxAge: 300, private: true }),
   RoleController.listPermissions
 );
 
@@ -75,6 +77,7 @@ router.get(
 router.get(
   '/permissions/grouped',
   requirePermission(PERMISSIONS.ROLES_READ),
+  cacheControl({ maxAge: 300, private: true }),
   RoleController.listPermissionsGrouped
 );
 
@@ -104,7 +107,7 @@ router.get(
  *                   items:
  *                     $ref: '#/components/schemas/Role'
  */
-router.get('/', requirePermission(PERMISSIONS.ROLES_READ), RoleController.listRoles);
+router.get('/', requirePermission(PERMISSIONS.ROLES_READ), cacheControl({ maxAge: 60, private: true }), RoleController.listRoles);
 
 /**
  * @openapi
@@ -139,7 +142,7 @@ router.get('/', requirePermission(PERMISSIONS.ROLES_READ), RoleController.listRo
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get('/:id', requirePermission(PERMISSIONS.ROLES_READ), RoleController.getRole);
+router.get('/:id', requirePermission(PERMISSIONS.ROLES_READ), cacheControl({ maxAge: 60, private: true }), RoleController.getRole);
 
 /**
  * @openapi

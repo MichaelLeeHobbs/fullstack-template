@@ -15,9 +15,10 @@ import routes from './routes/index.js';
 import { requestId } from './middleware/request-id.middleware.js';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
 
-// Use createRequire for proper ESM/CJS interop with pino-http
+// Use createRequire for proper ESM/CJS interop with CJS packages
 const require = createRequire(import.meta.url);
 const pinoHttp = require('pino-http') as typeof import('pino-http').default;
+const compression = require('compression') as typeof import('compression');
 
 const app: Express = express();
 
@@ -29,6 +30,10 @@ app.use(
     credentials: true,
   })
 );
+
+// Compression & ETags
+app.use(compression({ threshold: 1024 }));
+app.set('etag', 'weak');
 
 // Request parsing
 app.use(express.json({ limit: '10mb' }));

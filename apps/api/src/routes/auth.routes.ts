@@ -10,6 +10,7 @@ import {
   authRateLimiter,
   registrationRateLimiter,
 } from '../middleware/rateLimit.middleware.js';
+import { noCache } from '../middleware/cache.middleware.js';
 import { registerSchema, loginSchema, refreshSchema } from '../schemas/auth.schema.js';
 
 const router: IRouter = Router();
@@ -231,6 +232,6 @@ router.post('/logout', validate({ body: refreshSchema }), AuthController.logout)
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get('/me', authenticate, AuthController.me);
+router.get('/me', authenticate, noCache(), AuthController.me);
 
 export default router;

@@ -12,6 +12,7 @@ import { AdminController } from '../controllers/admin.controller.js';
 import { PERMISSIONS } from '../db/seeds/permissions.js';
 import { listUsersQuerySchema, updateUserSchema, listAuditLogsQuerySchema } from '../schemas/admin.schema.js';
 import { updateSettingSchema } from '../schemas/settings.schema.js';
+import { cacheControl } from '../middleware/cache.middleware.js';
 
 const router: IRouter = Router();
 
@@ -44,7 +45,7 @@ router.use(authenticate);
  *                   items:
  *                     $ref: '#/components/schemas/Setting'
  */
-router.get('/settings', requirePermission(PERMISSIONS.SETTINGS_READ), SettingsController.list);
+router.get('/settings', requirePermission(PERMISSIONS.SETTINGS_READ), cacheControl({ maxAge: 60, private: true }), SettingsController.list);
 
 /**
  * @openapi
@@ -78,7 +79,7 @@ router.get('/settings', requirePermission(PERMISSIONS.SETTINGS_READ), SettingsCo
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get('/settings/:key', requirePermission(PERMISSIONS.SETTINGS_READ), SettingsController.get);
+router.get('/settings/:key', requirePermission(PERMISSIONS.SETTINGS_READ), cacheControl({ maxAge: 60, private: true }), SettingsController.get);
 
 /**
  * @openapi
@@ -189,7 +190,7 @@ router.patch(
  *                 meta:
  *                   $ref: '#/components/schemas/PaginationMeta'
  */
-router.get('/users', requirePermission(PERMISSIONS.USERS_READ), validate({ query: listUsersQuerySchema }), AdminController.listUsers);
+router.get('/users', requirePermission(PERMISSIONS.USERS_READ), validate({ query: listUsersQuerySchema }), cacheControl({ maxAge: 0, mustRevalidate: true, private: true }), AdminController.listUsers);
 
 /**
  * @openapi
@@ -224,7 +225,7 @@ router.get('/users', requirePermission(PERMISSIONS.USERS_READ), validate({ query
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get('/users/:id', requirePermission(PERMISSIONS.USERS_READ), AdminController.getUser);
+router.get('/users/:id', requirePermission(PERMISSIONS.USERS_READ), cacheControl({ maxAge: 0, mustRevalidate: true, private: true }), AdminController.getUser);
 
 /**
  * @openapi
@@ -356,6 +357,6 @@ router.delete('/users/:id', requirePermission(PERMISSIONS.USERS_DELETE), AdminCo
  *                 meta:
  *                   $ref: '#/components/schemas/PaginationMeta'
  */
-router.get('/audit-logs', requirePermission(PERMISSIONS.AUDIT_READ), validate({ query: listAuditLogsQuerySchema }), AdminController.listAuditLogs);
+router.get('/audit-logs', requirePermission(PERMISSIONS.AUDIT_READ), validate({ query: listAuditLogsQuerySchema }), cacheControl({ maxAge: 0, mustRevalidate: true, private: true }), AdminController.listAuditLogs);
 
 export default router;

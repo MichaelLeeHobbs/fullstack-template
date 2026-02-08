@@ -8,6 +8,7 @@ import { authenticate } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { UserController } from '../controllers/user.controller.js';
 import { changePasswordSchema, updatePreferencesSchema } from '../schemas/user.schema.js';
+import { noCache, cacheControl } from '../middleware/cache.middleware.js';
 
 const router: IRouter = Router();
 
@@ -42,7 +43,7 @@ router.use(authenticate);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get('/me', UserController.getProfile);
+router.get('/me', noCache(), UserController.getProfile);
 
 // Password
 
@@ -107,7 +108,7 @@ router.patch('/me/password', validate({ body: changePasswordSchema }), UserContr
  *                       type: string
  *                       enum: [light, dark, system]
  */
-router.get('/me/preferences', UserController.getPreferences);
+router.get('/me/preferences', cacheControl({ maxAge: 0, mustRevalidate: true, private: true }), UserController.getPreferences);
 
 /**
  * @openapi
