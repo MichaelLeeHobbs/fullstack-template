@@ -13,6 +13,7 @@ import type {
   MfaRegenerateBackupCodesInput,
 } from '../schemas/mfa.schema.js';
 import logger from '../lib/logger.js';
+import { setRefreshTokenCookie } from '../lib/cookies.js';
 
 export class MfaController {
   static async getMethods(req: Request, res: Response): Promise<void> {
@@ -79,7 +80,9 @@ export class MfaController {
       return;
     }
 
-    res.json({ success: true, data: result.value });
+    setRefreshTokenCookie(res, result.value.refreshToken);
+    const { refreshToken: _rt, ...responseData } = result.value;
+    res.json({ success: true, data: responseData });
   }
 
   static async disable(req: Request, res: Response): Promise<void> {

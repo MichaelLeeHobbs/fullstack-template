@@ -7,6 +7,7 @@ import { createRequire } from 'module';
 import express, { type Express, type Request, type Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 
 import { config } from './config/index.js';
 import logger from './lib/logger.js';
@@ -26,7 +27,7 @@ const app: Express = express();
 app.use(helmet());
 app.use(
   cors({
-    origin: config.NODE_ENV === 'development' ? '*' : undefined,
+    origin: config.FRONTEND_URL,
     credentials: true,
   })
 );
@@ -34,6 +35,9 @@ app.use(
 // Compression & ETags
 app.use(compression({ threshold: 1024 }));
 app.set('etag', 'weak');
+
+// Cookie parsing (for httpOnly refresh token cookies)
+app.use(cookieParser());
 
 // Request parsing
 app.use(express.json({ limit: '10mb' }));

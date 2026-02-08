@@ -28,6 +28,9 @@ const configSchema = z.object({
   JWT_ACCESS_EXPIRES_IN: z.string().default('15m'),
   JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
 
+  // Encryption (for secrets at rest; falls back to JWT_SECRET if not set)
+  ENCRYPTION_KEY: z.string().min(32).optional(),
+
   // Logging
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
 

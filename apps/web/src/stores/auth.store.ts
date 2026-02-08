@@ -22,13 +22,12 @@ export interface User {
 interface AuthState {
   user: User | null;
   accessToken: string | null;
-  refreshToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   intendedDestination: string | null;
   mfaTempToken: string | null;
   mfaMethods: string[];
-  setAuth: (user: User, accessToken: string, refreshToken: string) => void;
+  setAuth: (user: User, accessToken: string) => void;
   setAccessToken: (accessToken: string) => void;
   setLoading: (isLoading: boolean) => void;
   setIntendedDestination: (path: string | null) => void;
@@ -44,14 +43,13 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       accessToken: null,
-      refreshToken: null,
       isAuthenticated: false,
       isLoading: false,
       intendedDestination: null,
       mfaTempToken: null,
       mfaMethods: [],
-      setAuth: (user, accessToken, refreshToken) =>
-        set({ user, accessToken, refreshToken, isAuthenticated: true, isLoading: false, mfaTempToken: null, mfaMethods: [] }),
+      setAuth: (user, accessToken) =>
+        set({ user, accessToken, isAuthenticated: true, isLoading: false, mfaTempToken: null, mfaMethods: [] }),
       setAccessToken: (accessToken) => set({ accessToken }),
       setLoading: (isLoading) => set({ isLoading }),
       setIntendedDestination: (path) => set({ intendedDestination: path }),
@@ -69,7 +67,6 @@ export const useAuthStore = create<AuthState>()(
         set({
           user: null,
           accessToken: null,
-          refreshToken: null,
           isAuthenticated: false,
           isLoading: false,
           intendedDestination: null,
@@ -83,7 +80,6 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         user: state.user,
         accessToken: state.accessToken,
-        refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
       }),
     }

@@ -23,7 +23,7 @@ export function useLogin() {
         return;
       }
       const successData = data as AuthSuccessResponse;
-      setAuth(successData.user, successData.accessToken, successData.refreshToken);
+      setAuth(successData.user, successData.accessToken);
       queryClient.clear();
       navigate('/');
     },
@@ -40,7 +40,7 @@ export function useRegister() {
     onSuccess: (data) => {
       // Register never returns MFA required
       const successData = data as AuthSuccessResponse;
-      setAuth(successData.user, successData.accessToken, successData.refreshToken);
+      setAuth(successData.user, successData.accessToken);
       queryClient.clear();
       navigate('/');
     },
@@ -48,16 +48,12 @@ export function useRegister() {
 }
 
 export function useLogout() {
-  const { refreshToken, clearAuth } = useAuthStore();
+  const clearAuth = useAuthStore((state) => state.clearAuth);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async () => {
-      if (refreshToken) {
-        await authApi.logout(refreshToken);
-      }
-    },
+    mutationFn: () => authApi.logout(),
     onSettled: () => {
       clearAuth();
       queryClient.clear();

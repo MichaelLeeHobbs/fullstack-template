@@ -106,7 +106,7 @@ export function LoginPage() {
         method: mfaMethods[0] || 'totp',
         code: mfaCode,
       });
-      setAuth(data.user, data.accessToken, data.refreshToken);
+      setAuth(data.user, data.accessToken);
       clearMfa();
       notify.success('Welcome back!');
       const destination = intendedDestination || '/home';

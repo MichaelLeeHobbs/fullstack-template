@@ -20,7 +20,6 @@ describe('Auth Store', () => {
     useAuthStore.setState({
       user: null,
       accessToken: null,
-      refreshToken: null,
       isAuthenticated: false,
       isLoading: false,
       intendedDestination: null,
@@ -40,16 +39,14 @@ describe('Auth Store', () => {
   });
 
   describe('setAuth', () => {
-    it('should set user and tokens', () => {
+    it('should set user and access token', () => {
       const accessToken = 'access-token';
-      const refreshToken = 'refresh-token';
 
-      useAuthStore.getState().setAuth(mockUser, accessToken, refreshToken);
+      useAuthStore.getState().setAuth(mockUser, accessToken);
 
       const state = useAuthStore.getState();
       expect(state.user).toEqual(mockUser);
       expect(state.accessToken).toBe(accessToken);
-      expect(state.refreshToken).toBe(refreshToken);
       expect(state.isAuthenticated).toBe(true);
     });
   });
@@ -70,7 +67,7 @@ describe('Auth Store', () => {
 
   describe('updatePreferences', () => {
     it('should update user preferences', () => {
-      useAuthStore.getState().setAuth(mockUser, 'access', 'refresh');
+      useAuthStore.getState().setAuth(mockUser, 'access');
       useAuthStore.getState().updatePreferences({ theme: 'dark' });
 
       const state = useAuthStore.getState();
@@ -81,7 +78,7 @@ describe('Auth Store', () => {
   describe('clearAuth', () => {
     it('should clear all auth state', () => {
       // First set some auth
-      useAuthStore.getState().setAuth(mockUser, 'access-token', 'refresh-token');
+      useAuthStore.getState().setAuth(mockUser, 'access-token');
 
       // Then clear
       useAuthStore.getState().clearAuth();
@@ -89,9 +86,7 @@ describe('Auth Store', () => {
       const state = useAuthStore.getState();
       expect(state.user).toBeNull();
       expect(state.accessToken).toBeNull();
-      expect(state.refreshToken).toBeNull();
       expect(state.isAuthenticated).toBe(false);
     });
   });
 });
-

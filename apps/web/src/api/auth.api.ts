@@ -9,7 +9,6 @@ import type { User } from '../stores/auth.store.js';
 export interface AuthSuccessResponse {
   user: User;
   accessToken: string;
-  refreshToken: string;
 }
 
 export interface MfaRequiredResponse {
@@ -37,8 +36,8 @@ export const authApi = {
   login: (data: LoginInput) =>
     api.post<AuthResponse>('/auth/login', data, { skipAuth: true }),
 
-  logout: (refreshToken: string) =>
-    api.post<{ message: string }>('/auth/logout', { refreshToken }),
+  logout: () =>
+    api.post<{ message: string }>('/auth/logout'),
 
   me: () => api.get<User>('/auth/me'),
 };

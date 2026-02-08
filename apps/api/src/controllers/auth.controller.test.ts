@@ -18,9 +18,16 @@ vi.mock('../lib/logger.js', () => ({
   default: { info: vi.fn(), error: vi.fn(), warn: vi.fn() },
 }));
 
+vi.mock('../lib/cookies.js', () => ({
+  setRefreshTokenCookie: vi.fn(),
+  clearRefreshTokenCookie: vi.fn(),
+  getRefreshTokenFromCookie: vi.fn((cookies: Record<string, string>) => cookies?.refreshToken),
+}));
+
 import { AuthController } from './auth.controller.js';
 import { AuthService } from '../services/auth.service.js';
 import { createMockRequest, createMockResponse } from '../../test/utils/index.js';
+import { setRefreshTokenCookie, clearRefreshTokenCookie } from '../lib/cookies.js';
 
 describe('AuthController', () => {
   beforeEach(() => {
@@ -32,7 +39,7 @@ describe('AuthController', () => {
   // ===========================================
 
   describe('register()', () => {
-    it('should return 201 on success', async () => {
+    it('should return 201, set cookie, and omit refreshToken from body', async () => {
       const data = { user: { id: 'u1', email: 'a@b.com', permissions: [] }, accessToken: 'at', refreshToken: 'rt' };
       (AuthService.register as ReturnType<typeof vi.fn>).mockResolvedValue({ ok: true, value: data });
 
@@ -42,7 +49,12 @@ describe('AuthController', () => {
       await AuthController.register(req, res as any);
 
       expect(res._status).toBe(201);
-      expect(res._json).toEqual({ success: true, data });
+      expect(setRefreshTokenCookie).toHaveBeenCalledWith(res, 'rt');
+      // Response body should NOT contain refreshToken
+      expect(res._json).toEqual({
+        success: true,
+        data: { user: data.user, accessToken: 'at' },
+      });
     });
 
     it('should return 409 for duplicate email', async () => {
@@ -81,7 +93,7 @@ describe('AuthController', () => {
   // ===========================================
 
   describe('login()', () => {
-    it('should return 200 on success', async () => {
+    it('should return 200, set cookie, and omit refreshToken from body', async () => {
       const data = { user: { id: 'u1', email: 'a@b.com' }, accessToken: 'at', refreshToken: 'rt' };
       (AuthService.login as ReturnType<typeof vi.fn>).mockResolvedValue({ ok: true, value: data });
 
@@ -91,10 +103,14 @@ describe('AuthController', () => {
       await AuthController.login(req, res as any);
 
       expect(res._status).toBe(200);
-      expect(res._json).toEqual({ success: true, data });
+      expect(setRefreshTokenCookie).toHaveBeenCalledWith(res, 'rt');
+      expect(res._json).toEqual({
+        success: true,
+        data: { user: data.user, accessToken: 'at' },
+      });
     });
 
-    it('should return 200 with MFA required', async () => {
+    it('should return 200 with MFA required (no cookie set)', async () => {
       const data = { mfaRequired: true, mfaMethods: ['totp'], tempToken: 'temp' };
       (AuthService.login as ReturnType<typeof vi.fn>).mockResolvedValue({ ok: true, value: data });
 
@@ -104,6 +120,7 @@ describe('AuthController', () => {
       await AuthController.login(req, res as any);
 
       expect(res._status).toBe(200);
+      expect(setRefreshTokenCookie).not.toHaveBeenCalled();
       expect(res._json).toEqual({ success: true, data });
     });
 
@@ -203,31 +220,43 @@ describe('AuthController', () => {
   // ===========================================
 
   describe('refresh()', () => {
-    it('should return 200 on success', async () => {
+    it('should return 200, set new cookie, and return only accessToken', async () => {
       const tokens = { accessToken: 'at2', refreshToken: 'rt2' };
       (AuthService.refresh as ReturnType<typeof vi.fn>).mockResolvedValue({ ok: true, value: tokens });
 
-      const req = createMockRequest({ body: { refreshToken: 'rt1' } });
+      const req = createMockRequest({ cookies: { refreshToken: 'rt1' } });
       const res = createMockResponse();
 
       await AuthController.refresh(req, res as any);
 
       expect(res._status).toBe(200);
-      expect(res._json).toEqual({ success: true, data: tokens });
+      expect(setRefreshTokenCookie).toHaveBeenCalledWith(res, 'rt2');
+      expect(res._json).toEqual({ success: true, data: { accessToken: 'at2' } });
     });
 
-    it('should return 401 on error', async () => {
-      (AuthService.refresh as ReturnType<typeof vi.fn>).mockResolvedValue({
-        ok: false,
-        error: new Error('Invalid refresh token'),
-      });
-
-      const req = createMockRequest({ body: { refreshToken: 'bad' } });
+    it('should return 401 when no refresh token in cookie or body', async () => {
+      const req = createMockRequest({});
       const res = createMockResponse();
 
       await AuthController.refresh(req, res as any);
 
       expect(res._status).toBe(401);
+      expect(res._json).toEqual({ success: false, error: 'No refresh token provided' });
+    });
+
+    it('should return 401 and clear cookie on invalid token', async () => {
+      (AuthService.refresh as ReturnType<typeof vi.fn>).mockResolvedValue({
+        ok: false,
+        error: new Error('Invalid refresh token'),
+      });
+
+      const req = createMockRequest({ cookies: { refreshToken: 'bad' } });
+      const res = createMockResponse();
+
+      await AuthController.refresh(req, res as any);
+
+      expect(res._status).toBe(401);
+      expect(clearRefreshTokenCookie).toHaveBeenCalledWith(res);
     });
   });
 
@@ -236,15 +265,16 @@ describe('AuthController', () => {
   // ===========================================
 
   describe('logout()', () => {
-    it('should return 200 on success', async () => {
+    it('should return 200 and clear cookie', async () => {
       (AuthService.logout as ReturnType<typeof vi.fn>).mockResolvedValue({ ok: true });
 
-      const req = createMockRequest({ body: { refreshToken: 'rt1' } });
+      const req = createMockRequest({ cookies: { refreshToken: 'rt1' } });
       const res = createMockResponse();
 
       await AuthController.logout(req, res as any);
 
       expect(res._status).toBe(200);
+      expect(clearRefreshTokenCookie).toHaveBeenCalledWith(res);
       expect(res._json).toEqual({ success: true, data: { message: 'Logged out successfully' } });
     });
   });

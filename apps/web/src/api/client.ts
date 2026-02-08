@@ -11,6 +11,9 @@ interface FetchOptions extends RequestInit {
   skipAuth?: boolean;
 }
 
+// Mutex for token refresh — prevents concurrent 401s from triggering multiple refreshes
+let refreshPromise: Promise<string | null> | null = null;
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -26,7 +29,7 @@ export async function apiFetch<T>(
   options: FetchOptions = {}
 ): Promise<T> {
   const { skipAuth = false, ...fetchOptions } = options;
-  const { accessToken, refreshToken, setAccessToken, clearAuth } =
+  const { accessToken, setAccessToken, clearAuth } =
     useAuthStore.getState();
 
   const makeRequest = async (token: string | null): Promise<Response> => {
@@ -42,31 +45,50 @@ export async function apiFetch<T>(
     return fetch(`${API_URL}${path}`, {
       ...fetchOptions,
       headers,
+      credentials: 'include',
     });
   };
 
   let response = await makeRequest(accessToken);
 
-  // If 401 and we have a refresh token, try to refresh
-  if (response.status === 401 && refreshToken && !skipAuth) {
+  // If 401, try to refresh using httpOnly cookie (with mutex)
+  if (response.status === 401 && !skipAuth) {
     try {
-      const refreshResponse = await fetch(`${API_URL}/auth/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
-      });
+      // If a refresh is already in progress, wait for it instead of starting another
+      if (!refreshPromise) {
+        refreshPromise = (async () => {
+          try {
+            const refreshResponse = await fetch(`${API_URL}/auth/refresh`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+            });
 
-      if (refreshResponse.ok) {
-        const refreshData = await refreshResponse.json();
-        setAccessToken(refreshData.data.accessToken);
-        // Retry the original request with new token
-        response = await makeRequest(refreshData.data.accessToken);
+            if (refreshResponse.ok) {
+              const refreshData = await refreshResponse.json();
+              setAccessToken(refreshData.data.accessToken);
+              return refreshData.data.accessToken as string;
+            } else {
+              clearAuth();
+              return null;
+            }
+          } catch {
+            clearAuth();
+            return null;
+          } finally {
+            refreshPromise = null;
+          }
+        })();
+      }
+
+      const newToken = await refreshPromise;
+      if (newToken) {
+        response = await makeRequest(newToken);
       } else {
-        // Refresh failed, clear auth and redirect to login
-        clearAuth();
         throw new ApiError(401, 'Session expired');
       }
-    } catch {
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
       clearAuth();
       throw new ApiError(401, 'Session expired');
     }

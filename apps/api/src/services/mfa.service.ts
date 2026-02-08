@@ -12,9 +12,28 @@ import { tryCatch, type Result } from 'stderr-lib';
 import { db } from '../lib/db.js';
 import { userMfaMethods, MFA_METHODS, type MfaMethod, type TotpConfig } from '../db/schema/index.js';
 import { eq, and } from 'drizzle-orm';
+import { encrypt, decrypt, isEncrypted } from '../lib/crypto.js';
 
 const BACKUP_CODE_COUNT = 10;
 const SALT_ROUNDS = 10;
+
+/**
+ * Decrypt a TOTP secret from storage. Handles both encrypted and legacy plaintext secrets.
+ */
+function decryptSecret(storedSecret: string): string {
+  if (isEncrypted(storedSecret)) {
+    return decrypt(storedSecret);
+  }
+  // Legacy plaintext secret — return as-is (will be encrypted on next write)
+  return storedSecret;
+}
+
+/**
+ * Encrypt a TOTP secret for storage.
+ */
+function encryptSecret(plainSecret: string): string {
+  return encrypt(plainSecret);
+}
 
 interface VerifyResult {
   valid: boolean;
@@ -90,7 +109,8 @@ export class MfaService {
           eq(userMfaMethods.method, MFA_METHODS.TOTP),
         ));
 
-      const config: TotpConfig = { secret, backupCodes: [] };
+      // Encrypt the secret before storing in database
+      const config: TotpConfig = { secret: encryptSecret(secret), backupCodes: [] };
 
       if (existing.length > 0) {
         await db
@@ -132,6 +152,7 @@ export class MfaService {
       }
 
       const config = record.config as TotpConfig;
+      const plaintextSecret = decryptSecret(config.secret);
 
       // Verify the code against the secret
       const totp = new OTPAuth.TOTP({
@@ -139,7 +160,7 @@ export class MfaService {
         algorithm: 'SHA1',
         digits: 6,
         period: 30,
-        secret: OTPAuth.Secret.fromBase32(config.secret),
+        secret: OTPAuth.Secret.fromBase32(plaintextSecret),
       });
 
       const delta = totp.validate({ token: code, window: 1 });
@@ -158,7 +179,8 @@ export class MfaService {
       }
 
       // Update record: store hashed backup codes, enable, verify
-      const updatedConfig: TotpConfig = { secret: config.secret, backupCodes: hashedCodes };
+      // Re-encrypt secret to ensure it's always stored encrypted
+      const updatedConfig: TotpConfig = { secret: encryptSecret(plaintextSecret), backupCodes: hashedCodes };
 
       await db
         .update(userMfaMethods)
@@ -210,6 +232,7 @@ export class MfaService {
       }
 
       const config = record.config as TotpConfig;
+      const plaintextSecret = decryptSecret(config.secret);
 
       // Verify TOTP code (not backup)
       const totp = new OTPAuth.TOTP({
@@ -217,7 +240,7 @@ export class MfaService {
         algorithm: 'SHA1',
         digits: 6,
         period: 30,
-        secret: OTPAuth.Secret.fromBase32(config.secret),
+        secret: OTPAuth.Secret.fromBase32(plaintextSecret),
       });
 
       const delta = totp.validate({ token: code, window: 1 });
@@ -235,7 +258,7 @@ export class MfaService {
         hashedCodes.push(await bcrypt.hash(rawCode, SALT_ROUNDS));
       }
 
-      const updatedConfig: TotpConfig = { secret: config.secret, backupCodes: hashedCodes };
+      const updatedConfig: TotpConfig = { secret: encryptSecret(plaintextSecret), backupCodes: hashedCodes };
 
       await db
         .update(userMfaMethods)
@@ -264,6 +287,7 @@ export class MfaService {
     }
 
     const config = record.config as TotpConfig;
+    const plaintextSecret = decryptSecret(config.secret);
 
     // Try TOTP code first
     const totp = new OTPAuth.TOTP({
@@ -271,7 +295,7 @@ export class MfaService {
       algorithm: 'SHA1',
       digits: 6,
       period: 30,
-      secret: OTPAuth.Secret.fromBase32(config.secret),
+      secret: OTPAuth.Secret.fromBase32(plaintextSecret),
     });
 
     const delta = totp.validate({ token, window: 1 });
@@ -286,7 +310,7 @@ export class MfaService {
         // Remove used backup code
         const updatedCodes = [...config.backupCodes];
         updatedCodes.splice(i, 1);
-        const updatedConfig: TotpConfig = { secret: config.secret, backupCodes: updatedCodes };
+        const updatedConfig: TotpConfig = { secret: encryptSecret(plaintextSecret), backupCodes: updatedCodes };
 
         await db
           .update(userMfaMethods)

@@ -24,10 +24,17 @@ vi.mock('../lib/logger.js', () => ({
   default: { info: vi.fn(), error: vi.fn(), warn: vi.fn() },
 }));
 
+vi.mock('../lib/cookies.js', () => ({
+  setRefreshTokenCookie: vi.fn(),
+  clearRefreshTokenCookie: vi.fn(),
+  getRefreshTokenFromCookie: vi.fn(),
+}));
+
 import { MfaController } from './mfa.controller.js';
 import { MfaService } from '../services/mfa.service.js';
 import { AuthService } from '../services/auth.service.js';
 import { createMockRequest, createMockResponse } from '../../test/utils/index.js';
+import { setRefreshTokenCookie } from '../lib/cookies.js';
 
 describe('MfaController', () => {
   beforeEach(() => {
@@ -122,7 +129,7 @@ describe('MfaController', () => {
   });
 
   describe('verifyLogin()', () => {
-    it('should return 200 on success', async () => {
+    it('should return 200, set cookie, and omit refreshToken from body', async () => {
       const data = { user: { id: 'u1' }, accessToken: 'at', refreshToken: 'rt' };
       (AuthService.verifyMfaAndLogin as ReturnType<typeof vi.fn>).mockResolvedValue({ ok: true, value: data });
 
@@ -132,7 +139,8 @@ describe('MfaController', () => {
       await MfaController.verifyLogin(req, res as any);
 
       expect(res._status).toBe(200);
-      expect(res._json).toEqual({ success: true, data });
+      expect(setRefreshTokenCookie).toHaveBeenCalledWith(res, 'rt');
+      expect(res._json).toEqual({ success: true, data: { user: { id: 'u1' }, accessToken: 'at' } });
     });
 
     it('should return 401 for invalid MFA code', async () => {

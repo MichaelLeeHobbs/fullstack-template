@@ -169,7 +169,20 @@ describe('Auth Integration Tests', () => {
   // POST /api/v1/auth/refresh
   // ===========================================
 
-  it('POST /api/v1/auth/refresh → 200', async () => {
+  it('POST /api/v1/auth/refresh → 200 with cookie', async () => {
+    const tokens = { accessToken: 'at2', refreshToken: 'rt2' };
+    (AuthService.refresh as ReturnType<typeof vi.fn>).mockResolvedValue({ ok: true, value: tokens });
+
+    const res = await agent
+      .post('/api/v1/auth/refresh')
+      .set('Cookie', 'refreshToken=old-token');
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.accessToken).toBe('at2');
+  });
+
+  it('POST /api/v1/auth/refresh → 200 with body fallback', async () => {
     const tokens = { accessToken: 'at2', refreshToken: 'rt2' };
     (AuthService.refresh as ReturnType<typeof vi.fn>).mockResolvedValue({ ok: true, value: tokens });
 
@@ -185,12 +198,12 @@ describe('Auth Integration Tests', () => {
   // POST /api/v1/auth/logout
   // ===========================================
 
-  it('POST /api/v1/auth/logout → 200', async () => {
+  it('POST /api/v1/auth/logout → 200 with cookie', async () => {
     (AuthService.logout as ReturnType<typeof vi.fn>).mockResolvedValue({ ok: true });
 
     const res = await agent
       .post('/api/v1/auth/logout')
-      .send({ refreshToken: 'some-token' });
+      .set('Cookie', 'refreshToken=some-token');
 
     expect(res.status).toBe(200);
   });
@@ -243,7 +256,7 @@ describe('Auth Integration Tests', () => {
 
     const res = await agent
       .post('/api/v1/auth/logout')
-      .send({ refreshToken: 'token' });
+      .set('Cookie', 'refreshToken=token');
 
     expect(res.headers['x-request-id']).toBeDefined();
   });

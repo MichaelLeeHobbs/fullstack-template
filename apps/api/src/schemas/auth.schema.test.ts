@@ -82,7 +82,12 @@ describe('Auth Schemas', () => {
       expect(result.success).toBe(true);
     });
 
-    it('should reject empty refresh token', () => {
+    it('should accept missing refresh token (comes from httpOnly cookie)', () => {
+      const result = refreshSchema.safeParse({});
+      expect(result.success).toBe(true);
+    });
+
+    it('should reject empty refresh token string', () => {
       const result = refreshSchema.safeParse({
         refreshToken: '',
       });

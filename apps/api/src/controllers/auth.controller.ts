@@ -6,8 +6,9 @@
 
 import type { Request, Response } from 'express';
 import { AuthService } from '../services/auth.service.js';
-import type { RegisterInput, LoginInput, RefreshInput } from '../schemas/auth.schema.js';
+import type { RegisterInput, LoginInput } from '../schemas/auth.schema.js';
 import logger from '../lib/logger.js';
+import { setRefreshTokenCookie, clearRefreshTokenCookie, getRefreshTokenFromCookie } from '../lib/cookies.js';
 
 export class AuthController {
   static async register(req: Request, res: Response): Promise<void> {
@@ -29,7 +30,9 @@ export class AuthController {
     }
 
     logger.info({ userId: result.value.user.id }, 'User registered');
-    res.status(201).json({ success: true, data: result.value });
+    setRefreshTokenCookie(res, result.value.refreshToken);
+    const { refreshToken: _rt, ...responseData } = result.value;
+    res.status(201).json({ success: true, data: responseData });
   }
 
   static async login(req: Request, res: Response): Promise<void> {
@@ -90,34 +93,45 @@ export class AuthController {
     }
 
     logger.info({ userId: result.value.user.id }, 'User logged in');
-    res.json({ success: true, data: result.value });
+    setRefreshTokenCookie(res, result.value.refreshToken);
+    const { refreshToken: _rt, ...responseData } = result.value;
+    res.json({ success: true, data: responseData });
   }
 
   static async refresh(req: Request, res: Response): Promise<void> {
-    const { refreshToken } = req.body as RefreshInput;
+    const refreshToken = getRefreshTokenFromCookie(req.cookies as Record<string, string | undefined>)
+      ?? (req.body as { refreshToken?: string }).refreshToken;
+
+    if (!refreshToken) {
+      res.status(401).json({ success: false, error: 'No refresh token provided' });
+      return;
+    }
 
     const metadata = { userAgent: req.headers['user-agent'], ipAddress: req.ip };
     const result = await AuthService.refresh(refreshToken, metadata);
 
     if (!result.ok) {
+      clearRefreshTokenCookie(res);
       res.status(401).json({ success: false, error: 'Invalid refresh token' });
       return;
     }
 
-    res.json({ success: true, data: result.value });
+    setRefreshTokenCookie(res, result.value.refreshToken);
+    res.json({ success: true, data: { accessToken: result.value.accessToken } });
   }
 
   static async logout(req: Request, res: Response): Promise<void> {
-    const { refreshToken } = req.body as RefreshInput;
+    const refreshToken = getRefreshTokenFromCookie(req.cookies as Record<string, string | undefined>)
+      ?? (req.body as { refreshToken?: string }).refreshToken;
 
-    const result = await AuthService.logout(refreshToken);
-
-    if (!result.ok) {
-      logger.error({ error: result.error }, 'Logout failed');
-      res.status(500).json({ success: false, error: 'Logout failed' });
-      return;
+    if (refreshToken) {
+      const result = await AuthService.logout(refreshToken);
+      if (!result.ok) {
+        logger.error({ error: result.error }, 'Logout failed');
+      }
     }
 
+    clearRefreshTokenCookie(res);
     res.json({ success: true, data: { message: 'Logged out successfully' } });
   }
 

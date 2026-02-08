@@ -11,6 +11,7 @@ interface MockRequestOverrides {
   body?: Record<string, unknown>;
   params?: Record<string, string>;
   query?: Record<string, unknown>;
+  cookies?: Record<string, string>;
   ip?: string;
   user?: { id: string; email?: string; isAdmin?: boolean };
   sessionId?: string;
@@ -22,6 +23,7 @@ export function createMockRequest(overrides: MockRequestOverrides = {}): Request
     body: {},
     params: {},
     query: {},
+    cookies: {},
     ip: '127.0.0.1',
     ...overrides,
   } as unknown as Request;
@@ -32,6 +34,8 @@ export function createMockResponse() {
     _status: 200,
     _json: null as unknown,
     _headers: {} as Record<string, string>,
+    _cookies: {} as Record<string, { value: string; options?: unknown }>,
+    _clearedCookies: [] as string[],
     status(code: number) {
       res._status = code;
       return res;
@@ -44,13 +48,27 @@ export function createMockResponse() {
       res._headers[name] = value;
       return res;
     },
+    cookie(name: string, value: string, options?: unknown) {
+      res._cookies[name] = { value, options };
+      return res;
+    },
+    clearCookie(name: string, _options?: unknown) {
+      res._clearedCookies.push(name);
+      return res;
+    },
   };
 
   // Spy on methods so tests can use expect().toHaveBeenCalled()
   vi.spyOn(res, 'status');
   vi.spyOn(res, 'json');
 
-  return res as unknown as Response & { _status: number; _json: unknown; _headers: Record<string, string> };
+  return res as unknown as Response & {
+    _status: number;
+    _json: unknown;
+    _headers: Record<string, string>;
+    _cookies: Record<string, { value: string; options?: unknown }>;
+    _clearedCookies: string[];
+  };
 }
 
 export function createMockNext(): NextFunction {

@@ -13,7 +13,7 @@ import {
   type Role,
   type NewRole,
 } from '../db/schema/index.js';
-import { eq, inArray } from 'drizzle-orm';
+import { eq, and, inArray } from 'drizzle-orm';
 import { PermissionService } from './permission.service.js';
 
 // ===========================================
@@ -356,8 +356,10 @@ export class RoleService {
       await db
         .delete(rolePermissions)
         .where(
-          eq(rolePermissions.roleId, roleId) &&
-            inArray(rolePermissions.permissionId, permissionIds)
+          and(
+            eq(rolePermissions.roleId, roleId),
+            inArray(rolePermissions.permissionId, permissionIds),
+          )
         );
 
       // Get affected users for cache invalidation
