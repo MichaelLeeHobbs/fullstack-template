@@ -201,10 +201,11 @@ These tasks modify the same files. Execute them sequentially (not in parallel):
 
 ---
 
-### Step 9: API Low Priority (Remaining Phases)
+### Step 9: API Low Priority (Remaining Phases) -- COMPLETE
 
 **Task:** `api-low-priority.md` Phases 1-2
 **Priority:** Low
+**Completed:** 2026-02-08
 **Why now:
 ** Compression and caching are performance polish. No functional changes, no new routes. Safe to add after all features and tests are in place.
 
@@ -215,10 +216,11 @@ These tasks modify the same files. Execute them sequentially (not in parallel):
 
 ---
 
-### Step 10: Documentation (Low Priority Phases)
+### Step 10: Documentation (Low Priority Phases) -- COMPLETE
 
 **Task:** `documentation.md` Phases 3-5
 **Priority:** Low
+**Completed:** 2026-02-08
 **Why now:
 ** The codebase is feature-complete and tested. These docs capture the final state for production deployment.
 

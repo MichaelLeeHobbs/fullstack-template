@@ -15,6 +15,10 @@
 ### API
 - **[API Reference](./API_REFERENCE.md)** - Complete endpoint documentation
 
+### Deployment
+- **[Deployment Guide](./DEPLOYMENT.md)** - Build, configure, and deploy to production
+- **[Production Checklist](./PRODUCTION_CHECKLIST.md)** - Pre-launch checklist
+
 ### Architecture
 - [Tech Stack](./architecture/TECH_STACK.md) - Frameworks and libraries
 - [Dev Environment](./architecture/DEV_ENVIRONMENT.md) - Local development setup
