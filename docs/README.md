@@ -12,6 +12,9 @@
 - [MVP Scope](./features/_MVP_SCOPE.md) - Template features
 - [AI Agent Instructions](./AI_README.md) - Instructions for AI assistants
 
+### API
+- **[API Reference](./API_REFERENCE.md)** - Complete endpoint documentation
+
 ### Architecture
 - [Tech Stack](./architecture/TECH_STACK.md) - Frameworks and libraries
 - [Dev Environment](./architecture/DEV_ENVIRONMENT.md) - Local development setup

@@ -171,7 +171,7 @@ These tasks modify the same files. Execute them sequentially (not in parallel):
 
 ---
 
-### Step 7: API High Priority — OpenAPI/Swagger
+### Step 7: API High Priority — OpenAPI/Swagger -- COMPLETE
 
 **Task:** `api-high-priority.md` Phase 4 (also referenced by
 `documentation.md` Phase 2)
@@ -187,18 +187,17 @@ These tasks modify the same files. Execute them sequentially (not in parallel):
 
 ---
 
-### Step 8: Documentation (High Priority Phases)
+### Step 8: Documentation (High Priority Phases) -- COMPLETE
 
 **Task:** `documentation.md` Phase 1
 **Priority:** High
+**Completed:** 2026-02-08
 **Why now:
 ** All routes are finalized and the OpenAPI spec exists. The API reference documents everything in one place.
 
-- Phase 1: API endpoint reference (
-  `docs/API_REFERENCE.md`) — all routes including API key management
+- Phase 1: API endpoint reference (`docs/API_REFERENCE.md`) — all routes including API key management
 
-**Verification:** Cross-check every route in
-`apps/api/src/routes/` against the reference document.
+**Verification:** Cross-check every route in `apps/api/src/routes/` against the reference document.
 
 ---
 
