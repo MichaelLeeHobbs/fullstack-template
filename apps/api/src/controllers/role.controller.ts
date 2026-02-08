@@ -4,18 +4,12 @@
 // Handles role and permission management endpoints.
 
 import type { Request, Response } from 'express';
-import { z } from 'zod/v4';
 import { RoleService } from '../services/role.service.js';
 import { UserRoleService } from '../services/user-role.service.js';
 import { PermissionService } from '../services/permission.service.js';
 import { AuditService } from '../services/audit.service.js';
 import { AUDIT_ACTIONS } from '../db/schema/audit.js';
-import {
-  createRoleSchema,
-  updateRoleSchema,
-  setPermissionsSchema,
-  setUserRolesSchema,
-} from '../schemas/role.schema.js';
+import type { CreateRoleInput, UpdateRoleInput, SetPermissionsInput, SetUserRolesInput } from '../schemas/role.schema.js';
 import logger from '../lib/logger.js';
 
 export class RoleController {
@@ -119,15 +113,7 @@ export class RoleController {
    * Create a new role
    */
   static async createRole(req: Request, res: Response): Promise<void> {
-    const parseResult = createRoleSchema.safeParse(req.body);
-    if (!parseResult.success) {
-      return void res.status(400).json({
-        success: false,
-        error: z.prettifyError(parseResult.error),
-      });
-    }
-
-    const result = await RoleService.create(parseResult.data);
+    const result = await RoleService.create(req.body as CreateRoleInput);
 
     if (!result.ok) {
       if (result.error.message?.includes('already exists')) {
@@ -164,15 +150,7 @@ export class RoleController {
       });
     }
 
-    const parseResult = updateRoleSchema.safeParse(req.body);
-    if (!parseResult.success) {
-      return void res.status(400).json({
-        success: false,
-        error: z.prettifyError(parseResult.error),
-      });
-    }
-
-    const result = await RoleService.update(id, parseResult.data);
+    const result = await RoleService.update(id, req.body as UpdateRoleInput);
 
     if (!result.ok) {
       if (result.error.message?.includes('not found')) {
@@ -268,15 +246,8 @@ export class RoleController {
       });
     }
 
-    const parseResult = setPermissionsSchema.safeParse(req.body);
-    if (!parseResult.success) {
-      return void res.status(400).json({
-        success: false,
-        error: z.prettifyError(parseResult.error),
-      });
-    }
-
-    const result = await RoleService.setPermissions(id, parseResult.data.permissionIds);
+    const body = req.body as SetPermissionsInput;
+    const result = await RoleService.setPermissions(id, body.permissionIds);
 
     if (!result.ok) {
       if (result.error.message?.includes('not found')) {
@@ -360,15 +331,8 @@ export class RoleController {
       });
     }
 
-    const parseResult = setUserRolesSchema.safeParse(req.body);
-    if (!parseResult.success) {
-      return void res.status(400).json({
-        success: false,
-        error: z.prettifyError(parseResult.error),
-      });
-    }
-
-    const result = await UserRoleService.setRoles(userId, parseResult.data.roleIds);
+    const body = req.body as SetUserRolesInput;
+    const result = await UserRoleService.setRoles(userId, body.roleIds);
 
     if (!result.ok) {
       if (result.error.message?.includes('not found')) {

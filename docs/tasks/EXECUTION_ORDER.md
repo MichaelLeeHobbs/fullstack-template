@@ -92,10 +92,11 @@ These tasks modify the same files. Execute them sequentially (not in parallel):
 
 ---
 
-### Step 3: API Low Priority — Validation Middleware Only
+### Step 3: API Low Priority — Validation Middleware Only -- COMPLETE
 
 **Task:** `api-low-priority.md` Phase 3
 **Priority:** Low (but do it now)
+**Completed:** 2026-02-08
 **Why now:** This refactors all controllers to move Zod validation from inline
 `safeParse` blocks into route-level `validate()` middleware. Doing this
 *before* writing new controllers (API key management) means the new code follows the clean pattern from the start, and existing controllers are cleaner for when we write tests later.

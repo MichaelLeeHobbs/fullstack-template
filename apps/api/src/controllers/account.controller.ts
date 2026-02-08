@@ -4,15 +4,10 @@
 // Handles password recovery and email verification.
 
 import type { Request, Response } from 'express';
-import { z } from 'zod/v4';
 import { AccountService } from '../services/account.service.js';
 import { AuditService, type AuditContext } from '../services/audit.service.js';
 import { AUDIT_ACTIONS } from '../db/schema/audit.js';
-import {
-  forgotPasswordSchema,
-  resetPasswordSchema,
-  verifyEmailSchema,
-} from '../schemas/account.schema.js';
+import type { ForgotPasswordInput, ResetPasswordInput, VerifyEmailInput } from '../schemas/account.schema.js';
 import logger from '../lib/logger.js';
 
 export class AccountController {
@@ -21,16 +16,8 @@ export class AccountController {
    * Request password reset email
    */
   static async forgotPassword(req: Request, res: Response): Promise<void> {
-    const parseResult = forgotPasswordSchema.safeParse(req.body);
-    if (!parseResult.success) {
-      return void res.status(400).json({
-        success: false,
-        error: z.prettifyError(parseResult.error),
-      });
-    }
-
     const context: AuditContext = AuditService.getContextFromRequest(req);
-    const { email } = parseResult.data;
+    const { email } = req.body as ForgotPasswordInput;
 
     const result = await AccountService.requestPasswordReset(email);
 
@@ -54,16 +41,8 @@ export class AccountController {
    * Reset password with token
    */
   static async resetPassword(req: Request, res: Response): Promise<void> {
-    const parseResult = resetPasswordSchema.safeParse(req.body);
-    if (!parseResult.success) {
-      return void res.status(400).json({
-        success: false,
-        error: z.prettifyError(parseResult.error),
-      });
-    }
-
     const context: AuditContext = AuditService.getContextFromRequest(req);
-    const { token, password } = parseResult.data;
+    const { token, password } = req.body as ResetPasswordInput;
 
     const result = await AccountService.resetPassword(token, password);
 
@@ -94,16 +73,8 @@ export class AccountController {
    * Verify email with token
    */
   static async verifyEmail(req: Request, res: Response): Promise<void> {
-    const parseResult = verifyEmailSchema.safeParse(req.body);
-    if (!parseResult.success) {
-      return void res.status(400).json({
-        success: false,
-        error: z.prettifyError(parseResult.error),
-      });
-    }
-
     const context: AuditContext = AuditService.getContextFromRequest(req);
-    const { token } = parseResult.data;
+    const { token } = req.body as VerifyEmailInput;
 
     const result = await AccountService.verifyEmail(token);
 
@@ -151,7 +122,7 @@ export class AccountController {
     const result = await AccountService.sendVerificationEmail(userId, email);
 
     if (!result.ok) {
-      logger.error({ error: result.error },'Failed to resend verification');
+      logger.error({ error: result.error }, 'Failed to resend verification');
       return void res.status(500).json({
         success: false,
         error: 'Failed to send verification email',

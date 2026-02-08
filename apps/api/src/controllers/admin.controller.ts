@@ -4,15 +4,10 @@
 // Handles admin operations for user management.
 
 import type { Request, Response } from 'express';
-import { z } from 'zod/v4';
 import { AdminService } from '../services/admin.service.js';
 import { AuditService } from '../services/audit.service.js';
 import { AUDIT_ACTIONS } from '../db/schema/audit.js';
-import {
-  listUsersQuerySchema,
-  updateUserSchema,
-  listAuditLogsQuerySchema,
-} from '../schemas/admin.schema.js';
+import type { ListUsersQuery, UpdateUserInput, ListAuditLogsQuery } from '../schemas/admin.schema.js';
 import logger from '../lib/logger.js';
 
 export class AdminController {
@@ -21,15 +16,7 @@ export class AdminController {
    * List users with pagination and filtering
    */
   static async listUsers(req: Request, res: Response): Promise<void> {
-    const parseResult = listUsersQuerySchema.safeParse(req.query);
-    if (!parseResult.success) {
-      return void res.status(400).json({
-        success: false,
-        error: z.prettifyError(parseResult.error),
-      });
-    }
-
-    const result = await AdminService.listUsers(parseResult.data);
+    const result = await AdminService.listUsers(req.query as unknown as ListUsersQuery);
 
     if (!result.ok) {
       logger.error({ error: result.error },'Failed to list users' );
@@ -89,23 +76,17 @@ export class AdminController {
       });
     }
 
-    const parseResult = updateUserSchema.safeParse(req.body);
-    if (!parseResult.success) {
-      return void res.status(400).json({
-        success: false,
-        error: z.prettifyError(parseResult.error),
-      });
-    }
+    const body = req.body as UpdateUserInput;
 
     // Prevent self-demotion
-    if (id === adminId && parseResult.data.isAdmin === false) {
+    if (id === adminId && body.isAdmin === false) {
       return void res.status(400).json({
         success: false,
         error: 'Cannot remove your own admin privileges',
       });
     }
 
-    const result = await AdminService.updateUser(id, parseResult.data);
+    const result = await AdminService.updateUser(id, body);
 
     if (!result.ok) {
       if (result.error.message?.includes('not found')) {
@@ -124,15 +105,15 @@ export class AdminController {
     const context = AuditService.getContextFromRequest(req);
     const targetEmail = result.value.email;
 
-    if (parseResult.data.isActive === false) {
+    if (body.isActive === false) {
       await AuditService.log(AUDIT_ACTIONS.USER_DEACTIVATED, context, `${targetEmail}`);
-    } else if (parseResult.data.isActive === true) {
+    } else if (body.isActive === true) {
       await AuditService.log(AUDIT_ACTIONS.USER_ACTIVATED, context, `${targetEmail}`);
     }
 
-    if (parseResult.data.isAdmin === true) {
+    if (body.isAdmin === true) {
       await AuditService.log(AUDIT_ACTIONS.ADMIN_GRANTED, context, `${targetEmail}`);
-    } else if (parseResult.data.isAdmin === false) {
+    } else if (body.isAdmin === false) {
       await AuditService.log(AUDIT_ACTIONS.ADMIN_REVOKED, context, `${targetEmail}`);
     }
 
@@ -198,15 +179,7 @@ export class AdminController {
    * List audit logs with pagination
    */
   static async listAuditLogs(req: Request, res: Response): Promise<void> {
-    const parseResult = listAuditLogsQuerySchema.safeParse(req.query);
-    if (!parseResult.success) {
-      return void res.status(400).json({
-        success: false,
-        error: z.prettifyError(parseResult.error),
-      });
-    }
-
-    const { page, limit, userId, sortBy, sortOrder } = parseResult.data;
+    const { page, limit, userId, sortBy, sortOrder } = req.query as unknown as ListAuditLogsQuery;
     const result = await AdminService.listAuditLogs(page, limit, userId, sortBy, sortOrder);
 
     if (!result.ok) {

@@ -4,9 +4,8 @@
 // Handles user profile and preferences endpoints.
 
 import type { Request, Response } from 'express';
-import { z } from 'zod/v4';
 import { UserService } from '../services/user.service.js';
-import { changePasswordSchema, updatePreferencesSchema } from '../schemas/user.schema.js';
+import type { ChangePasswordInput, UpdatePreferencesInput } from '../schemas/user.schema.js';
 import logger from '../lib/logger.js';
 
 export class UserController {
@@ -51,15 +50,7 @@ export class UserController {
       });
     }
 
-    const parseResult = changePasswordSchema.safeParse(req.body);
-    if (!parseResult.success) {
-      return void res.status(400).json({
-        success: false,
-        error: z.prettifyError(parseResult.error),
-      });
-    }
-
-    const { currentPassword, newPassword } = parseResult.data;
+    const { currentPassword, newPassword } = req.body as ChangePasswordInput;
     const result = await UserService.changePassword(userId, currentPassword, newPassword);
 
     if (!result.ok) {
@@ -125,15 +116,7 @@ export class UserController {
       });
     }
 
-    const parseResult = updatePreferencesSchema.safeParse(req.body);
-    if (!parseResult.success) {
-      return void res.status(400).json({
-        success: false,
-        error: z.prettifyError(parseResult.error),
-      });
-    }
-
-    const result = await UserService.updatePreferences(userId, parseResult.data);
+    const result = await UserService.updatePreferences(userId, req.body as UpdatePreferencesInput);
 
     if (!result.ok) {
       logger.error({ error: result.error },'Failed to update preferences');

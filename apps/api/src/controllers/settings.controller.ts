@@ -4,13 +4,9 @@
 // Admin API for managing system settings.
 
 import type { Request, Response } from 'express';
-import { z } from 'zod/v4';
 import { SettingsService } from '../services/settings.service.js';
+import type { UpdateSettingInput } from '../schemas/settings.schema.js';
 import logger from '../lib/logger.js';
-
-const updateSettingSchema = z.object({
-  value: z.union([z.string(), z.number(), z.boolean()]),
-});
 
 export class SettingsController {
   /**
@@ -90,15 +86,8 @@ export class SettingsController {
       });
     }
 
-    const parseResult = updateSettingSchema.safeParse(req.body);
-    if (!parseResult.success) {
-      return void res.status(400).json({
-        success: false,
-        error: z.prettifyError(parseResult.error),
-      });
-    }
-
-    const result = await SettingsService.set(key, parseResult.data.value);
+    const body = req.body as UpdateSettingInput;
+    const result = await SettingsService.set(key, body.value);
 
     if (!result.ok) {
       if (result.error.message?.includes('not found')) {

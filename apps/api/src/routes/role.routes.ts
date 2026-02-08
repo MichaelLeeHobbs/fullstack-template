@@ -6,8 +6,10 @@
 import { type IRouter, Router } from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { requirePermission } from '../middleware/permission.middleware.js';
+import { validate } from '../middleware/validate.middleware.js';
 import { RoleController } from '../controllers/role.controller.js';
 import { PERMISSIONS } from '../db/seeds/permissions.js';
+import { createRoleSchema, updateRoleSchema, setPermissionsSchema, setUserRolesSchema } from '../schemas/role.schema.js';
 
 const router: IRouter = Router();
 
@@ -43,10 +45,10 @@ router.get('/', requirePermission(PERMISSIONS.ROLES_READ), RoleController.listRo
 router.get('/:id', requirePermission(PERMISSIONS.ROLES_READ), RoleController.getRole);
 
 // Create role
-router.post('/', requirePermission(PERMISSIONS.ROLES_CREATE), RoleController.createRole);
+router.post('/', requirePermission(PERMISSIONS.ROLES_CREATE), validate({ body: createRoleSchema }), RoleController.createRole);
 
 // Update role
-router.put('/:id', requirePermission(PERMISSIONS.ROLES_UPDATE), RoleController.updateRole);
+router.put('/:id', requirePermission(PERMISSIONS.ROLES_UPDATE), validate({ body: updateRoleSchema }), RoleController.updateRole);
 
 // Delete role
 router.delete('/:id', requirePermission(PERMISSIONS.ROLES_DELETE), RoleController.deleteRole);
@@ -55,6 +57,7 @@ router.delete('/:id', requirePermission(PERMISSIONS.ROLES_DELETE), RoleControlle
 router.put(
   '/:id/permissions',
   requirePermission(PERMISSIONS.ROLES_UPDATE),
+  validate({ body: setPermissionsSchema }),
   RoleController.setRolePermissions
 );
 
@@ -73,6 +76,7 @@ router.get(
 router.put(
   '/users/:userId',
   requirePermission(PERMISSIONS.USERS_UPDATE),
+  validate({ body: setUserRolesSchema }),
   RoleController.setUserRoles
 );
 
