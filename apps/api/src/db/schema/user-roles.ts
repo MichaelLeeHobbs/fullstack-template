@@ -3,7 +3,7 @@
 // ===========================================
 // Links users to their assigned roles.
 
-import { pgTable, uuid, timestamp, primaryKey } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, timestamp, primaryKey, index } from 'drizzle-orm/pg-core';
 import { users } from './users.js';
 import { roles } from './roles.js';
 
@@ -18,7 +18,10 @@ export const userRoles = pgTable(
       .references(() => roles.id, { onDelete: 'cascade' }),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
-  (table) => [primaryKey({ columns: [table.userId, table.roleId] })]
+  (table) => [
+    primaryKey({ columns: [table.userId, table.roleId] }),
+    index('user_roles_user_id_idx').on(table.userId),
+  ]
 );
 
 export type UserRole = typeof userRoles.$inferSelect;

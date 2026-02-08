@@ -15,6 +15,13 @@
       "when": 1768843291711,
       "tag": "0001_salty_wong",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1770565314420,
+      "tag": "0002_whole_weapon_omega",
+      "breakpoints": true
     }
   ]
 }

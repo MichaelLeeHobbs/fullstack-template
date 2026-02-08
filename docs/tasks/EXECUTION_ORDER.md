@@ -55,10 +55,11 @@ These tasks modify the same files. Execute them sequentially (not in parallel):
 
 ## Execution Order
 
-### Step 1: Database Improvements
+### Step 1: Database Improvements -- COMPLETE
 
 **Task:** `database-improvements.md` (all 3 phases)
 **Priority:** Medium
+**Completed:** 2026-02-08
 **Why first:
 ** Indexes, transactions, and pooling make the existing codebase more robust. No API surface changes, no new routes, no frontend work. Pure infrastructure hardening that every subsequent task benefits from. Transaction patterns in
 `auth.service.ts` should be in place before adding more complexity to that file.

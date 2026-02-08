@@ -138,30 +138,34 @@ export class RoleService {
         throw new Error('Role with this name already exists');
       }
 
-      const [role] = await db
-        .insert(roles)
-        .values({
-          name: data.name,
-          description: data.description,
-          isSystem: false,
-        })
-        .returning();
+      // Transaction: insert role + permissions atomically
+      const role = await db.transaction(async (tx) => {
+        const [role] = await tx
+          .insert(roles)
+          .values({
+            name: data.name,
+            description: data.description,
+            isSystem: false,
+          })
+          .returning();
 
-      if (!role) {
-        throw new Error('Failed to create role');
-      }
+        if (!role) {
+          throw new Error('Failed to create role');
+        }
 
-      // Assign permissions if provided
-      if (data.permissionIds && data.permissionIds.length > 0) {
-        await db.insert(rolePermissions).values(
-          data.permissionIds.map((permissionId) => ({
-            roleId: role.id,
-            permissionId,
-          }))
-        );
-      }
+        if (data.permissionIds && data.permissionIds.length > 0) {
+          await tx.insert(rolePermissions).values(
+            data.permissionIds.map((permissionId) => ({
+              roleId: role.id,
+              permissionId,
+            }))
+          );
+        }
 
-      // Return role with permissions
+        return role;
+      });
+
+      // Return role with permissions (read-only, outside transaction)
       const result = await this.getById(role.id);
       if (!result.ok) {
         throw result.error;
@@ -266,26 +270,27 @@ export class RoleService {
         }
       }
 
-      // Get all users with this role for cache invalidation
+      // Get affected users before transaction (for cache invalidation after)
       const affectedUsers = await db
         .select({ userId: userRoles.userId })
         .from(userRoles)
         .where(eq(userRoles.roleId, roleId));
 
-      // Remove existing permissions
-      await db.delete(rolePermissions).where(eq(rolePermissions.roleId, roleId));
+      // Transaction: delete + insert permissions atomically
+      await db.transaction(async (tx) => {
+        await tx.delete(rolePermissions).where(eq(rolePermissions.roleId, roleId));
 
-      // Add new permissions
-      if (permissionIds.length > 0) {
-        await db.insert(rolePermissions).values(
-          permissionIds.map((permissionId) => ({
-            roleId,
-            permissionId,
-          }))
-        );
-      }
+        if (permissionIds.length > 0) {
+          await tx.insert(rolePermissions).values(
+            permissionIds.map((permissionId) => ({
+              roleId,
+              permissionId,
+            }))
+          );
+        }
+      });
 
-      // Invalidate cache for affected users
+      // Cache invalidation after transaction commits
       PermissionService.invalidateUsersCache(affectedUsers.map((u) => u.userId));
     });
   }

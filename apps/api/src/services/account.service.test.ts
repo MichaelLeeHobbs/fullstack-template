@@ -10,6 +10,9 @@ vi.mock('../lib/db.js', () => {
   const mockInsert = vi.fn();
   const mockUpdate = vi.fn();
   const mockDelete = vi.fn();
+  const mockTransaction = vi.fn(async (cb: (tx: Record<string, unknown>) => Promise<unknown>) => {
+    return cb({ select: mockSelect, insert: mockInsert, update: mockUpdate, delete: mockDelete });
+  });
 
   return {
     db: {
@@ -17,8 +20,9 @@ vi.mock('../lib/db.js', () => {
       insert: mockInsert,
       update: mockUpdate,
       delete: mockDelete,
+      transaction: mockTransaction,
     },
-    __mocks: { mockSelect, mockInsert, mockUpdate, mockDelete },
+    __mocks: { mockSelect, mockInsert, mockUpdate, mockDelete, mockTransaction },
   };
 });
 

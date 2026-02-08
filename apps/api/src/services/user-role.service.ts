@@ -138,20 +138,21 @@ export class UserRoleService {
         }
       }
 
-      // Remove existing roles
-      await db.delete(userRoles).where(eq(userRoles.userId, userId));
+      // Transaction: delete + insert roles atomically
+      await db.transaction(async (tx) => {
+        await tx.delete(userRoles).where(eq(userRoles.userId, userId));
 
-      // Add new roles
-      if (roleIds.length > 0) {
-        await db.insert(userRoles).values(
-          roleIds.map((roleId) => ({
-            userId,
-            roleId,
-          }))
-        );
-      }
+        if (roleIds.length > 0) {
+          await tx.insert(userRoles).values(
+            roleIds.map((roleId) => ({
+              userId,
+              roleId,
+            }))
+          );
+        }
+      });
 
-      // Invalidate permission cache
+      // Cache invalidation after transaction commits
       PermissionService.invalidateUserCache(userId);
     });
   }

@@ -4,14 +4,15 @@
 // Handles user registration, login, token refresh, and logout.
 // All methods return Result<T> using tryCatch from stderr-lib.
 
+import { randomBytes } from 'crypto';
 import bcrypt from 'bcrypt';
 import { tryCatch, type Result, type StdError } from 'stderr-lib';
 import { db } from '../lib/db.js';
-import { users, sessions, type UserPreferences } from '../db/schema/index.js';
+import { users, sessions, emailVerificationTokens, type UserPreferences } from '../db/schema/index.js';
 import { eq } from 'drizzle-orm';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../lib/jwt.js';
 import { PermissionService } from './permission.service.js';
-import { AccountService } from './account.service.js';
+import { EmailService } from './email.service.js';
 
 const SALT_ROUNDS = 12;
 const REFRESH_TOKEN_DAYS = 7;
@@ -45,41 +46,45 @@ export interface LoginResult {
 export class AuthService {
   static async register(email: string, password: string): Promise<Result<RegisterResult>> {
     return tryCatch(async () => {
-      // Check if email exists
+      // Check + hash outside transaction (read-only + CPU-bound)
       const [existing] = await db.select().from(users).where(eq(users.email, email.toLowerCase()));
       if (existing) {
         throw new Error('Email already exists');
       }
 
-      // Hash password
       const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
-      // Create user
-      const [user] = await db
-        .insert(users)
-        .values({
-          email: email.toLowerCase(),
-          passwordHash,
-        })
-        .returning({
-          id: users.id,
-          email: users.email,
-          isAdmin: users.isAdmin,
-          preferences: users.preferences,
-          createdAt: users.createdAt,
-        });
+      // Transaction: create user + verification token atomically
+      const { user, verificationToken } = await db.transaction(async (tx) => {
+        const [user] = await tx
+          .insert(users)
+          .values({
+            email: email.toLowerCase(),
+            passwordHash,
+          })
+          .returning({
+            id: users.id,
+            email: users.email,
+            isAdmin: users.isAdmin,
+            preferences: users.preferences,
+            createdAt: users.createdAt,
+          });
 
-      if (!user) {
-        throw new Error('Failed to create user');
-      }
+        if (!user) {
+          throw new Error('Failed to create user');
+        }
 
-      // Send verification email
-      await AccountService.sendVerificationEmail(user.id, user.email);
+        const token = randomBytes(32).toString('hex');
+        const expiresAt = new Date();
+        expiresAt.setHours(expiresAt.getHours() + 24);
+        await tx.insert(emailVerificationTokens).values({ userId: user.id, token, expiresAt });
 
-      // Generate tokens (user can receive tokens but will be blocked from login until verified)
+        return { user, verificationToken: token };
+      });
+
+      // External calls after transaction commits
+      await EmailService.sendVerificationEmail(user.email, verificationToken);
       const tokens = await this.createTokens(user.id);
-
-      // Get user permissions (will be empty for new users)
       const permissions = await PermissionService.getUserPermissions(user.id);
 
       return {

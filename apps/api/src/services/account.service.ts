@@ -76,16 +76,17 @@ export class AccountService {
         throw new Error('Invalid or expired verification token');
       }
 
-      // Mark email as verified
-      await db
-        .update(users)
-        .set({ emailVerified: true, updatedAt: new Date() })
-        .where(eq(users.id, tokenRecord.userId));
+      // Transaction: update user + delete token atomically
+      await db.transaction(async (tx) => {
+        await tx
+          .update(users)
+          .set({ emailVerified: true, updatedAt: new Date() })
+          .where(eq(users.id, tokenRecord.userId));
 
-      // Delete the token
-      await db
-        .delete(emailVerificationTokens)
-        .where(eq(emailVerificationTokens.id, tokenRecord.id));
+        await tx
+          .delete(emailVerificationTokens)
+          .where(eq(emailVerificationTokens.id, tokenRecord.id));
+      });
 
       logger.info({ userId: tokenRecord.userId }, 'Email verified');
 
@@ -160,22 +161,20 @@ export class AccountService {
         throw new Error('Invalid or expired reset token');
       }
 
-      // Hash new password
+      // Hash outside transaction (CPU-bound)
       const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
 
-      // Update password
-      await db
-        .update(users)
-        .set({ passwordHash, updatedAt: new Date() })
-        .where(eq(users.id, tokenRecord.userId));
+      // Transaction: update password + delete token atomically
+      await db.transaction(async (tx) => {
+        await tx
+          .update(users)
+          .set({ passwordHash, updatedAt: new Date() })
+          .where(eq(users.id, tokenRecord.userId));
 
-      // Delete the token
-      await db
-        .delete(passwordResetTokens)
-        .where(eq(passwordResetTokens.id, tokenRecord.id));
-
-      // Optionally: invalidate all sessions for this user
-      // await db.delete(sessions).where(eq(sessions.userId, tokenRecord.userId));
+        await tx
+          .delete(passwordResetTokens)
+          .where(eq(passwordResetTokens.id, tokenRecord.id));
+      });
 
       logger.info({ userId: tokenRecord.userId }, 'Password reset successful');
     });

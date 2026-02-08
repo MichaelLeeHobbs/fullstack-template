@@ -118,6 +118,25 @@ pnpm db:migrate
 pnpm db:studio
 ```
 
+### Pool Configuration
+
+The application uses `pg.Pool` with explicit connection pool settings:
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `max` | 20 | Maximum connections in the pool |
+| `idleTimeoutMillis` | 30000 | Close idle connections after 30s |
+| `connectionTimeoutMillis` | 5000 | Fail if no connection available within 5s |
+
+Docker PostgreSQL defaults to `max_connections = 100`. With `max: 20`, you can run up to 5 app instances against one database.
+
+**Production tuning:** Set `max` to `(num_cores * 2) + effective_spindle_count` (typically 5-10 for most workloads). More connections does not mean better performance — each connection consumes ~10MB of PostgreSQL memory.
+
+**Monitoring:** The pool exposes counters for debugging:
+- `pool.totalCount` — total connections (active + idle)
+- `pool.idleCount` — connections available for use
+- `pool.waitingCount` — queued requests waiting for a connection (should be 0)
+
 ---
 
 ## MinIO (S3-Compatible Storage)

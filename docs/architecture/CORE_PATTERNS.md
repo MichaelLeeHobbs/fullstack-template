@@ -211,6 +211,51 @@ export type NewWorld = typeof worlds.$inferInsert;
 
 ---
 
+### Transaction Patterns
+
+Use `db.transaction()` when multiple tables must be written atomically — if one operation fails, all changes roll back.
+
+**When to use:**
+- Creating a parent record and related child records together
+- Delete-then-insert operations (replacing permissions, roles)
+- Any multi-table write where partial completion leaves invalid state
+
+**Pattern:** Wrap `db.transaction()` inside the existing `tryCatch()`. Use `tx` instead of `db` within the callback. Keep external calls (email, cache invalidation) **outside** the transaction.
+
+```typescript
+static async register(email: string, password: string): Promise<Result<RegisterResult>> {
+  return tryCatch(async () => {
+    // Reads and CPU-bound work outside transaction
+    const [existing] = await db.select().from(users).where(eq(users.email, email));
+    if (existing) throw new Error('Email already exists');
+    const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+
+    // Transaction: all writes that must succeed together
+    const { user, verificationToken } = await db.transaction(async (tx) => {
+      const [user] = await tx.insert(users).values({ email, passwordHash }).returning();
+      if (!user) throw new Error('Failed to create user');
+
+      const token = randomBytes(32).toString('hex');
+      await tx.insert(emailVerificationTokens).values({ userId: user.id, token, expiresAt });
+
+      return { user, verificationToken: token };
+    });
+
+    // External calls after transaction commits
+    await EmailService.sendVerificationEmail(user.email, verificationToken);
+    return { user, ...await this.createTokens(user.id) };
+  });
+}
+```
+
+**Rules:**
+1. Keep transactions short — no `await` on external services inside them
+2. Read-only queries and CPU-bound work (hashing) go outside the transaction
+3. Cache invalidation and side effects happen after the transaction commits
+4. If the transaction throws, `tryCatch` catches it and returns `Result.error`
+
+---
+
 ## Non-Request Patterns
 
 ### Providers (`/src/providers/*.ts`)
