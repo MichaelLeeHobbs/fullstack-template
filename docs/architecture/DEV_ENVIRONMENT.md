@@ -1,7 +1,5 @@
 # Development Environment
 
-> Last Updated: 2024-12-28
-
 ## Overview
 
 This document describes how to set up and run the development environment locally.

@@ -1,7 +1,5 @@
 # Core Patterns
 
-> Last Updated: 2024-12-28
-
 ## Overview
 
 This document defines the architectural patterns used throughout this project. Follow these patterns for consistency and maintainability.

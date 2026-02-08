@@ -1,7 +1,5 @@
 # Tech Stack
 
-> Last Updated: 2024-12-28
-
 ## Overview
 
 This is a full-stack web application template using TypeScript throughout, with a

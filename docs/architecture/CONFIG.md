@@ -1,7 +1,5 @@
 # Configuration Management
 
-> Last Updated: 2026-02-08
-
 ## Overview
 
 Configuration is split into two categories:

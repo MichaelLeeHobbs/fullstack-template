@@ -19,7 +19,11 @@
       "WebSearch",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:swagger.io)",
-      "WebFetch(domain:dev.to)"
+      "WebFetch(domain:dev.to)",
+      "Bash(git mv:*)",
+      "Bash(Remove-Item -Path \"docs\\\\architecture\\\\FULLSTACK TEMPLATE - COMPREHENSIVE FEATURE AUDIT.md\" -Force)",
+      "Bash(git rm:*)",
+      "Bash(git status:*)"
     ]
   }
 }
