@@ -71,7 +71,7 @@ This document defines the features included in this fullstack template.
 This template provides the foundation. Add your own features by:
 
 1. Create feature doc in `docs/features/XX_feature-name.md`
-2. Create task docs in `docs/tasks/XX_feature-name/`
+2. Create a task file in `docs/tasks/` (see `docs/tasks/README.md` for the template)
 3. Implement: Schema → Service → Controller → Routes → UI
 
 ---

@@ -49,7 +49,7 @@ Read these documents before starting work:
 
 | Document                               | Purpose                                              |
 |----------------------------------------|------------------------------------------------------|
-| `docs/tasks/README.md`                 | Current work items and task status                   |
+| `docs/tasks/README.md`                 | Task lifecycle: how to create, execute, and close tasks |
 | `docs/features/_MVP_SCOPE.md`          | What we're building, feature order                   |
 | `docs/architecture/DEV_ENVIRONMENT.md` | Local development setup                              |
 | `docs/architecture/CODING_STANDARD.md` | Code conventions, patterns                           |
@@ -61,29 +61,22 @@ Read these documents before starting work:
 
 ## Task Workflow
 
-We track implementation progress in `docs/tasks/`. Each task file has:
+We track implementation progress in `docs/tasks/`. See `docs/tasks/README.md` for the full task lifecycle.
 
-1. **Status**: ⬜ Not Started, 🟡 In Progress, ✅ Complete
-2. **Prerequisites**: Tasks that must be done first
-3. **Checklist**: Specific items to complete
-4. **Verification**: How to confirm the task is done
+### Task Lifecycle (Summary)
+
+1. **Research** — Read the code you'll change, trace the request flow, check the schema, map cross-package dependencies
+2. **Write the task** — Create a file in `docs/tasks/` with Status, Context, Phases, and Verification steps
+3. **Execute** — Work through phases in order (Database → Shared → Service → Controller → API Client → Hook → Component), verifying after each phase
+4. **Close** — Run final checks (`pnpm build`, `pnpm lint`, `pnpm test`), update status to Complete, move file to `docs/tasks/completed/`
 
 ### Working on a Task
 
-1. Check prerequisites are complete
-2. Work through checklist items in order
-3. Run verification steps
-4. Check off completed items
-5. Update task status when done
-
-### Current Tasks
-
-| Task | Description |
-|------|-------------|
-| `01_dev-environment-setup.md` | Docker, PostgreSQL, MinIO |
-| `02_monorepo-initialization.md` | pnpm workspace, folder structure |
-| `03_backend-foundation.md` | Express, Drizzle, auth |
-| `04_frontend-foundation.md` | Vite, React, MUI, dark mode |
+1. Read `docs/tasks/README.md` for the full lifecycle guide
+2. Research the problem space before writing any code
+3. Work through phases in order, running verification after each
+4. Do not accumulate regressions — fix breakage before moving to the next phase
+5. When complete, move the task file to `docs/tasks/completed/`
 
 ---
 

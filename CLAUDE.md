@@ -164,4 +164,5 @@ Detailed docs in `docs/`:
 - `docs/architecture/CODING_STANDARD.md` - TypeScript conventions
 - `docs/architecture/DEV_ENVIRONMENT.md` - Local setup guide
 - `docs/features/_MVP_SCOPE.md` - Included features
+- `docs/tasks/README.md` - Task lifecycle: research, write, execute, close
 - `docs/AI_README.md` - Extended AI agent instructions

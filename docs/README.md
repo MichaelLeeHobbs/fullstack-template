@@ -60,7 +60,8 @@ docs/
 │   └── 01b_user-admin.md
 │
 └── tasks/                 # Task tracking
-    └── README.md
+    ├── README.md          # Task lifecycle guide
+    └── completed/         # Completed task files
 ```
 
 ---
