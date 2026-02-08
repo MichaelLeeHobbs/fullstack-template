@@ -9,6 +9,7 @@ import adminRoutes from './admin.routes.js';
 import userRoutes from './user.routes.js';
 import accountRoutes from './account.routes.js';
 import roleRoutes from './role.routes.js';
+import apiKeyRoutes from './api-key.routes.js';
 
 const router: IRouter = Router();
 
@@ -18,6 +19,7 @@ router.use('/admin', adminRoutes);
 router.use('/users', userRoutes);
 router.use('/account', accountRoutes);
 router.use('/roles', roleRoutes);
+router.use('/api-keys', apiKeyRoutes);
 
 export default router;
 

@@ -11,4 +11,5 @@ export * from './audit.js';
 export * from './permissions.js';
 export * from './roles.js';
 export * from './user-roles.js';
+export * from './api-keys.js';
 

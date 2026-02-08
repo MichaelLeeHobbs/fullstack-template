@@ -18,12 +18,24 @@ export const defaultPreferences: UserPreferences = {
   theme: 'system',
 };
 
+// ===========================================
+// Account Types
+// ===========================================
+
+export const ACCOUNT_TYPES = {
+  USER: 'user',
+  SERVICE: 'service',
+} as const;
+
+export type AccountType = (typeof ACCOUNT_TYPES)[keyof typeof ACCOUNT_TYPES];
+
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
   email: varchar('email', { length: 255 }).notNull().unique(),
-  passwordHash: varchar('password_hash', { length: 255 }).notNull(),
+  passwordHash: varchar('password_hash', { length: 255 }),
 
-  // Role & Status
+  // Account type & Status
+  accountType: varchar('account_type', { length: 20 }).default('user').notNull(),
   isAdmin: boolean('is_admin').default(false).notNull(),
   isActive: boolean('is_active').default(true).notNull(),
   emailVerified: boolean('email_verified').default(false).notNull(),

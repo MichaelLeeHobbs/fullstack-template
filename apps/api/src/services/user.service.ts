@@ -58,7 +58,7 @@ export class UserService {
         .from(users)
         .where(eq(users.id, userId));
 
-      if (!user) {
+      if (!user || !user.passwordHash) {
         throw new Error('User not found');
       }
 

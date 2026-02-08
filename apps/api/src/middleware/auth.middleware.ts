@@ -10,6 +10,7 @@ import { users } from '../db/schema/index.js';
 import { eq } from 'drizzle-orm';
 import logger from '../lib/logger.js';
 import { PermissionService } from '../services/permission.service.js';
+import { ApiKeyService } from '../services/api-key.service.js';
 
 // Extend Express Request type
 declare global {
@@ -24,6 +25,7 @@ declare global {
         emailVerified: boolean;
         permissions: string[];
       };
+      apiKeyId?: string;
     }
   }
 }
@@ -33,6 +35,13 @@ export async function authenticate(
   res: Response,
   next: NextFunction
 ): Promise<void> {
+  // Check for API key first
+  const apiKeyHeader = req.headers['x-api-key'] as string | undefined;
+  if (apiKeyHeader) {
+    return authenticateApiKey(apiKeyHeader, req, res, next);
+  }
+
+  // Fall through to JWT Bearer
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -79,6 +88,56 @@ export async function authenticate(
     logger.debug({ error },'Token verification failed');
     res.status(401).json({ success: false, error: 'Invalid or expired token' });
   }
+}
+
+/**
+ * Authenticate via X-API-Key header
+ */
+async function authenticateApiKey(
+  rawKey: string,
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const result = await ApiKeyService.validateKey(rawKey);
+
+  if (!result.ok) {
+    logger.debug({ error: result.error.message }, 'API key validation failed');
+    res.status(401).json({ success: false, error: 'Invalid or expired API key' });
+    return;
+  }
+
+  const { apiKey, userId, permissions } = result.value;
+
+  // Fetch owning user to check isActive
+  const [owner] = await db
+    .select({
+      id: users.id,
+      email: users.email,
+      isAdmin: users.isAdmin,
+      isActive: users.isActive,
+      emailVerified: users.emailVerified,
+    })
+    .from(users)
+    .where(eq(users.id, userId));
+
+  if (!owner) {
+    res.status(401).json({ success: false, error: 'API key owner not found' });
+    return;
+  }
+
+  if (!owner.isActive) {
+    res.status(403).json({ success: false, error: 'API key owner account is deactivated' });
+    return;
+  }
+
+  // Use key's own permissions (not the user's role-based permissions)
+  req.user = {
+    ...owner,
+    permissions: Array.from(permissions),
+  };
+  req.apiKeyId = apiKey.id;
+  next();
 }
 
 // Optional auth - attaches user if token present but doesn't require it

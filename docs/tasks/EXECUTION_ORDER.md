@@ -108,10 +108,11 @@ These tasks modify the same files. Execute them sequentially (not in parallel):
 
 ---
 
-### Step 4: API Key Management
+### Step 4: API Key Management -- COMPLETE
 
 **Task:** `api-key-management.md` (all 8 phases)
 **Priority:** High
+**Completed:** 2026-02-08
 **Why now:** Largest feature task. Modifies `users.ts` schema (nullable
 `passwordHash`,
 `accountType` column), adds new tables, services, middleware changes, routes, and full frontend UI. Best done before

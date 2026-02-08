@@ -27,6 +27,8 @@ import { SettingsPage } from './pages/admin/SettingsPage.js';
 import { UsersPage } from './pages/admin/UsersPage.js';
 import { RolesPage } from './pages/admin/RolesPage.js';
 import { AuditLogsPage } from './pages/admin/AuditLogsPage.js';
+import { ApiKeysPage } from './pages/admin/ApiKeysPage.js';
+import { ServiceAccountsPage } from './pages/admin/ServiceAccountsPage.js';
 import { NotFoundPage } from './pages/NotFoundPage.js';
 
 const queryClient = new QueryClient({
@@ -70,6 +72,8 @@ function AppWithTheme() {
               <Route path="/admin/roles" element={<RolesPage />} />
               <Route path="/admin/settings" element={<SettingsPage />} />
               <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
+              <Route path="/admin/api-keys" element={<ApiKeysPage />} />
+              <Route path="/admin/service-accounts" element={<ServiceAccountsPage />} />
             </Route>
           </Route>
 

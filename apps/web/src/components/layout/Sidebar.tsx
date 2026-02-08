@@ -15,7 +15,7 @@ import {
   Typography,
   Box,
 } from '@mui/material';
-import { Home, Settings, People, History, Security } from '@mui/icons-material';
+import { Home, Settings, People, History, Security, VpnKey, ManageAccounts } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
 import { useAnyPermission } from '../../hooks/usePermission.js';
 import { PERMISSIONS } from '../../types/role.js';
@@ -43,6 +43,8 @@ export function Sidebar({ open, onClose, variant }: SidebarProps) {
   const canViewRoles = useAnyPermission([PERMISSIONS.ROLES_READ]);
   const canViewSettings = useAnyPermission([PERMISSIONS.SETTINGS_READ]);
   const canViewAuditLogs = useAnyPermission([PERMISSIONS.AUDIT_READ]);
+  const canViewApiKeys = useAnyPermission([PERMISSIONS.API_KEYS_READ]);
+  const canViewServiceAccounts = useAnyPermission([PERMISSIONS.SERVICE_ACCOUNTS_READ]);
 
   // Main navigation items - expand as features are added
   const navItems: NavItem[] = [{ text: 'Home', icon: <Home />, path: '/home' }];
@@ -54,6 +56,12 @@ export function Sidebar({ open, onClose, variant }: SidebarProps) {
     ...(canViewSettings ? [{ text: 'Settings', icon: <Settings />, path: '/admin/settings' }] : []),
     ...(canViewAuditLogs
       ? [{ text: 'Audit Logs', icon: <History />, path: '/admin/audit-logs' }]
+      : []),
+    ...(canViewApiKeys
+      ? [{ text: 'API Keys', icon: <VpnKey />, path: '/admin/api-keys' }]
+      : []),
+    ...(canViewServiceAccounts
+      ? [{ text: 'Service Accounts', icon: <ManageAccounts />, path: '/admin/service-accounts' }]
       : []),
   ];
 

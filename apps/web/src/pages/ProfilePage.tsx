@@ -5,6 +5,7 @@
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from 'react';
 import {
   Container,
   Typography,
@@ -19,20 +20,46 @@ import {
   ToggleButton,
   Alert,
   Skeleton,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Chip,
+  IconButton,
+  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  InputAdornment,
+  Stack,
 } from '@mui/material';
-import { LightMode, DarkMode, SettingsBrightness } from '@mui/icons-material';
+import { LightMode, DarkMode, SettingsBrightness, ContentCopy, Block, Warning, Add } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { changePasswordSchema, type ChangePasswordInput } from '@fullstack-template/shared';
 import { userApi } from '../api/user.api.js';
 import { useNotification } from '../hooks/useNotification.js';
 import { useThemeStore } from '../stores/theme.store.js';
 import { useAuthStore } from '../stores/auth.store.js';
+import { useMyApiKeys, useCreateApiKey, useRevokeApiKey } from '../hooks/useApiKeys.js';
+import type { ApiKey, CreateApiKeyInput } from '../types/api-key.js';
 
 export function ProfilePage() {
   const notify = useNotification();
   const queryClient = useQueryClient();
   const { setMode } = useThemeStore();
   const { updatePreferences } = useAuthStore();
+
+  // API Keys
+  const { data: myKeys } = useMyApiKeys();
+  const createKeyMutation = useCreateApiKey();
+  const revokeKeyMutation = useRevokeApiKey();
+  const [createKeyOpen, setCreateKeyOpen] = useState(false);
+  const [keyName, setKeyName] = useState('');
+  const [rawKeyDialog, setRawKeyDialog] = useState<string | null>(null);
+  const [revokeKeyTarget, setRevokeKeyTarget] = useState<ApiKey | null>(null);
 
   // Fetch profile
   const { data: profile, isLoading } = useQuery({
@@ -171,6 +198,179 @@ export function ProfilePage() {
           </ToggleButtonGroup>
         </CardContent>
       </Card>
+
+      {/* API Keys */}
+      <Card sx={{ mb: 3 }}>
+        <CardHeader
+          title="API Keys"
+          action={
+            <Button size="small" startIcon={<Add />} onClick={() => setCreateKeyOpen(true)}>
+              Create Key
+            </Button>
+          }
+        />
+        <Divider />
+        <CardContent>
+          <TableContainer>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Prefix</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Last Used</TableCell>
+                  <TableCell align="right">Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {!myKeys || myKeys.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} align="center">No API keys</TableCell>
+                  </TableRow>
+                ) : (
+                  myKeys.map((key) => (
+                    <TableRow key={key.id}>
+                      <TableCell>{key.name}</TableCell>
+                      <TableCell><code>{key.prefix}...</code></TableCell>
+                      <TableCell>
+                        {!key.isActive ? (
+                          <Chip label="Revoked" size="small" color="error" />
+                        ) : key.expiresAt && new Date(key.expiresAt) < new Date() ? (
+                          <Chip label="Expired" size="small" color="warning" />
+                        ) : (
+                          <Chip label="Active" size="small" color="success" />
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {key.lastUsedAt ? new Date(key.lastUsedAt).toLocaleDateString() : 'Never'}
+                      </TableCell>
+                      <TableCell align="right">
+                        {key.isActive && (
+                          <Tooltip title="Revoke">
+                            <IconButton
+                              size="small"
+                              color="warning"
+                              onClick={() => setRevokeKeyTarget(key)}
+                            >
+                              <Block fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </CardContent>
+      </Card>
+
+      {/* Create Key Dialog */}
+      <Dialog open={createKeyOpen} onClose={() => setCreateKeyOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Create API Key</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Key Name"
+            value={keyName}
+            onChange={(e) => setKeyName(e.target.value)}
+            fullWidth
+            required
+            sx={{ mt: 1 }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCreateKeyOpen(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            disabled={!keyName || createKeyMutation.isPending}
+            onClick={() => {
+              const input: CreateApiKeyInput = { name: keyName, permissionIds: [] };
+              createKeyMutation.mutate(input, {
+                onSuccess: (data) => {
+                  setCreateKeyOpen(false);
+                  setKeyName('');
+                  setRawKeyDialog(data.rawKey);
+                  notify.success('API key created');
+                },
+                onError: (error: Error) => notify.error(error.message || 'Failed to create'),
+              });
+            }}
+          >
+            {createKeyMutation.isPending ? 'Creating...' : 'Create'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Raw Key Display */}
+      <Dialog open={!!rawKeyDialog} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <Warning color="warning" /> <span>API Key Created</span>
+          </Stack>
+        </DialogTitle>
+        <DialogContent>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            This key will not be shown again. Copy and store it securely.
+          </Alert>
+          <TextField
+            value={rawKeyDialog ?? ''}
+            fullWidth
+            slotProps={{
+              input: {
+                readOnly: true,
+                sx: { fontFamily: 'monospace', fontSize: '0.85rem' },
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => {
+                        if (rawKeyDialog) {
+                          navigator.clipboard.writeText(rawKeyDialog);
+                          notify.success('Copied to clipboard');
+                        }
+                      }}
+                    >
+                      <ContentCopy />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRawKeyDialog(null)} variant="contained">Done</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Revoke Key Confirmation */}
+      <Dialog open={!!revokeKeyTarget} onClose={() => setRevokeKeyTarget(null)}>
+        <DialogTitle>Revoke API Key</DialogTitle>
+        <DialogContent>
+          Revoke key &quot;{revokeKeyTarget?.name}&quot;? It will immediately stop working.
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRevokeKeyTarget(null)}>Cancel</Button>
+          <Button
+            color="warning"
+            variant="contained"
+            disabled={revokeKeyMutation.isPending}
+            onClick={() => {
+              if (revokeKeyTarget) {
+                revokeKeyMutation.mutate(revokeKeyTarget.id, {
+                  onSuccess: () => {
+                    setRevokeKeyTarget(null);
+                    notify.success('API key revoked');
+                  },
+                  onError: (error: Error) => notify.error(error.message || 'Failed to revoke'),
+                });
+              }
+            }}
+          >
+            Revoke
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Change Password */}
       <Card>

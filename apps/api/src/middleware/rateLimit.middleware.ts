@@ -68,3 +68,20 @@ export const apiRateLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+// ===========================================
+// API Key Rate Limiter
+// ===========================================
+// Rate limit for API key authenticated requests
+
+export const apiKeyRateLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 60, // 60 requests per minute per key/IP
+  keyGenerator: (req) => req.apiKeyId || req.ip || 'unknown',
+  message: {
+    success: false,
+    error: 'Too many API key requests. Please slow down.',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});

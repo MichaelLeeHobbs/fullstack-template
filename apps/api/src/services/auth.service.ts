@@ -8,7 +8,7 @@ import { randomBytes } from 'crypto';
 import bcrypt from 'bcrypt';
 import { tryCatch, type Result, type StdError } from 'stderr-lib';
 import { db } from '../lib/db.js';
-import { users, sessions, emailVerificationTokens, type UserPreferences } from '../db/schema/index.js';
+import { users, sessions, emailVerificationTokens, type UserPreferences, ACCOUNT_TYPES } from '../db/schema/index.js';
 import { eq } from 'drizzle-orm';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../lib/jwt.js';
 import { PermissionService } from './permission.service.js';
@@ -103,6 +103,11 @@ export class AuthService {
       const [user] = await db.select().from(users).where(eq(users.email, email.toLowerCase()));
       if (!user) {
         throw new Error('Invalid credentials');
+      }
+
+      // Guard: service accounts cannot log in interactively
+      if (user.accountType === ACCOUNT_TYPES.SERVICE || !user.passwordHash) {
+        throw new Error('Service accounts cannot log in');
       }
 
       // Verify password

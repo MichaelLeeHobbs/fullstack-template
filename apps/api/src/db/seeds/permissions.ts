@@ -88,6 +88,62 @@ export const defaultPermissions: NewPermission[] = [
     resource: 'audit',
     action: 'read',
   },
+
+  // ===========================================
+  // API Keys
+  // ===========================================
+  {
+    name: 'api_keys:read',
+    description: 'View API keys',
+    resource: 'api_keys',
+    action: 'read',
+  },
+  {
+    name: 'api_keys:create',
+    description: 'Create API keys',
+    resource: 'api_keys',
+    action: 'create',
+  },
+  {
+    name: 'api_keys:update',
+    description: 'Update API key permissions',
+    resource: 'api_keys',
+    action: 'update',
+  },
+  {
+    name: 'api_keys:delete',
+    description: 'Revoke and delete API keys',
+    resource: 'api_keys',
+    action: 'delete',
+  },
+
+  // ===========================================
+  // Service Accounts
+  // ===========================================
+  {
+    name: 'service_accounts:read',
+    description: 'View service accounts',
+    resource: 'service_accounts',
+    action: 'read',
+  },
+  {
+    name: 'service_accounts:create',
+    description: 'Create service accounts',
+    resource: 'service_accounts',
+    action: 'create',
+  },
+  {
+    name: 'service_accounts:update',
+    description: 'Update service accounts',
+    resource: 'service_accounts',
+    action: 'update',
+  },
+  {
+    name: 'service_accounts:delete',
+    description: 'Delete service accounts',
+    resource: 'service_accounts',
+    action: 'delete',
+  },
 ];
 
 // Permission names as constants for type-safe usage
@@ -103,6 +159,14 @@ export const PERMISSIONS = {
   SETTINGS_READ: 'settings:read',
   SETTINGS_UPDATE: 'settings:update',
   AUDIT_READ: 'audit:read',
+  API_KEYS_READ: 'api_keys:read',
+  API_KEYS_CREATE: 'api_keys:create',
+  API_KEYS_UPDATE: 'api_keys:update',
+  API_KEYS_DELETE: 'api_keys:delete',
+  SERVICE_ACCOUNTS_READ: 'service_accounts:read',
+  SERVICE_ACCOUNTS_CREATE: 'service_accounts:create',
+  SERVICE_ACCOUNTS_UPDATE: 'service_accounts:update',
+  SERVICE_ACCOUNTS_DELETE: 'service_accounts:delete',
 } as const;
 
 export type PermissionName = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
