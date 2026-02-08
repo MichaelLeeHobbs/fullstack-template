@@ -834,6 +834,9 @@ coverage*[.json, .xml, .info]
 
 # Ionide (cross platform F# VS Code tools) working folder
 
+### Windows reserved names (accidental redirects)
+nul
+
 ### macOS template
 # General
 .DS_Store

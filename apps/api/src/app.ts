@@ -11,6 +11,7 @@ import helmet from 'helmet';
 import { config } from './config/index.js';
 import logger from './lib/logger.js';
 import routes from './routes/index.js';
+import { requestId } from './middleware/request-id.middleware.js';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
 
 // Use createRequire for proper ESM/CJS interop with pino-http
@@ -32,10 +33,14 @@ app.use(
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Request ID tracking (before logging so requestId appears in logs)
+app.use(requestId);
+
 // Request logging
 app.use(
   pinoHttp({
     logger,
+    customProps: (req) => ({ requestId: (req as Request).id }),
     autoLogging: {
       ignore: (req) => (req as Request).url === '/health',
     },

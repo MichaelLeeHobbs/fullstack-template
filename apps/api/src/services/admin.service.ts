@@ -6,7 +6,9 @@
 import { tryCatch, type Result } from 'stderr-lib';
 import { db } from '../lib/db.js';
 import { users, auditLogs } from '../db/schema/index.js';
-import { eq, like, and, desc, sql, type SQL } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
+import { type PaginatedResult, paginationToOffset, buildPaginationResult } from '../lib/pagination.js';
+import { buildOrderBy, buildWhereConditions } from '../lib/query.js';
 
 // ===========================================
 // Types
@@ -18,16 +20,8 @@ interface ListUsersOptions {
   search?: string;
   isActive?: boolean;
   isAdmin?: boolean;
-}
-
-interface PaginatedResult<T> {
-  data: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface UserListItem {
@@ -52,24 +46,34 @@ export class AdminService {
   /**
    * List users with pagination and filtering
    */
+  private static readonly USER_SORT_COLUMNS = {
+    email: users.email,
+    createdAt: users.createdAt,
+    lastLoginAt: users.lastLoginAt,
+  } as const;
+
+  private static readonly USER_FILTER_MAP = {
+    search: { column: users.email, operator: 'like' as const },
+    isActive: { column: users.isActive, operator: 'eq' as const },
+    isAdmin: { column: users.isAdmin, operator: 'eq' as const },
+  };
+
   static async listUsers(options: ListUsersOptions): Promise<Result<PaginatedResult<UserListItem>>> {
     return tryCatch(async () => {
-      const { page, limit, search, isActive, isAdmin } = options;
-      const offset = (page - 1) * limit;
+      const { page, limit, search, isActive, isAdmin, sortBy, sortOrder = 'desc' } = options;
+      const { offset } = paginationToOffset(page, limit);
 
-      // Build conditions
-      const conditions: SQL[] = [];
-      if (search) {
-        conditions.push(like(users.email, `%${search}%`));
-      }
-      if (isActive !== undefined) {
-        conditions.push(eq(users.isActive, isActive));
-      }
-      if (isAdmin !== undefined) {
-        conditions.push(eq(users.isAdmin, isAdmin));
-      }
+      const whereClause = buildWhereConditions(
+        { search, isActive, isAdmin },
+        this.USER_FILTER_MAP
+      );
 
-      const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+      const orderBy = buildOrderBy(
+        this.USER_SORT_COLUMNS,
+        sortBy,
+        sortOrder,
+        'createdAt'
+      );
 
       // Get total count
       const [countResult] = await db
@@ -92,19 +96,11 @@ export class AdminService {
         })
         .from(users)
         .where(whereClause)
-        .orderBy(desc(users.createdAt))
+        .orderBy(orderBy)
         .limit(limit)
         .offset(offset);
 
-      return {
-        data: userList,
-        pagination: {
-          page,
-          limit,
-          total,
-          totalPages: Math.ceil(total / limit),
-        },
-      };
+      return buildPaginationResult(userList, total, page, limit);
     });
   }
 
@@ -187,15 +183,29 @@ export class AdminService {
   /**
    * List audit logs with pagination
    */
+  private static readonly AUDIT_SORT_COLUMNS = {
+    createdAt: auditLogs.createdAt,
+    action: auditLogs.action,
+  } as const;
+
   static async listAuditLogs(
     page: number,
     limit: number,
-    userId?: string
+    userId?: string,
+    sortBy?: string,
+    sortOrder: 'asc' | 'desc' = 'desc'
   ): Promise<Result<PaginatedResult<unknown>>> {
     return tryCatch(async () => {
-      const offset = (page - 1) * limit;
+      const { offset } = paginationToOffset(page, limit);
 
       const whereClause = userId ? eq(auditLogs.userId, userId) : undefined;
+
+      const orderBy = buildOrderBy(
+        this.AUDIT_SORT_COLUMNS,
+        sortBy,
+        sortOrder,
+        'createdAt'
+      );
 
       // Get total count
       const [countResult] = await db
@@ -221,19 +231,11 @@ export class AdminService {
         .from(auditLogs)
         .leftJoin(users, eq(auditLogs.userId, users.id))
         .where(whereClause)
-        .orderBy(desc(auditLogs.createdAt))
+        .orderBy(orderBy)
         .limit(limit)
         .offset(offset);
 
-      return {
-        data: logs,
-        pagination: {
-          page,
-          limit,
-          total,
-          totalPages: Math.ceil(total / limit),
-        },
-      };
+      return buildPaginationResult(logs, total, page, limit);
     });
   }
 }

@@ -3,10 +3,10 @@
 // ===========================================
 
 import { z } from 'zod/v4';
+import { paginationSchema } from './pagination.schema.js';
+import { sortSchema } from './query.schema.js';
 
-export const listUsersQuerySchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
+export const listUsersQuerySchema = paginationSchema.merge(sortSchema).extend({
   search: z.string().optional(),
   isActive: z
     .enum(['true', 'false'])
@@ -23,8 +23,7 @@ export const updateUserSchema = z.object({
   isAdmin: z.boolean().optional(),
 });
 
-export const listAuditLogsQuerySchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
+export const listAuditLogsQuerySchema = paginationSchema.merge(sortSchema).extend({
   limit: z.coerce.number().int().min(1).max(100).default(50),
   userId: z.string().uuid().optional(),
 });

@@ -206,8 +206,8 @@ export class AdminController {
       });
     }
 
-    const { page, limit, userId } = parseResult.data;
-    const result = await AdminService.listAuditLogs(page, limit, userId);
+    const { page, limit, userId, sortBy, sortOrder } = parseResult.data;
+    const result = await AdminService.listAuditLogs(page, limit, userId, sortBy, sortOrder);
 
     if (!result.ok) {
       logger.error({ error: result.error },'Failed to list audit logs');
