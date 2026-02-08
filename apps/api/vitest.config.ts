@@ -6,6 +6,7 @@ export default defineConfig({
     environment: 'node',
     include: ['src/**/*.test.ts', 'test/**/*.test.ts'],
     pool: 'forks',
+    setupFiles: ['./test/setup.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],

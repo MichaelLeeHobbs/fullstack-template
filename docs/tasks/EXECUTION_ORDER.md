@@ -134,10 +134,11 @@ These tasks modify the same files. Execute them sequentially (not in parallel):
 
 ---
 
-### Step 5: Future Auth
+### Step 5: Future Auth -- COMPLETE
 
 **Task:** `future-auth.md` (all 3 phases)
 **Priority:** High
+**Completed:** 2026-02-08
 **Why now:** After API key management, `auth.service.ts` and
 `users.ts` have their structural changes in place. Future auth builds on top with additional columns and service logic. All three phases are independent of each other.
 
@@ -153,17 +154,18 @@ These tasks modify the same files. Execute them sequentially (not in parallel):
 
 ---
 
-### Step 6: Testing
+### Step 6: Testing -- COMPLETE
 
 **Task:** `testing.md` (all 4 phases)
 **Priority:** High
+**Completed:** 2026-02-08
 **Why now:
 ** All feature work that modifies services, controllers, and middleware is complete. Tests written now target the final code shape and won't need rewriting. The test utilities (Phase 1) are prerequisites for all other test phases.
 
 - Phase 1: Test utilities and factories (mock-db, mock-express, data factories)
-- Phase 2: Auth service tests (~17 tests covering login, register, refresh, logout including lockout/2FA/service account guards)
-- Phase 3: Controller tests (~35+ tests across all controllers, testing the validation-middleware pattern)
-- Phase 4: Integration tests (~15+ tests with supertest)
+- Phase 2: Auth service tests (~23 tests covering login, register, refresh, logout including lockout/2FA/service account guards)
+- Phase 3: Controller tests (~86 tests across all 8 controllers)
+- Phase 4: Integration tests (~16 tests with supertest)
 
 **Verification:** `pnpm test && pnpm build && pnpm lint`
 
