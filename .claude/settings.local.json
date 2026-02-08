@@ -6,7 +6,20 @@
       "Bash(pnpm build:*)",
       "Bash(pnpm test:*)",
       "Bash(pnpm add:*)",
-      "Bash(pnpm:*)"
+      "Bash(pnpm:*)",
+      "Bash(findstr:*)",
+      "Bash(npx tsc:*)",
+      "Bash(Move-Item \"C:\\\\Users\\\\mhobb\\\\WebstormProjects\\\\fullstack-template\\\\docs\\\\tasks\\\\future-auth.md\" \"C:\\\\Users\\\\mhobb\\\\WebstormProjects\\\\fullstack-template\\\\docs\\\\tasks\\\\completed\\\\future-auth.md\")",
+      "Bash(git -C \"C:\\\\Users\\\\mhobb\\\\WebstormProjects\\\\fullstack-template\" status)",
+      "Bash(git -C \"C:\\\\Users\\\\mhobb\\\\WebstormProjects\\\\fullstack-template\" diff --staged)",
+      "Bash(git -C \"C:\\\\Users\\\\mhobb\\\\WebstormProjects\\\\fullstack-template\" log --oneline -5)",
+      "Bash(git -C \"C:\\\\Users\\\\mhobb\\\\WebstormProjects\\\\fullstack-template\" diff -- apps/api/vitest.config.ts apps/api/test/setup.ts docs/tasks/EXECUTION_ORDER.md apps/api/package.json)",
+      "Bash(git -C \"C:\\\\Users\\\\mhobb\\\\WebstormProjects\\\\fullstack-template\" add apps/api/vitest.config.ts apps/api/test/setup.ts apps/api/test/utils/mock-db.ts apps/api/test/utils/mock-express.ts apps/api/test/utils/factories.ts apps/api/test/utils/index.ts apps/api/src/services/auth.service.test.ts apps/api/src/controllers/auth.controller.test.ts apps/api/src/controllers/account.controller.test.ts apps/api/src/controllers/admin.controller.test.ts apps/api/src/controllers/user.controller.test.ts apps/api/src/controllers/role.controller.test.ts apps/api/src/controllers/mfa.controller.test.ts apps/api/src/controllers/session.controller.test.ts apps/api/src/controllers/api-key.controller.test.ts apps/api/test/integration/setup.ts apps/api/test/integration/auth.integration.test.ts apps/api/test/integration/admin.integration.test.ts apps/api/package.json pnpm-lock.yaml docs/tasks/EXECUTION_ORDER.md)",
+      "Bash(git -C \"C:\\\\Users\\\\mhobb\\\\WebstormProjects\\\\fullstack-template\" commit -m \"$\\(cat <<''EOF''\nAdd test utilities, service/controller/integration tests \\(61→175\\)\n\nSet up shared test infrastructure \\(mock-db helpers, mock-express,\ndata factories\\) and comprehensive test coverage across all layers:\n- Auth service tests \\(23\\) covering register, login, MFA, refresh, logout\n- Controller tests \\(86\\) for all 8 controllers with service mocks\n- Integration tests \\(16\\) with supertest for auth and admin routes\n- Vitest setup file with env vars for Zod config validation\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:swagger.io)",
+      "WebFetch(domain:dev.to)"
     ]
   }
 }
