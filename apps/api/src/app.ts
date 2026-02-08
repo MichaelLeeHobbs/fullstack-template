@@ -10,6 +10,7 @@ import helmet from 'helmet';
 
 import { config } from './config/index.js';
 import logger from './lib/logger.js';
+import { setupSwagger } from './lib/swagger.js';
 import routes from './routes/index.js';
 import { requestId } from './middleware/request-id.middleware.js';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
@@ -55,6 +56,11 @@ app.get('/health', (_req: Request, res: Response) => {
     uptime: process.uptime(),
   });
 });
+
+// Swagger docs (non-production only)
+if (config.NODE_ENV !== 'production') {
+  setupSwagger(app);
+}
 
 // API routes
 app.use('/api/v1', routes);
