@@ -50,6 +50,13 @@
       "when": 1770603127160,
       "tag": "0006_dry_starhawk",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1770611523013,
+      "tag": "0007_deep_roland_deschain",
+      "breakpoints": true
     }
   ]
 }

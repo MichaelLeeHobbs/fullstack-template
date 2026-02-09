@@ -2,7 +2,8 @@
 // Users Table Schema
 // ===========================================
 
-import { pgTable, uuid, varchar, timestamp, boolean, jsonb, index, integer } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, timestamp, boolean, jsonb, index, integer, check } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import type { UserPreferences } from '@fullstack-template/shared';
 
 export type { UserPreferences };
@@ -46,6 +47,7 @@ export const users = pgTable('users', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => [
   index('users_is_active_idx').on(table.isActive),
+  check('users_account_type_check', sql`${table.accountType} IN ('user', 'service')`),
 ]);
 
 export type User = typeof users.$inferSelect;

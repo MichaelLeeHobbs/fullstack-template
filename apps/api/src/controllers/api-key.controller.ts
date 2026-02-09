@@ -12,6 +12,7 @@ import type {
   CreateApiKeyInput,
   UpdateApiKeyPermissionsInput,
   ListApiKeysQuery,
+  ListServiceAccountsQuery,
   CreateServiceAccountInput,
 } from '../schemas/api-key.schema.js';
 import logger from '../lib/logger.js';
@@ -198,8 +199,9 @@ export class ApiKeyController {
    * GET /api/v1/api-keys/service-accounts
    * List service accounts
    */
-  static async listServiceAccounts(_req: Request, res: Response): Promise<void> {
-    const result = await ServiceAccountService.list();
+  static async listServiceAccounts(req: Request, res: Response): Promise<void> {
+    const { page, limit } = req.query as unknown as ListServiceAccountsQuery;
+    const result = await ServiceAccountService.list(page, limit);
 
     if (!result.ok) {
       logger.error({ error: result.error }, 'Failed to list service accounts');

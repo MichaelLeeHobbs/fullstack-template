@@ -6,8 +6,9 @@
 import { tryCatch, type Result } from 'stderr-lib';
 import { db } from '../lib/db.js';
 import { users, roles, userRoles, type Role } from '../db/schema/index.js';
-import { eq, and, inArray } from 'drizzle-orm';
+import { eq, and, inArray, sql } from 'drizzle-orm';
 import { PermissionService } from './permission.service.js';
+import { type PaginatedResult, paginationToOffset, buildPaginationResult } from '../lib/pagination.js';
 
 // ===========================================
 // Types
@@ -158,22 +159,32 @@ export class UserRoleService {
   }
 
   /**
-   * Get all users with their roles
+   * Get users with their roles (paginated)
    */
-  static async getAllUsersWithRoles(): Promise<Result<UserWithRoles[]>> {
+  static async getAllUsersWithRoles(page = 1, limit = 20): Promise<Result<PaginatedResult<UserWithRoles>>> {
     return tryCatch(async () => {
-      const allUsers = await db
+      const { offset } = paginationToOffset(page, limit);
+
+      // Get total count
+      const [countResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(users);
+      const total = Number(countResult?.count || 0);
+
+      const pageUsers = await db
         .select({
           id: users.id,
           email: users.email,
         })
         .from(users)
-        .orderBy(users.email);
+        .orderBy(users.email)
+        .limit(limit)
+        .offset(offset);
 
-      if (allUsers.length === 0) return [];
+      if (pageUsers.length === 0) return buildPaginationResult([], total, page, limit);
 
-      // Batch-fetch all user-role assignments in one query
-      const userIds = allUsers.map((u) => u.id);
+      // Batch-fetch user-role assignments for this page
+      const userIds = pageUsers.map((u) => u.id);
       const allUserRoles = await db
         .select({
           userId: userRoles.userId,
@@ -196,10 +207,12 @@ export class UserRoleService {
         rolesByUser.set(row.userId, list);
       }
 
-      return allUsers.map((user) => ({
+      const usersWithRoles = pageUsers.map((user) => ({
         ...user,
         roles: rolesByUser.get(user.id) ?? [],
       }));
+
+      return buildPaginationResult(usersWithRoles, total, page, limit);
     });
   }
 

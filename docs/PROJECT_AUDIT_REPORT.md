@@ -249,7 +249,7 @@ The `apiRateLimiter` (100 req/min) is defined but never applied. Only auth-speci
 ### Security
 - **Password validation inconsistency**: Registration requires uppercase + number, but password reset (`account.schema.ts:12`) and change (`user.schema.ts:9`) only require 8 chars
 - **Password policy violates NIST 800-63B Rev 4**: Composition rules (uppercase, number) are explicitly discouraged by NIST. Should use minimum length + breached password checking instead
-- **`optionalAuth` middleware ignores API keys**: Only checks Bearer JWT, silently ignores `X-API-Key`
+- ~~**`optionalAuth` middleware ignores API keys**: Only checks Bearer JWT, silently ignores `X-API-Key`~~
 - **API key creation allows non-admin user assignment**: `api-key.service.ts:80-86` — `userId` override not restricted to admins
 - **No `trust proxy` configuration**: `req.ip` behind a load balancer returns the proxy's IP, breaking rate limiting
 - **10MB JSON body limit**: Excessive for an API handling small payloads; enables DoS
@@ -262,31 +262,31 @@ The `apiRateLimiter` (100 req/min) is defined but never applied. Only auth-speci
 - **`feature.email_verification_required` setting is never checked**: Setting exists but isn't used
 - **`app.maintenance_mode` setting is never checked**: No middleware reads it
 - **`sortBy` query parameter not validated against allowlist at schema level**
-- **`SettingsController.get` fetches ALL settings to find one**: Should query by key directly
+- ~~**`SettingsController.get` fetches ALL settings to find one**: Should query by key directly~~
 - **No UUID validation on `:id` path parameters** for most admin routes
-- **Permission cache not invalidated when `isAdmin` changes**
-- **`UserRoleService.getAllUsersWithRoles()` has no pagination** — fetches ALL users
-- **`ServiceAccountService.list()` has no pagination**
-- **`usePermissions` name collision**: Both `usePermission.ts` and `useRoles.ts` export `usePermissions` with different semantics
+- ~~**Permission cache not invalidated when `isAdmin` changes**~~
+- ~~**`UserRoleService.getAllUsersWithRoles()` has no pagination** — fetches ALL users~~
+- ~~**`ServiceAccountService.list()` has no pagination**~~
+- ~~**`usePermissions` name collision**: Both `usePermission.ts` and `useRoles.ts` export `usePermissions` with different semantics~~
 
 ### Frontend
-- **No debounce on user search** in `UsersPage.tsx` — fires API request per keystroke
-- **`response.json()` called without checking Content-Type** in `client.ts` — non-JSON responses throw `SyntaxError`
-- **`apiFetch` always sets `Content-Type: application/json`** — prevents file uploads
-- **`AdminRoute` doesn't save `intendedDestination`** before redirect to login
+- ~~**No debounce on user search** in `UsersPage.tsx` — fires API request per keystroke~~
+- ~~**`response.json()` called without checking Content-Type** in `client.ts` — non-JSON responses throw `SyntaxError`~~
+- ~~**`apiFetch` always sets `Content-Type: application/json`** — prevents file uploads~~
+- ~~**`AdminRoute` doesn't save `intendedDestination`** before redirect to login~~
 - **`useTheme` returns stale `toggleTheme` function** — not in `useMemo` deps
 - **TopNav theme toggle ignores "system" mode** — always shows binary dark/light
-- **`useRegister` marks user as authenticated before email verification**
+- ~~**`useRegister` marks user as authenticated before email verification**~~
 - **No error boundary at route level** — any page error replaces the entire UI
-- **`ErrorBoundary` "Try Again" doesn't navigate away** — deterministic errors cause a loop
+- ~~**`ErrorBoundary` "Try Again" doesn't navigate away** — deterministic errors cause a loop~~
 
 ### Database
-- **Redundant index on `api_keys.key_hash`** — already has unique constraint
-- **Missing index on `audit_logs.action`**
-- **Missing index on `sessions.expiresAt`**
-- **Missing composite unique constraint on `permissions(resource, action)`**
-- **No `CHECK` constraint on `users.accountType`**
-- **`audit_logs.details` uses VARCHAR(1000)** — should be TEXT
+- ~~**Redundant index on `api_keys.key_hash`** — already has unique constraint~~
+- ~~**Missing index on `audit_logs.action`**~~
+- ~~**Missing index on `sessions.expiresAt`**~~
+- ~~**Missing composite unique constraint on `permissions(resource, action)`**~~
+- ~~**No `CHECK` constraint on `users.accountType`**~~
+- ~~**`audit_logs.details` uses VARCHAR(1000)** — should be TEXT~~
 - **Seed script not wrapped in a transaction**
 
 ---

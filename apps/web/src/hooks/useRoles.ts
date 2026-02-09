@@ -31,7 +31,7 @@ export const roleKeys = {
 // Permissions Queries
 // ===========================================
 
-export function usePermissions() {
+export function usePermissionsList() {
   return useQuery({
     queryKey: roleKeys.permissions(),
     queryFn: rolesApi.listPermissions,

@@ -13,6 +13,7 @@ import {
   createApiKeySchema,
   updateApiKeyPermissionsSchema,
   listApiKeysQuerySchema,
+  listServiceAccountsQuerySchema,
   createServiceAccountSchema,
 } from '../schemas/api-key.schema.js';
 
@@ -75,7 +76,7 @@ router.get('/my', ApiKeyController.listMy);
  *                   items:
  *                     $ref: '#/components/schemas/User'
  */
-router.get('/service-accounts', requirePermission(PERMISSIONS.SERVICE_ACCOUNTS_READ), ApiKeyController.listServiceAccounts);
+router.get('/service-accounts', requirePermission(PERMISSIONS.SERVICE_ACCOUNTS_READ), validate({ query: listServiceAccountsQuerySchema }), ApiKeyController.listServiceAccounts);
 
 /**
  * @openapi

@@ -53,23 +53,28 @@ export class SettingsController {
   static async get(req: Request, res: Response): Promise<void> {
     const { key } = req.params;
 
-    const result = await SettingsService.getAll();
+    if (!key) {
+      return void res.status(400).json({
+        success: false,
+        error: 'Setting key is required',
+      });
+    }
+
+    const result = await SettingsService.getByKey(key);
     if (!result.ok) {
+      if (result.error.message?.includes('not found')) {
+        return void res.status(404).json({
+          success: false,
+          error: 'Setting not found',
+        });
+      }
       return void res.status(500).json({
         success: false,
         error: 'Failed to retrieve setting',
       });
     }
 
-    const setting = result.value.find((s) => s.key === key);
-    if (!setting) {
-      return void res.status(404).json({
-        success: false,
-        error: 'Setting not found',
-      });
-    }
-
-    res.json({ success: true, data: setting });
+    res.json({ success: true, data: result.value });
   }
 
   /**

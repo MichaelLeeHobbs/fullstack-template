@@ -30,19 +30,10 @@ export function useLogin() {
 }
 
 export function useRegister() {
-  const setAuth = useAuthStore((state) => state.setAuth);
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (data: RegisterInput) => authApi.register(data),
-    onSuccess: (data) => {
-      // Register never returns MFA required
-      const successData = data as AuthSuccessResponse;
-      setAuth(successData.user, successData.accessToken);
-      queryClient.clear();
-      navigate('/');
-    },
+    // Don't auto-authenticate — user must verify email first.
+    // The caller (RegisterPage) handles the success flow.
   });
 }
 

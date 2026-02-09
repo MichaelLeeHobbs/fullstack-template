@@ -148,6 +148,39 @@ export async function optionalAuth(
   res: Response,
   next: NextFunction
 ): Promise<void> {
+  // Check for API key first
+  const apiKeyHeader = req.headers['x-api-key'] as string | undefined;
+  if (apiKeyHeader) {
+    try {
+      const result = await ApiKeyService.validateKey(apiKeyHeader);
+      if (result.ok) {
+        const { apiKey, userId, permissions } = result.value;
+        const [owner] = await db
+          .select({
+            id: users.id,
+            email: users.email,
+            isAdmin: users.isAdmin,
+            isActive: users.isActive,
+            emailVerified: users.emailVerified,
+          })
+          .from(users)
+          .where(eq(users.id, userId));
+
+        if (owner && owner.isActive) {
+          req.user = {
+            ...owner,
+            permissions: Array.from(permissions),
+          };
+          req.apiKeyId = apiKey.id;
+        }
+      }
+    } catch {
+      // Ignore invalid API keys for optional auth
+    }
+    return void next();
+  }
+
+  // Fall through to JWT Bearer
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {

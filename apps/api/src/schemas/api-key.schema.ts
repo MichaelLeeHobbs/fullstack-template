@@ -28,7 +28,10 @@ export const createServiceAccountSchema = z.object({
   email: z.email(),
 });
 
+export const listServiceAccountsQuerySchema = paginationSchema;
+
 export type CreateApiKeyInput = z.infer<typeof createApiKeySchema>;
 export type UpdateApiKeyPermissionsInput = z.infer<typeof updateApiKeyPermissionsSchema>;
 export type ListApiKeysQuery = z.infer<typeof listApiKeysQuerySchema>;
+export type ListServiceAccountsQuery = z.infer<typeof listServiceAccountsQuerySchema>;
 export type CreateServiceAccountInput = z.infer<typeof createServiceAccountSchema>;

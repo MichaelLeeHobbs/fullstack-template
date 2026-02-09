@@ -9,6 +9,7 @@ import { users, auditLogs } from '../db/schema/index.js';
 import { eq, sql } from 'drizzle-orm';
 import { type PaginatedResult, paginationToOffset, buildPaginationResult } from '../lib/pagination.js';
 import { buildOrderBy, buildWhereConditions } from '../lib/query.js';
+import { PermissionService } from './permission.service.js';
 
 // ===========================================
 // Types
@@ -155,6 +156,11 @@ export class AdminService {
 
       if (!user) {
         throw new Error('User not found');
+      }
+
+      // Invalidate permission cache when admin status changes
+      if (updates.isAdmin !== undefined) {
+        PermissionService.invalidateUserCache(userId);
       }
 
       return user;

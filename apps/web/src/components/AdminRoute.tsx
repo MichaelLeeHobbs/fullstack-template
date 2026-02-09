@@ -4,7 +4,7 @@
 // Protects routes that require admin access.
 // Uses permission-based access control.
 
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/auth.store.js';
 import { CircularProgress, Container } from '@mui/material';
 import { PERMISSIONS } from '../types/role.js';
@@ -20,7 +20,8 @@ const ADMIN_PERMISSIONS = [
 ];
 
 export function AdminRoute() {
-  const { isAuthenticated, user, isLoading } = useAuthStore();
+  const { isAuthenticated, user, isLoading, setIntendedDestination } = useAuthStore();
+  const location = useLocation();
 
   if (isLoading) {
     return (
@@ -31,6 +32,7 @@ export function AdminRoute() {
   }
 
   if (!isAuthenticated) {
+    setIntendedDestination(location.pathname);
     return <Navigate to="/login" replace />;
   }
 

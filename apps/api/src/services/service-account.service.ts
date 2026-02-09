@@ -6,8 +6,9 @@
 import { tryCatch, type Result } from 'stderr-lib';
 import { db } from '../lib/db.js';
 import { users, ACCOUNT_TYPES } from '../db/schema/index.js';
-import { eq, and, count, inArray } from 'drizzle-orm';
+import { eq, and, count, inArray, sql } from 'drizzle-orm';
 import { apiKeys } from '../db/schema/api-keys.js';
+import { type PaginatedResult, paginationToOffset, buildPaginationResult } from '../lib/pagination.js';
 
 export interface ServiceAccount {
   id: string;
@@ -53,10 +54,19 @@ export class ServiceAccountService {
   }
 
   /**
-   * List all service accounts
+   * List service accounts with pagination
    */
-  static async list(): Promise<Result<ServiceAccount[]>> {
+  static async list(page = 1, limit = 20): Promise<Result<PaginatedResult<ServiceAccount>>> {
     return tryCatch(async () => {
+      const { offset } = paginationToOffset(page, limit);
+
+      // Get total count
+      const [countResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(users)
+        .where(eq(users.accountType, ACCOUNT_TYPES.SERVICE));
+      const total = Number(countResult?.count || 0);
+
       const accounts = await db
         .select({
           id: users.id,
@@ -66,9 +76,11 @@ export class ServiceAccountService {
         })
         .from(users)
         .where(eq(users.accountType, ACCOUNT_TYPES.SERVICE))
-        .orderBy(users.createdAt);
+        .orderBy(users.createdAt)
+        .limit(limit)
+        .offset(offset);
 
-      if (accounts.length === 0) return [];
+      if (accounts.length === 0) return buildPaginationResult([], total, page, limit);
 
       // Batch-fetch API key counts in one query
       const accountIds = accounts.map((a) => a.id);
@@ -83,10 +95,12 @@ export class ServiceAccountService {
 
       const countByUser = new Map(keyCounts.map((r) => [r.userId, r.count]));
 
-      return accounts.map((account) => ({
+      const accountsWithKeys = accounts.map((account) => ({
         ...account,
         apiKeyCount: countByUser.get(account.id) ?? 0,
       }));
+
+      return buildPaginationResult(accountsWithKeys, total, page, limit);
     });
   }
 

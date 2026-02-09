@@ -3,7 +3,7 @@
 // ===========================================
 // Tracks security-related events.
 
-import { pgTable, uuid, varchar, timestamp, boolean, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, timestamp, boolean, index } from 'drizzle-orm/pg-core';
 import { users } from './users.js';
 
 // ===========================================
@@ -79,12 +79,13 @@ export const auditLogs = pgTable('audit_logs', {
   action: varchar('action', { length: 50 }).notNull(),
   ipAddress: varchar('ip_address', { length: 45 }),
   userAgent: varchar('user_agent', { length: 500 }),
-  details: varchar('details', { length: 1000 }),
+  details: text('details'),
   success: boolean('success').default(true).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => [
   index('audit_logs_user_id_idx').on(table.userId),
   index('audit_logs_created_at_idx').on(table.createdAt),
+  index('audit_logs_action_idx').on(table.action),
 ]);
 
 export type AuditLog = typeof auditLogs.$inferSelect;

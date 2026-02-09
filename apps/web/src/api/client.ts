@@ -34,9 +34,14 @@ export async function apiFetch<T>(
 
   const makeRequest = async (token: string | null): Promise<Response> => {
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
       ...(options.headers as Record<string, string>),
     };
+
+    // Only set Content-Type for requests with a body (not GET/HEAD)
+    // and only if the caller didn't already set one
+    if (fetchOptions.body && !headers['Content-Type']) {
+      headers['Content-Type'] = 'application/json';
+    }
 
     if (token && !skipAuth) {
       headers['Authorization'] = `Bearer ${token}`;
@@ -92,6 +97,14 @@ export async function apiFetch<T>(
       clearAuth();
       throw new ApiError(401, 'Session expired');
     }
+  }
+
+  const contentType = response.headers.get('content-type');
+  if (!contentType?.includes('application/json')) {
+    if (!response.ok) {
+      throw new ApiError(response.status, `Request failed (${response.status})`);
+    }
+    return undefined as T;
   }
 
   const data = await response.json();

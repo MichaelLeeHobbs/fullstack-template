@@ -3,7 +3,7 @@
 // ===========================================
 // User management with list, edit, delete, and role assignment.
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useDeferredValue } from 'react';
 import {
   Container,
   Typography,
@@ -53,18 +53,19 @@ export function UsersPage() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
   const [search, setSearch] = useState('');
+  const deferredSearch = useDeferredValue(search);
   const [deleteDialog, setDeleteDialog] = useState<AdminUser | null>(null);
   const [rolesDialog, setRolesDialog] = useState<AdminUser | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<Set<string>>(new Set());
 
-  // Fetch users
+  // Fetch users (deferredSearch avoids a query per keystroke)
   const { data, isLoading, error } = useQuery({
-    queryKey: ['admin', 'users', page, rowsPerPage, search],
+    queryKey: ['admin', 'users', page, rowsPerPage, deferredSearch],
     queryFn: () =>
       adminApi.listUsers({
         page: page + 1,
         limit: rowsPerPage,
-        search: search || undefined,
+        search: deferredSearch || undefined,
       }),
   });
 

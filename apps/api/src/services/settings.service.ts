@@ -92,6 +92,21 @@ export class SettingsService {
   }
 
   /**
+   * Get a single setting by key (returns full setting object)
+   */
+  static async getByKey(key: string): Promise<Result<SystemSetting>> {
+    return tryCatch(async () => {
+      const [setting] = await db
+        .select()
+        .from(systemSettings)
+        .where(eq(systemSettings.key, key));
+
+      if (!setting) throw new Error('Setting not found');
+      return setting;
+    });
+  }
+
+  /**
    * Get all settings (for admin UI)
    */
   static async getAll(): Promise<Result<SystemSetting[]>> {

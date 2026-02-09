@@ -24,7 +24,6 @@ export const apiKeys = pgTable('api_keys', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => [
   index('api_keys_user_id_idx').on(table.userId),
-  index('api_keys_key_hash_idx').on(table.keyHash),
 ]);
 
 export type ApiKey = typeof apiKeys.$inferSelect;

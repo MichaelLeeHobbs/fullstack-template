@@ -61,9 +61,14 @@ export class ErrorBoundary extends Component<Props, State> {
             <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
               We're sorry, an unexpected error occurred.
             </Typography>
-            <Button variant="contained" onClick={this.handleReset}>
-              Try Again
-            </Button>
+            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+              <Button variant="contained" onClick={this.handleReset}>
+                Try Again
+              </Button>
+              <Button variant="outlined" onClick={() => { window.location.href = '/'; }}>
+                Go Home
+              </Button>
+            </Box>
           </Box>
         </Container>
       );
