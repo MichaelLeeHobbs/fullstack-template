@@ -28,6 +28,16 @@ const configSchema = z.object({
   JWT_ACCESS_EXPIRES_IN: z.string().default('15m'),
   JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
 
+  // Proxy — accepts 'true', 'false', 'loopback', number, or specific IPs
+  TRUST_PROXY: z.string().default('false')
+    .transform((v): boolean | number | string => {
+      if (v === 'true') return true;
+      if (v === 'false') return false;
+      const num = Number(v);
+      if (!isNaN(num)) return num;
+      return v;
+    }),
+
   // Encryption (for secrets at rest; falls back to JWT_SECRET if not set)
   ENCRYPTION_KEY: z.string().min(32).optional(),
 

@@ -9,6 +9,7 @@ import { tryCatch, type Result } from 'stderr-lib';
 import { db } from '../lib/db.js';
 import {
   users,
+  sessions,
   emailVerificationTokens,
   passwordResetTokens,
 } from '../db/schema/index.js';
@@ -164,7 +165,7 @@ export class AccountService {
       // Hash outside transaction (CPU-bound)
       const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
 
-      // Transaction: update password + delete token atomically
+      // Transaction: update password + delete token + invalidate sessions atomically
       await db.transaction(async (tx) => {
         await tx
           .update(users)
@@ -174,6 +175,11 @@ export class AccountService {
         await tx
           .delete(passwordResetTokens)
           .where(eq(passwordResetTokens.id, tokenRecord.id));
+
+        // Invalidate all sessions — user must re-login after password reset
+        await tx
+          .delete(sessions)
+          .where(eq(sessions.userId, tokenRecord.userId));
       });
 
       logger.info({ userId: tokenRecord.userId }, 'Password reset successful');

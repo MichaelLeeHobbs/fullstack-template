@@ -15,6 +15,7 @@ import { setupSwagger } from './lib/swagger.js';
 import routes from './routes/index.js';
 import { requestId } from './middleware/request-id.middleware.js';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
+import { apiRateLimiter } from './middleware/rateLimit.middleware.js';
 
 // Use createRequire for proper ESM/CJS interop with CJS packages
 const require = createRequire(import.meta.url);
@@ -22,6 +23,9 @@ const pinoHttp = require('pino-http') as typeof import('pino-http').default;
 const compression = require('compression') as typeof import('compression');
 
 const app: Express = express();
+
+// Trust proxy (needed for rate limiting behind reverse proxy)
+app.set('trust proxy', config.TRUST_PROXY);
 
 // Security middleware
 app.use(helmet());
@@ -40,7 +44,7 @@ app.set('etag', 'weak');
 app.use(cookieParser());
 
 // Request parsing
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Request ID tracking (before logging so requestId appears in logs)
@@ -70,6 +74,9 @@ app.get('/health', (_req: Request, res: Response) => {
 if (config.NODE_ENV !== 'production') {
   setupSwagger(app);
 }
+
+// Global API rate limiter (100 req/min per IP)
+app.use('/api/v1', apiRateLimiter);
 
 // API routes
 app.use('/api/v1', routes);

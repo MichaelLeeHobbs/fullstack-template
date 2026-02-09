@@ -65,11 +65,12 @@ describe('UserController', () => {
   });
 
   describe('changePassword()', () => {
-    it('should return 200 on success', async () => {
+    it('should return 200 on success and pass sessionId', async () => {
       (UserService.changePassword as ReturnType<typeof vi.fn>).mockResolvedValue({ ok: true });
 
       const req = createMockRequest({
         user: { id: 'u1' },
+        sessionId: 's1',
         body: { currentPassword: 'OldPass1!', newPassword: 'NewPass1!' },
       });
       const res = createMockResponse();
@@ -78,6 +79,7 @@ describe('UserController', () => {
 
       expect(res._status).toBe(200);
       expect(res._json).toEqual({ success: true, data: { message: 'Password changed successfully' } });
+      expect(UserService.changePassword).toHaveBeenCalledWith('u1', 'OldPass1!', 'NewPass1!', 's1');
     });
 
     it('should return 400 for incorrect current password', async () => {

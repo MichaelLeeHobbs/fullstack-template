@@ -51,7 +51,7 @@ export class UserController {
     }
 
     const { currentPassword, newPassword } = req.body as ChangePasswordInput;
-    const result = await UserService.changePassword(userId, currentPassword, newPassword);
+    const result = await UserService.changePassword(userId, currentPassword, newPassword, req.sessionId);
 
     if (!result.ok) {
       const errorMsg = result.error.message || 'Failed to change password';

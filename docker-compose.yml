@@ -33,6 +33,20 @@ services:
     networks:
       - app-net
 
+  api:
+    build: .
+    container_name: app-api
+    env_file: .env
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    networks:
+      - app-net
+
 networks:
   app-net:
     driver: bridge

@@ -4,7 +4,7 @@
 // Handles user registration, login, token refresh, and logout.
 // All methods return Result<T> using tryCatch from stderr-lib.
 
-import { randomBytes } from 'crypto';
+import { randomBytes, createHash } from 'crypto';
 import bcrypt from 'bcrypt';
 import { tryCatch, type Result } from 'stderr-lib';
 import { db } from '../lib/db.js';
@@ -19,6 +19,10 @@ import type { MfaMethod } from '../db/schema/index.js';
 
 const SALT_ROUNDS = 12;
 const REFRESH_TOKEN_DAYS = 7;
+
+function hashToken(token: string): string {
+  return createHash('sha256').update(token).digest('hex');
+}
 
 export interface SessionMetadata {
   userAgent?: string;
@@ -246,11 +250,12 @@ export class AuthService {
       // Verify token signature
       const payload = verifyRefreshToken(refreshToken);
 
-      // Find session in database
+      // Find session in database by hashed token
+      const hashedToken = hashToken(refreshToken);
       const [session] = await db
         .select()
         .from(sessions)
-        .where(eq(sessions.refreshToken, refreshToken));
+        .where(eq(sessions.refreshToken, hashedToken));
 
       if (!session || session.expiresAt < new Date()) {
         throw new Error('Invalid refresh token');
@@ -266,7 +271,8 @@ export class AuthService {
 
   static async logout(refreshToken: string): Promise<Result<void>> {
     return tryCatch(async () => {
-      await db.delete(sessions).where(eq(sessions.refreshToken, refreshToken));
+      const hashedToken = hashToken(refreshToken);
+      await db.delete(sessions).where(eq(sessions.refreshToken, hashedToken));
     });
   }
 
@@ -300,13 +306,13 @@ export class AuthService {
   private static async createTokens(userId: string, metadata?: SessionMetadata): Promise<AuthTokens> {
     const refreshToken = signRefreshToken({ userId });
 
-    // Store refresh token in database with metadata
+    // Store hashed refresh token in database with metadata
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + REFRESH_TOKEN_DAYS);
 
     const [session] = await db.insert(sessions).values({
       userId,
-      refreshToken,
+      refreshToken: hashToken(refreshToken),
       userAgent: metadata?.userAgent,
       ipAddress: metadata?.ipAddress,
       lastUsedAt: new Date(),

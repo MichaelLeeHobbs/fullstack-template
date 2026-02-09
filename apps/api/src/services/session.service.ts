@@ -57,6 +57,17 @@ export class SessionService {
     });
   }
 
+  static async revokeAllUserSessions(userId: string): Promise<Result<{ revokedCount: number }>> {
+    return tryCatch(async () => {
+      const result = await db
+        .delete(sessions)
+        .where(eq(sessions.userId, userId))
+        .returning({ id: sessions.id });
+
+      return { revokedCount: result.length };
+    });
+  }
+
   static async revokeAllOtherSessions(userId: string, currentSessionId: string): Promise<Result<{ revokedCount: number }>> {
     return tryCatch(async () => {
       const result = await db

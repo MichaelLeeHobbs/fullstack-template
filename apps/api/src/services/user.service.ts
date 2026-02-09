@@ -6,8 +6,8 @@
 import bcrypt from 'bcrypt';
 import { tryCatch, type Result } from 'stderr-lib';
 import { db } from '../lib/db.js';
-import { users, type UserPreferences, defaultPreferences } from '../db/schema/index.js';
-import { eq } from 'drizzle-orm';
+import { users, sessions, type UserPreferences, defaultPreferences } from '../db/schema/index.js';
+import { eq, and, ne } from 'drizzle-orm';
 
 const SALT_ROUNDS = 12;
 
@@ -50,7 +50,8 @@ export class UserService {
   static async changePassword(
     userId: string,
     currentPassword: string,
-    newPassword: string
+    newPassword: string,
+    currentSessionId?: string
   ): Promise<Result<void>> {
     return tryCatch(async () => {
       const [user] = await db
@@ -73,6 +74,13 @@ export class UserService {
         .update(users)
         .set({ passwordHash, updatedAt: new Date() })
         .where(eq(users.id, userId));
+
+      // Invalidate all other sessions (keep current session alive)
+      if (currentSessionId) {
+        await db
+          .delete(sessions)
+          .where(and(eq(sessions.userId, userId), ne(sessions.id, currentSessionId)));
+      }
     });
   }
 
