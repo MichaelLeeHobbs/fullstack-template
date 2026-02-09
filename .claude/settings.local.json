@@ -26,7 +26,11 @@
       "Bash(git status:*)",
       "Bash(git stash:*)",
       "Bash(git -C C:UsersmhobbWebstormProjectsfullstack-template status)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(grep:*)",
+      "Bash(xargs:*)",
+      "Bash(git check-ignore:*)",
+      "Bash(npm pkg:*)"
     ]
   }
 }

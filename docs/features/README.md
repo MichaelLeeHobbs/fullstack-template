@@ -10,8 +10,8 @@ This document defines the features included in this fullstack template.
 
 ## Included Features
 
-| #   | Feature                                     | Description                 | Status     |
-|-----|---------------------------------------------|-----------------------------|------------|
+| #   | Feature                                     | Description                 | Status   |
+|-----|---------------------------------------------|-----------------------------|----------|
 | 00  | [Project Setup](./000_setup.md)             | Monorepo, tooling, database | Complete |
 | 00b | [Core Services](./001_core-services.md)     | Email, storage              | Complete |
 | 00c | [Core Frontend](./002_core-frontend.md)     | Layout, navigation, theme   | Complete |
