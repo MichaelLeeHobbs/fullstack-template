@@ -10,6 +10,7 @@ import { validate } from '../middleware/validate.middleware.js';
 import { RoleController } from '../controllers/role.controller.js';
 import { PERMISSIONS } from '../db/seeds/permissions.js';
 import { createRoleSchema, updateRoleSchema, setPermissionsSchema, setUserRolesSchema } from '../schemas/role.schema.js';
+import { uuidParamSchema } from '../schemas/query.schema.js';
 import { cacheControl } from '../middleware/cache.middleware.js';
 
 const router: IRouter = Router();
@@ -142,7 +143,7 @@ router.get('/', requirePermission(PERMISSIONS.ROLES_READ), cacheControl({ maxAge
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get('/:id', requirePermission(PERMISSIONS.ROLES_READ), cacheControl({ maxAge: 60, private: true }), RoleController.getRole);
+router.get('/:id', requirePermission(PERMISSIONS.ROLES_READ), validate({ params: uuidParamSchema }), cacheControl({ maxAge: 60, private: true }), RoleController.getRole);
 
 /**
  * @openapi
@@ -237,7 +238,7 @@ router.post('/', requirePermission(PERMISSIONS.ROLES_CREATE), validate({ body: c
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.put('/:id', requirePermission(PERMISSIONS.ROLES_UPDATE), validate({ body: updateRoleSchema }), RoleController.updateRole);
+router.put('/:id', requirePermission(PERMISSIONS.ROLES_UPDATE), validate({ params: uuidParamSchema, body: updateRoleSchema }), RoleController.updateRole);
 
 /**
  * @openapi
@@ -266,7 +267,7 @@ router.put('/:id', requirePermission(PERMISSIONS.ROLES_UPDATE), validate({ body:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.delete('/:id', requirePermission(PERMISSIONS.ROLES_DELETE), RoleController.deleteRole);
+router.delete('/:id', requirePermission(PERMISSIONS.ROLES_DELETE), validate({ params: uuidParamSchema }), RoleController.deleteRole);
 
 /**
  * @openapi
@@ -305,7 +306,7 @@ router.delete('/:id', requirePermission(PERMISSIONS.ROLES_DELETE), RoleControlle
 router.put(
   '/:id/permissions',
   requirePermission(PERMISSIONS.ROLES_UPDATE),
-  validate({ body: setPermissionsSchema }),
+  validate({ params: uuidParamSchema, body: setPermissionsSchema }),
   RoleController.setRolePermissions
 );
 

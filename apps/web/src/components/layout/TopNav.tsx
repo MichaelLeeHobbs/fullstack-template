@@ -96,7 +96,7 @@ export function TopNav({ onMenuClick, showMenuButton = false }: TopNavProps) {
           {APP_NAME}
         </Typography>
 
-        <Tooltip title={mode === 'dark' ? 'Light mode' : 'Dark mode'}>
+        <Tooltip title={mode === 'light' ? 'Dark mode' : mode === 'dark' ? 'System mode' : 'Light mode'}>
           <IconButton color="inherit" onClick={toggleMode}>
             {mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
           </IconButton>

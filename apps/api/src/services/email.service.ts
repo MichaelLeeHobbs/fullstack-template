@@ -25,6 +25,18 @@ interface EmailOptions {
   html?: string;
 }
 
+/**
+ * Escape HTML special characters to prevent XSS in email templates.
+ */
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 export class EmailService {
   /**
    * Send an email using the configured provider.
@@ -67,7 +79,8 @@ export class EmailService {
    * Send email verification link
    */
   static async sendVerificationEmail(email: string, token: string): Promise<Result<EmailResult>> {
-    const verifyUrl = `${config.FRONTEND_URL}/verify-email?token=${token}`;
+    const verifyUrl = `${config.FRONTEND_URL}/verify-email?token=${encodeURIComponent(token)}`;
+    const safeUrl = escapeHtml(verifyUrl);
 
     return this.send({
       to: email,
@@ -94,7 +107,7 @@ If you didn't create an account, you can ignore this email.`,
       Click the button below to verify your email address:
     </p>
     <p style="margin: 30px 0; text-align: center;">
-      <a href="${verifyUrl}"
+      <a href="${safeUrl}"
          style="background: #1976d2; color: white; padding: 14px 28px;
                 text-decoration: none; border-radius: 6px; font-weight: 500;
                 display: inline-block;">
@@ -105,7 +118,7 @@ If you didn't create an account, you can ignore this email.`,
       Or copy and paste this link into your browser:
     </p>
     <p style="color: #1976d2; font-size: 14px; word-break: break-all;">
-      ${verifyUrl}
+      ${safeUrl}
     </p>
     <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
     <p style="color: #999; font-size: 12px;">
@@ -121,7 +134,8 @@ If you didn't create an account, you can ignore this email.`,
    * Send password reset link
    */
   static async sendPasswordResetEmail(email: string, token: string): Promise<Result<EmailResult>> {
-    const resetUrl = `${config.FRONTEND_URL}/reset-password?token=${token}`;
+    const resetUrl = `${config.FRONTEND_URL}/reset-password?token=${encodeURIComponent(token)}`;
+    const safeResetUrl = escapeHtml(resetUrl);
 
     return this.send({
       to: email,
@@ -148,7 +162,7 @@ If you didn't request this, you can safely ignore this email.`,
       You requested a password reset. Click the button below to choose a new password:
     </p>
     <p style="margin: 30px 0; text-align: center;">
-      <a href="${resetUrl}"
+      <a href="${safeResetUrl}"
          style="background: #1976d2; color: white; padding: 14px 28px;
                 text-decoration: none; border-radius: 6px; font-weight: 500;
                 display: inline-block;">
@@ -159,7 +173,7 @@ If you didn't request this, you can safely ignore this email.`,
       Or copy and paste this link into your browser:
     </p>
     <p style="color: #1976d2; font-size: 14px; word-break: break-all;">
-      ${resetUrl}
+      ${safeResetUrl}
     </p>
     <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
     <p style="color: #999; font-size: 12px;">

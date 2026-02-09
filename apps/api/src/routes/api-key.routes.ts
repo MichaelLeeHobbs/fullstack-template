@@ -16,6 +16,7 @@ import {
   listServiceAccountsQuerySchema,
   createServiceAccountSchema,
 } from '../schemas/api-key.schema.js';
+import { uuidParamSchema } from '../schemas/query.schema.js';
 
 const router: IRouter = Router();
 
@@ -138,7 +139,7 @@ router.post('/service-accounts', requirePermission(PERMISSIONS.SERVICE_ACCOUNTS_
  *             schema:
  *               $ref: '#/components/schemas/SuccessResponse'
  */
-router.delete('/service-accounts/:id', requirePermission(PERMISSIONS.SERVICE_ACCOUNTS_DELETE), ApiKeyController.deleteServiceAccount);
+router.delete('/service-accounts/:id', requirePermission(PERMISSIONS.SERVICE_ACCOUNTS_DELETE), validate({ params: uuidParamSchema }), ApiKeyController.deleteServiceAccount);
 
 // ===========================================
 // API Key Admin CRUD
@@ -282,7 +283,7 @@ router.get('/', requirePermission(PERMISSIONS.API_KEYS_READ), validate({ query: 
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get('/:id', requirePermission(PERMISSIONS.API_KEYS_READ), ApiKeyController.get);
+router.get('/:id', requirePermission(PERMISSIONS.API_KEYS_READ), validate({ params: uuidParamSchema }), ApiKeyController.get);
 
 /**
  * @openapi
@@ -318,7 +319,7 @@ router.get('/:id', requirePermission(PERMISSIONS.API_KEYS_READ), ApiKeyControlle
  *             schema:
  *               $ref: '#/components/schemas/SuccessResponse'
  */
-router.put('/:id/permissions', requirePermission(PERMISSIONS.API_KEYS_UPDATE), validate({ body: updateApiKeyPermissionsSchema }), ApiKeyController.setPermissions);
+router.put('/:id/permissions', requirePermission(PERMISSIONS.API_KEYS_UPDATE), validate({ params: uuidParamSchema, body: updateApiKeyPermissionsSchema }), ApiKeyController.setPermissions);
 
 /**
  * @openapi
@@ -341,7 +342,7 @@ router.put('/:id/permissions', requirePermission(PERMISSIONS.API_KEYS_UPDATE), v
  *             schema:
  *               $ref: '#/components/schemas/SuccessResponse'
  */
-router.post('/:id/revoke', requirePermission(PERMISSIONS.API_KEYS_DELETE), ApiKeyController.revoke);
+router.post('/:id/revoke', requirePermission(PERMISSIONS.API_KEYS_DELETE), validate({ params: uuidParamSchema }), ApiKeyController.revoke);
 
 /**
  * @openapi
@@ -364,6 +365,6 @@ router.post('/:id/revoke', requirePermission(PERMISSIONS.API_KEYS_DELETE), ApiKe
  *             schema:
  *               $ref: '#/components/schemas/SuccessResponse'
  */
-router.delete('/:id', requirePermission(PERMISSIONS.API_KEYS_DELETE), ApiKeyController.remove);
+router.delete('/:id', requirePermission(PERMISSIONS.API_KEYS_DELETE), validate({ params: uuidParamSchema }), ApiKeyController.remove);
 
 export default router;

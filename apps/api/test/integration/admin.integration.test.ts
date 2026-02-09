@@ -191,11 +191,11 @@ describe('Admin Integration Tests', () => {
   it('GET /api/v1/admin/users/:id → 200', async () => {
     setupAuthenticatedAdmin();
 
-    const user = { id: 'u1', email: 'a@b.com', isAdmin: false };
+    const user = { id: '10000000-0000-4000-8000-000000000001', email: 'a@b.com', isAdmin: false };
     (AdminService.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({ ok: true, value: user });
 
     const res = await agent
-      .get('/api/v1/admin/users/u1')
+      .get('/api/v1/admin/users/10000000-0000-4000-8000-000000000001')
       .set('Authorization', 'Bearer mock-token');
 
     expect(res.status).toBe(200);
@@ -211,7 +211,7 @@ describe('Admin Integration Tests', () => {
     });
 
     const res = await agent
-      .get('/api/v1/admin/users/nonexistent')
+      .get('/api/v1/admin/users/10000000-0000-4000-8000-000000000099')
       .set('Authorization', 'Bearer mock-token');
 
     expect(res.status).toBe(404);
@@ -222,10 +222,11 @@ describe('Admin Integration Tests', () => {
   // ===========================================
 
   it('PATCH /api/v1/admin/users/:id → 400 self-demotion', async () => {
-    // Set up user where admin-1 tries to demote themselves
-    (verifyAccessToken as ReturnType<typeof vi.fn>).mockReturnValue({ userId: 'admin-1', sessionId: 's1' });
+    // Set up user where admin tries to demote themselves
+    const adminId = '10000000-0000-4000-8000-000000000010';
+    (verifyAccessToken as ReturnType<typeof vi.fn>).mockReturnValue({ userId: adminId, sessionId: 's1' });
     mockSelectChain(db.select as ReturnType<typeof vi.fn>, [{
-      id: 'admin-1',
+      id: adminId,
       email: 'admin@test.com',
       isAdmin: true,
       isActive: true,
@@ -233,7 +234,7 @@ describe('Admin Integration Tests', () => {
     }]);
 
     const res = await agent
-      .patch('/api/v1/admin/users/admin-1')
+      .patch(`/api/v1/admin/users/${adminId}`)
       .set('Authorization', 'Bearer mock-token')
       .send({ isAdmin: false });
 

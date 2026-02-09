@@ -3,7 +3,7 @@
 // ===========================================
 // Resolves system preference and returns the active theme.
 
-import { useMemo, useSyncExternalStore } from 'react';
+import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import { useThemeStore, type ThemeMode } from '../stores/theme.store.js';
 import { lightTheme, darkTheme } from '../styles/theme.js';
 
@@ -34,11 +34,11 @@ export function useTheme() {
   const resolvedMode = mode === 'system' ? systemPreference : mode;
   const theme = resolvedMode === 'dark' ? darkTheme : lightTheme;
 
-  const toggleTheme = () => {
+  const toggleTheme = useCallback(() => {
     const nextMode: ThemeMode =
       mode === 'light' ? 'dark' : mode === 'dark' ? 'system' : 'light';
     setMode(nextMode);
-  };
+  }, [mode, setMode]);
 
   return useMemo(
     () => ({
@@ -49,7 +49,7 @@ export function useTheme() {
       toggleTheme,
       isDark: resolvedMode === 'dark',
     }),
-    [theme, mode, resolvedMode, setMode]
+    [theme, mode, resolvedMode, setMode, toggleTheme]
   );
 }
 

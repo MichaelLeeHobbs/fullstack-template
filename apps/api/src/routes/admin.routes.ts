@@ -12,6 +12,7 @@ import { AdminController } from '../controllers/admin.controller.js';
 import { PERMISSIONS } from '../db/seeds/permissions.js';
 import { listUsersQuerySchema, updateUserSchema, listAuditLogsQuerySchema } from '../schemas/admin.schema.js';
 import { updateSettingSchema } from '../schemas/settings.schema.js';
+import { uuidParamSchema } from '../schemas/query.schema.js';
 import { cacheControl } from '../middleware/cache.middleware.js';
 
 const router: IRouter = Router();
@@ -225,7 +226,7 @@ router.get('/users', requirePermission(PERMISSIONS.USERS_READ), validate({ query
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get('/users/:id', requirePermission(PERMISSIONS.USERS_READ), cacheControl({ maxAge: 0, mustRevalidate: true, private: true }), AdminController.getUser);
+router.get('/users/:id', requirePermission(PERMISSIONS.USERS_READ), validate({ params: uuidParamSchema }), cacheControl({ maxAge: 0, mustRevalidate: true, private: true }), AdminController.getUser);
 
 /**
  * @openapi
@@ -271,7 +272,7 @@ router.get('/users/:id', requirePermission(PERMISSIONS.USERS_READ), cacheControl
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.patch('/users/:id', requirePermission(PERMISSIONS.USERS_UPDATE), validate({ body: updateUserSchema }), AdminController.updateUser);
+router.patch('/users/:id', requirePermission(PERMISSIONS.USERS_UPDATE), validate({ params: uuidParamSchema, body: updateUserSchema }), AdminController.updateUser);
 
 /**
  * @openapi
@@ -300,7 +301,7 @@ router.patch('/users/:id', requirePermission(PERMISSIONS.USERS_UPDATE), validate
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.delete('/users/:id', requirePermission(PERMISSIONS.USERS_DELETE), AdminController.deleteUser);
+router.delete('/users/:id', requirePermission(PERMISSIONS.USERS_DELETE), validate({ params: uuidParamSchema }), AdminController.deleteUser);
 
 // ===========================================
 // Audit Logs
