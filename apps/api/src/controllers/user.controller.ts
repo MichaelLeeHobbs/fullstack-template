@@ -5,6 +5,8 @@
 
 import type { Request, Response } from 'express';
 import { UserService } from '../services/user.service.js';
+import { AuditService } from '../services/audit.service.js';
+import { AUDIT_ACTIONS } from '../db/schema/audit.js';
 import type { ChangePasswordInput, UpdatePreferencesInput } from '../schemas/user.schema.js';
 import logger from '../lib/logger.js';
 
@@ -69,6 +71,9 @@ export class UserController {
         error: 'Failed to change password',
       });
     }
+
+    const context = AuditService.getContextFromRequest(req);
+    await AuditService.log(AUDIT_ACTIONS.PASSWORD_CHANGE, context);
 
     res.json({
       success: true,

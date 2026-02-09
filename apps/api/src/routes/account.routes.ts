@@ -12,6 +12,7 @@ import {
   forgotPasswordSchema,
   resetPasswordSchema,
   verifyEmailSchema,
+  resendVerificationSchema,
 } from '../schemas/account.schema.js';
 
 const router: IRouter = Router();
@@ -114,6 +115,13 @@ router.post('/reset-password', validate({ body: resetPasswordSchema }), AccountC
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.post('/verify-email', validate({ body: verifyEmailSchema }), AccountController.verifyEmail);
+
+router.post(
+  '/resend-verification-public',
+  passwordResetRateLimiter,
+  validate({ body: resendVerificationSchema }),
+  AccountController.resendVerificationPublic,
+);
 
 // Protected routes
 

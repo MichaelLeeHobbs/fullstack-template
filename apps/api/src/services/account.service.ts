@@ -58,6 +58,25 @@ export class AccountService {
   }
 
   /**
+   * Resend verification email by email address (public — no auth required)
+   * Silently succeeds if email not found (prevents enumeration)
+   */
+  static async resendVerificationByEmail(email: string): Promise<Result<void>> {
+    return tryCatch(async () => {
+      const [user] = await db
+        .select({ id: users.id, email: users.email, emailVerified: users.emailVerified })
+        .from(users)
+        .where(eq(users.email, email.toLowerCase()));
+
+      if (!user || user.emailVerified) {
+        return; // Silently succeed to prevent enumeration
+      }
+
+      await this.sendVerificationEmail(user.id, user.email);
+    });
+  }
+
+  /**
    * Verify email with token
    */
   static async verifyEmail(token: string): Promise<Result<{ userId: string }>> {

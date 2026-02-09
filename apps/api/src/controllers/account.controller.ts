@@ -7,7 +7,7 @@ import type { Request, Response } from 'express';
 import { AccountService } from '../services/account.service.js';
 import { AuditService, type AuditContext } from '../services/audit.service.js';
 import { AUDIT_ACTIONS } from '../db/schema/audit.js';
-import type { ForgotPasswordInput, ResetPasswordInput, VerifyEmailInput } from '../schemas/account.schema.js';
+import type { ForgotPasswordInput, ResetPasswordInput, VerifyEmailInput, ResendVerificationInput } from '../schemas/account.schema.js';
 import logger from '../lib/logger.js';
 
 export class AccountController {
@@ -106,6 +106,28 @@ export class AccountController {
   /**
    * POST /api/v1/account/resend-verification
    * Resend email verification
+   */
+  /**
+   * POST /api/v1/account/resend-verification-public
+   * Resend email verification (public — for login page when not authenticated)
+   */
+  static async resendVerificationPublic(req: Request, res: Response): Promise<void> {
+    const { email } = req.body as ResendVerificationInput;
+    const context: AuditContext = AuditService.getContextFromRequest(req);
+
+    await AccountService.resendVerificationByEmail(email);
+    await AuditService.log(AUDIT_ACTIONS.EMAIL_VERIFICATION_SENT, context, `Email: ${email}`);
+
+    // Always return success to prevent email enumeration
+    res.json({
+      success: true,
+      data: { message: 'If an account with that email exists, a verification link has been sent.' },
+    });
+  }
+
+  /**
+   * POST /api/v1/account/resend-verification
+   * Resend email verification (authenticated)
    */
   static async resendVerification(req: Request, res: Response): Promise<void> {
     const userId = req.user?.id;

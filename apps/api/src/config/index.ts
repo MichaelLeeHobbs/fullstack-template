@@ -22,6 +22,7 @@ const configSchema = z.object({
 
   // Database
   DATABASE_URL: z.string().url(),
+  DATABASE_SSL: z.enum(['true', 'false']).default('false').transform((v) => v === 'true'),
 
   // Authentication
   JWT_SECRET: z.string().min(32),

@@ -3,10 +3,11 @@
 // ===========================================
 
 import { z } from 'zod/v4';
+import { passwordSchema } from './auth.schema.js';
 
 export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password is required'),
-  newPassword: z.string().min(8, 'Password must be at least 8 characters'),
+  newPassword: passwordSchema,
 });
 
 export const updatePreferencesSchema = z.object({

@@ -16,8 +16,8 @@ export const emailVerificationTokens = pgTable('email_verification_tokens', {
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
   token: varchar('token', { length: 255 }).notNull().unique(),
-  expiresAt: timestamp('expires_at').notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => [
   index('email_verification_tokens_user_id_idx').on(table.userId),
 ]);
@@ -35,8 +35,8 @@ export const passwordResetTokens = pgTable('password_reset_tokens', {
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
   token: varchar('token', { length: 255 }).notNull().unique(),
-  expiresAt: timestamp('expires_at').notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => [
   index('password_reset_tokens_user_id_idx').on(table.userId),
 ]);

@@ -48,8 +48,8 @@ export const userMfaMethods = pgTable('user_mfa_methods', {
   config: jsonb('config').$type<MfaMethodConfig>().notNull(),
   isEnabled: boolean('is_enabled').default(false).notNull(),
   isVerified: boolean('is_verified').default(false).notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => [
   index('user_mfa_methods_user_id_idx').on(table.userId),
   unique('user_mfa_methods_user_method_unique').on(table.userId, table.method),

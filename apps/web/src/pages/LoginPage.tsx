@@ -56,7 +56,7 @@ export function LoginPage() {
   });
 
   const resendVerification = useMutation({
-    mutationFn: () => accountApi.forgotPassword({ email: getValues('email') }),
+    mutationFn: () => accountApi.resendVerificationPublic({ email: getValues('email') }),
     onSuccess: () => {
       notify.success('Verification email sent! Please check your inbox.');
     },

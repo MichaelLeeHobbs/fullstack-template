@@ -11,7 +11,6 @@ import { useAuthStore } from '../stores/auth.store.js';
 export function useLogin() {
   const setAuth = useAuthStore((state) => state.setAuth);
   const setMfaRequired = useAuthStore((state) => state.setMfaRequired);
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -25,7 +24,7 @@ export function useLogin() {
       const successData = data as AuthSuccessResponse;
       setAuth(successData.user, successData.accessToken);
       queryClient.clear();
-      navigate('/');
+      // Navigation is handled by the caller (LoginPage)
     },
   });
 }

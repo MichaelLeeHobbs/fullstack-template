@@ -34,8 +34,8 @@ export const systemSettings = pgTable('system_settings', {
   category: varchar('category', { length: 100 }).default('general'),
 
   // Timestamps
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
 export type SystemSetting = typeof systemSettings.$inferSelect;

@@ -6,12 +6,21 @@
 
 import type { Request, Response } from 'express';
 import { AuthService } from '../services/auth.service.js';
+import { AuditService } from '../services/audit.service.js';
+import { SettingsService } from '../services/settings.service.js';
+import { AUDIT_ACTIONS } from '../db/schema/audit.js';
 import type { RegisterInput, LoginInput } from '../schemas/auth.schema.js';
 import logger from '../lib/logger.js';
 import { setRefreshTokenCookie, clearRefreshTokenCookie, getRefreshTokenFromCookie } from '../lib/cookies.js';
 
 export class AuthController {
   static async register(req: Request, res: Response): Promise<void> {
+    const registrationEnabled = await SettingsService.get<boolean>('feature.registration_enabled', true);
+    if (!registrationEnabled) {
+      res.status(403).json({ success: false, error: 'Registration is currently disabled' });
+      return;
+    }
+
     const { email, password } = req.body as RegisterInput;
 
     const metadata = { userAgent: req.headers['user-agent'], ipAddress: req.ip };
@@ -29,6 +38,9 @@ export class AuthController {
       return;
     }
 
+    const context = AuditService.getContextFromRequest(req);
+    await AuditService.log(AUDIT_ACTIONS.REGISTER, { ...context, userId: result.value.user.id });
+
     logger.info({ userId: result.value.user.id }, 'User registered');
     setRefreshTokenCookie(res, result.value.refreshToken);
     const { refreshToken: _rt, ...responseData } = result.value;
@@ -42,6 +54,8 @@ export class AuthController {
     const result = await AuthService.login(email, password, metadata);
 
     if (!result.ok) {
+      const context = AuditService.getContextFromRequest(req);
+      await AuditService.log(AUDIT_ACTIONS.LOGIN_FAILED, context, `Email: ${email}`, false);
       logger.warn({ email, error: result.error.toString() }, 'Login failed');
 
       // Handle account lockout
@@ -92,6 +106,9 @@ export class AuthController {
       return;
     }
 
+    const context = AuditService.getContextFromRequest(req);
+    await AuditService.log(AUDIT_ACTIONS.LOGIN_SUCCESS, { ...context, userId: result.value.user.id });
+
     logger.info({ userId: result.value.user.id }, 'User logged in');
     setRefreshTokenCookie(res, result.value.refreshToken);
     const { refreshToken: _rt, ...responseData } = result.value;
@@ -130,6 +147,9 @@ export class AuthController {
         logger.error({ error: result.error }, 'Logout failed');
       }
     }
+
+    const context = AuditService.getContextFromRequest(req);
+    await AuditService.log(AUDIT_ACTIONS.LOGOUT, context);
 
     clearRefreshTokenCookie(res);
     res.json({ success: true, data: { message: 'Logged out successfully' } });

@@ -240,24 +240,39 @@ export class ApiKeyService {
         .where(eq(apiKeys.userId, userId))
         .orderBy(apiKeys.createdAt);
 
-      const result: ApiKeyWithPermissions[] = [];
-      for (const key of keys) {
-        const keyPerms = await this.getKeyPermissions(key.id);
-        result.push({
-          id: key.id,
-          userId: key.userId,
-          name: key.name,
-          prefix: key.prefix,
-          expiresAt: key.expiresAt,
-          isActive: key.isActive,
-          lastUsedAt: key.lastUsedAt,
-          createdAt: key.createdAt,
-          updatedAt: key.updatedAt,
-          permissions: keyPerms,
-        });
+      if (keys.length === 0) return [];
+
+      // Batch-fetch all permissions for all keys in one query
+      const keyIds = keys.map((k) => k.id);
+      const allPerms = await db
+        .select({
+          apiKeyId: apiKeyPermissions.apiKeyId,
+          id: permissions.id,
+          name: permissions.name,
+        })
+        .from(apiKeyPermissions)
+        .innerJoin(permissions, eq(apiKeyPermissions.permissionId, permissions.id))
+        .where(inArray(apiKeyPermissions.apiKeyId, keyIds));
+
+      const permsByKey = new Map<string, Array<{ id: string; name: string }>>();
+      for (const perm of allPerms) {
+        const list = permsByKey.get(perm.apiKeyId) ?? [];
+        list.push({ id: perm.id, name: perm.name });
+        permsByKey.set(perm.apiKeyId, list);
       }
 
-      return result;
+      return keys.map((key) => ({
+        id: key.id,
+        userId: key.userId,
+        name: key.name,
+        prefix: key.prefix,
+        expiresAt: key.expiresAt,
+        isActive: key.isActive,
+        lastUsedAt: key.lastUsedAt,
+        createdAt: key.createdAt,
+        updatedAt: key.updatedAt,
+        permissions: permsByKey.get(key.id) ?? [],
+      }));
     });
   }
 
@@ -305,18 +320,25 @@ export class ApiKeyService {
         .limit(limit)
         .offset(offset);
 
-      // Count permissions for each key
-      const items: ApiKeyListItem[] = [];
-      for (const row of rows) {
-        const [permCount] = await db
-          .select({ count: count() })
-          .from(apiKeyPermissions)
-          .where(eq(apiKeyPermissions.apiKeyId, row.id));
-        items.push({
-          ...row,
-          permissionCount: permCount?.count ?? 0,
-        });
-      }
+      if (rows.length === 0) return buildPaginationResult([], total, page, limit);
+
+      // Batch-fetch permission counts for all keys in one query
+      const keyIds = rows.map((r) => r.id);
+      const permCounts = await db
+        .select({
+          apiKeyId: apiKeyPermissions.apiKeyId,
+          count: count(),
+        })
+        .from(apiKeyPermissions)
+        .where(inArray(apiKeyPermissions.apiKeyId, keyIds))
+        .groupBy(apiKeyPermissions.apiKeyId);
+
+      const countByKey = new Map(permCounts.map((r) => [r.apiKeyId, r.count]));
+
+      const items: ApiKeyListItem[] = rows.map((row) => ({
+        ...row,
+        permissionCount: countByKey.get(row.id) ?? 0,
+      }));
 
       return buildPaginationResult(items, total, page, limit);
     });

@@ -62,28 +62,35 @@ export class RoleService {
     return tryCatch(async () => {
       const allRoles = await db.select().from(roles).orderBy(roles.name);
 
-      const rolesWithPermissions: RoleWithPermissions[] = [];
+      if (allRoles.length === 0) return [];
 
-      for (const role of allRoles) {
-        const rolePerms = await db
-          .select({
-            id: permissions.id,
-            name: permissions.name,
-            description: permissions.description,
-            resource: permissions.resource,
-            action: permissions.action,
-          })
-          .from(rolePermissions)
-          .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
-          .where(eq(rolePermissions.roleId, role.id));
+      // Batch-fetch all permissions for all roles in one query
+      const roleIds = allRoles.map((r) => r.id);
+      const allRolePerms = await db
+        .select({
+          roleId: rolePermissions.roleId,
+          id: permissions.id,
+          name: permissions.name,
+          description: permissions.description,
+          resource: permissions.resource,
+          action: permissions.action,
+        })
+        .from(rolePermissions)
+        .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
+        .where(inArray(rolePermissions.roleId, roleIds));
 
-        rolesWithPermissions.push({
-          ...role,
-          permissions: rolePerms,
-        });
+      // Group permissions by roleId
+      const permsByRole = new Map<string, RoleWithPermissions['permissions']>();
+      for (const perm of allRolePerms) {
+        const list = permsByRole.get(perm.roleId) ?? [];
+        list.push({ id: perm.id, name: perm.name, description: perm.description, resource: perm.resource, action: perm.action });
+        permsByRole.set(perm.roleId, list);
       }
 
-      return rolesWithPermissions;
+      return allRoles.map((role) => ({
+        ...role,
+        permissions: permsByRole.get(role.id) ?? [],
+      }));
     });
   }
 

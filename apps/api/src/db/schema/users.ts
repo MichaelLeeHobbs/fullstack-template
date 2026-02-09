@@ -45,12 +45,12 @@ export const users = pgTable('users', {
 
   // Lockout
   failedLoginAttempts: integer('failed_login_attempts').default(0).notNull(),
-  lockedUntil: timestamp('locked_until'),
+  lockedUntil: timestamp('locked_until', { withTimezone: true }),
 
   // Timestamps
-  lastLoginAt: timestamp('last_login_at'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => [
   index('users_is_active_idx').on(table.isActive),
 ]);

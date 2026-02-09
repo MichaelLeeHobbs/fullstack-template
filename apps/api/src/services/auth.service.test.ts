@@ -74,6 +74,13 @@ vi.mock('./mfa.service.js', () => ({
   },
 }));
 
+// Mock SettingsService
+vi.mock('./settings.service.js', () => ({
+  SettingsService: {
+    get: vi.fn().mockResolvedValue(true),
+  },
+}));
+
 // Mock logger
 vi.mock('../lib/logger.js', () => ({
   default: { info: vi.fn(), error: vi.fn(), warn: vi.fn() },
@@ -376,9 +383,10 @@ describe('AuthService', () => {
 
       expect(result.ok).toBe(true);
       if (result.ok && 'mfaRequired' in result.value) {
-        expect(result.value.mfaRequired).toBe(true);
-        expect(result.value.tempToken).toBe('mock-mfa-temp-token');
-        expect(result.value.mfaMethods).toEqual(['totp']);
+        const mfaResult = result.value as { mfaRequired: true; tempToken: string; mfaMethods: string[] };
+        expect(mfaResult.mfaRequired).toBe(true);
+        expect(mfaResult.tempToken).toBe('mock-mfa-temp-token');
+        expect(mfaResult.mfaMethods).toEqual(['totp']);
       }
     });
 

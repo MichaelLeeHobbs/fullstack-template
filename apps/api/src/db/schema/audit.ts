@@ -81,7 +81,7 @@ export const auditLogs = pgTable('audit_logs', {
   userAgent: varchar('user_agent', { length: 500 }),
   details: varchar('details', { length: 1000 }),
   success: boolean('success').default(true).notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => [
   index('audit_logs_user_id_idx').on(table.userId),
   index('audit_logs_created_at_idx').on(table.createdAt),

@@ -15,6 +15,7 @@ import { PermissionService } from './permission.service.js';
 import { EmailService } from './email.service.js';
 import { AccountLockoutService } from './account-lockout.service.js';
 import { MfaService } from './mfa.service.js';
+import { SettingsService } from './settings.service.js';
 import type { MfaMethod } from '../db/schema/index.js';
 
 const SALT_ROUNDS = 12;
@@ -148,8 +149,9 @@ export class AuthService {
         throw new Error(`INVALID_CREDENTIALS:${remaining ?? ''}`);
       }
 
-      // Check if email is verified
-      if (!user.emailVerified) {
+      // Check if email is verified (only when setting is enabled)
+      const emailVerificationRequired = await SettingsService.get<boolean>('feature.email_verification_required', false);
+      if (emailVerificationRequired && !user.emailVerified) {
         throw new Error('EMAIL_NOT_VERIFIED');
       }
 

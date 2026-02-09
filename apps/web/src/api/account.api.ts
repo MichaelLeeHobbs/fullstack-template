@@ -46,4 +46,10 @@ export const accountApi = {
    * Resend verification email (requires authentication).
    */
   resendVerification: () => api.post<{ message: string }>('/account/resend-verification', {}),
+
+  /**
+   * Resend verification email (public — for login page when not authenticated).
+   */
+  resendVerificationPublic: (data: ForgotPasswordInput) =>
+    api.post<{ message: string }>('/account/resend-verification-public', data, { skipAuth: true }),
 };

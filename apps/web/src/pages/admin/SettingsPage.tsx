@@ -3,7 +3,7 @@
 // ===========================================
 // Manage system settings (feature flags, AI config, etc.)
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -57,9 +57,11 @@ export function SettingsPage() {
 
   // Set initial tab when data loads
   const categories = Object.keys(data?.grouped || {});
-  if (categories.length > 0 && !activeTab && categories[0]) {
-    setActiveTab(categories[0]);
-  }
+  useEffect(() => {
+    if (categories.length > 0 && !activeTab && categories[0]) {
+      setActiveTab(categories[0]);
+    }
+  }, [categories.length]); // eslint-disable-line
 
   if (isLoading) {
     return (

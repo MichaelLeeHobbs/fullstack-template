@@ -6,6 +6,8 @@
 import type { Request, Response } from 'express';
 import { MfaService } from '../services/mfa.service.js';
 import { AuthService } from '../services/auth.service.js';
+import { AuditService } from '../services/audit.service.js';
+import { AUDIT_ACTIONS } from '../db/schema/audit.js';
 import type {
   MfaVerifySetupInput,
   MfaVerifyLoginInput,
@@ -61,6 +63,9 @@ export class MfaController {
       return;
     }
 
+    const context = AuditService.getContextFromRequest(req);
+    await AuditService.log(AUDIT_ACTIONS.MFA_ENABLED, context, 'TOTP');
+
     res.json({ success: true, data: result.value });
   }
 
@@ -101,6 +106,9 @@ export class MfaController {
       return;
     }
 
+    const context = AuditService.getContextFromRequest(req);
+    await AuditService.log(AUDIT_ACTIONS.MFA_DISABLED, context, method);
+
     res.json({ success: true, data: { message: 'MFA disabled' } });
   }
 
@@ -119,6 +127,9 @@ export class MfaController {
       res.status(500).json({ success: false, error: 'Failed to regenerate backup codes' });
       return;
     }
+
+    const context = AuditService.getContextFromRequest(req);
+    await AuditService.log(AUDIT_ACTIONS.MFA_BACKUP_REGENERATED, context);
 
     res.json({ success: true, data: result.value });
   }

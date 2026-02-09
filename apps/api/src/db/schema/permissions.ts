@@ -12,7 +12,7 @@ export const permissions = pgTable('permissions', {
   description: varchar('description', { length: 255 }).notNull(),
   resource: varchar('resource', { length: 50 }).notNull(), // e.g., 'users'
   action: varchar('action', { length: 50 }).notNull(), // e.g., 'read'
-  createdAt: timestamp('created_at').defaultNow().notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
 export type Permission = typeof permissions.$inferSelect;

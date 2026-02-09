@@ -5,6 +5,8 @@
 
 import type { Request, Response } from 'express';
 import { SessionService } from '../services/session.service.js';
+import { AuditService } from '../services/audit.service.js';
+import { AUDIT_ACTIONS } from '../db/schema/audit.js';
 import type { SessionIdParam } from '../schemas/session.schema.js';
 import logger from '../lib/logger.js';
 
@@ -45,6 +47,9 @@ export class SessionController {
       return;
     }
 
+    const context = AuditService.getContextFromRequest(req);
+    await AuditService.log(AUDIT_ACTIONS.SESSION_REVOKED, context, `Session: ${sessionId}`);
+
     res.json({ success: true, data: { message: 'Session revoked' } });
   }
 
@@ -64,6 +69,9 @@ export class SessionController {
       res.status(500).json({ success: false, error: 'Failed to revoke sessions' });
       return;
     }
+
+    const context = AuditService.getContextFromRequest(req);
+    await AuditService.log(AUDIT_ACTIONS.ALL_SESSIONS_REVOKED, context, `Revoked ${result.value.revokedCount} session(s)`);
 
     res.json({ success: true, data: { message: `Revoked ${result.value.revokedCount} session(s)` } });
   }

@@ -16,6 +16,7 @@ import routes from './routes/index.js';
 import { requestId } from './middleware/request-id.middleware.js';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
 import { apiRateLimiter } from './middleware/rateLimit.middleware.js';
+import { maintenanceMode } from './middleware/maintenance.middleware.js';
 
 // Use createRequire for proper ESM/CJS interop with CJS packages
 const require = createRequire(import.meta.url);
@@ -77,6 +78,9 @@ if (config.NODE_ENV !== 'production') {
 
 // Global API rate limiter (100 req/min per IP)
 app.use('/api/v1', apiRateLimiter);
+
+// Maintenance mode (blocks non-admin access when enabled)
+app.use('/api/v1', maintenanceMode);
 
 // API routes
 app.use('/api/v1', routes);

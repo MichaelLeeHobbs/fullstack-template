@@ -6,7 +6,7 @@
 import { tryCatch, type Result } from 'stderr-lib';
 import { db } from '../lib/db.js';
 import { users, ACCOUNT_TYPES } from '../db/schema/index.js';
-import { eq, and, count } from 'drizzle-orm';
+import { eq, and, count, inArray } from 'drizzle-orm';
 import { apiKeys } from '../db/schema/api-keys.js';
 
 export interface ServiceAccount {
@@ -68,19 +68,25 @@ export class ServiceAccountService {
         .where(eq(users.accountType, ACCOUNT_TYPES.SERVICE))
         .orderBy(users.createdAt);
 
-      const result: ServiceAccount[] = [];
-      for (const account of accounts) {
-        const [keyCount] = await db
-          .select({ count: count() })
-          .from(apiKeys)
-          .where(eq(apiKeys.userId, account.id));
-        result.push({
-          ...account,
-          apiKeyCount: keyCount?.count ?? 0,
-        });
-      }
+      if (accounts.length === 0) return [];
 
-      return result;
+      // Batch-fetch API key counts in one query
+      const accountIds = accounts.map((a) => a.id);
+      const keyCounts = await db
+        .select({
+          userId: apiKeys.userId,
+          count: count(),
+        })
+        .from(apiKeys)
+        .where(inArray(apiKeys.userId, accountIds))
+        .groupBy(apiKeys.userId);
+
+      const countByUser = new Map(keyCounts.map((r) => [r.userId, r.count]));
+
+      return accounts.map((account) => ({
+        ...account,
+        apiKeyCount: countByUser.get(account.id) ?? 0,
+      }));
     });
   }
 

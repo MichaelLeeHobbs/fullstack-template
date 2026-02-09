@@ -170,29 +170,36 @@ export class UserRoleService {
         .from(users)
         .orderBy(users.email);
 
-      const usersWithRoles: UserWithRoles[] = [];
+      if (allUsers.length === 0) return [];
 
-      for (const user of allUsers) {
-        const userRoleList = await db
-          .select({
-            id: roles.id,
-            name: roles.name,
-            description: roles.description,
-            isSystem: roles.isSystem,
-            createdAt: roles.createdAt,
-            updatedAt: roles.updatedAt,
-          })
-          .from(userRoles)
-          .innerJoin(roles, eq(userRoles.roleId, roles.id))
-          .where(eq(userRoles.userId, user.id));
+      // Batch-fetch all user-role assignments in one query
+      const userIds = allUsers.map((u) => u.id);
+      const allUserRoles = await db
+        .select({
+          userId: userRoles.userId,
+          id: roles.id,
+          name: roles.name,
+          description: roles.description,
+          isSystem: roles.isSystem,
+          createdAt: roles.createdAt,
+          updatedAt: roles.updatedAt,
+        })
+        .from(userRoles)
+        .innerJoin(roles, eq(userRoles.roleId, roles.id))
+        .where(inArray(userRoles.userId, userIds));
 
-        usersWithRoles.push({
-          ...user,
-          roles: userRoleList,
-        });
+      // Group roles by userId
+      const rolesByUser = new Map<string, Role[]>();
+      for (const row of allUserRoles) {
+        const list = rolesByUser.get(row.userId) ?? [];
+        list.push({ id: row.id, name: row.name, description: row.description, isSystem: row.isSystem, createdAt: row.createdAt, updatedAt: row.updatedAt });
+        rolesByUser.set(row.userId, list);
       }
 
-      return usersWithRoles;
+      return allUsers.map((user) => ({
+        ...user,
+        roles: rolesByUser.get(user.id) ?? [],
+      }));
     });
   }
 

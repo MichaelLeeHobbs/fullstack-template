@@ -12,8 +12,8 @@ export const roles = pgTable('roles', {
   name: varchar('name', { length: 100 }).notNull().unique(),
   description: varchar('description', { length: 255 }),
   isSystem: boolean('is_system').default(false).notNull(), // Protected roles like Super Admin
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
 export const rolePermissions = pgTable(

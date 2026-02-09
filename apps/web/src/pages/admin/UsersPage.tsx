@@ -3,7 +3,7 @@
 // ===========================================
 // User management with list, edit, delete, and role assignment.
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Container,
   Typography,
@@ -134,12 +134,14 @@ export function UsersPage() {
   };
 
   // Update selected roles when userRoles changes
-  if (rolesDialog && userRoles && selectedRoles.size === 0) {
-    const roleIds = new Set(userRoles.map((r) => r.id));
-    if (roleIds.size > 0) {
-      setSelectedRoles(roleIds);
+  useEffect(() => {
+    if (rolesDialog && userRoles && selectedRoles.size === 0) {
+      const roleIds = new Set(userRoles.map((r) => r.id));
+      if (roleIds.size > 0) {
+        setSelectedRoles(roleIds);
+      }
     }
-  }
+  }, [rolesDialog, userRoles]); // eslint-disable-line
 
   const handleSaveRoles = () => {
     if (!rolesDialog) return;
