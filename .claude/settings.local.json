@@ -23,7 +23,10 @@
       "Bash(git mv:*)",
       "Bash(Remove-Item -Path \"docs\\\\architecture\\\\FULLSTACK TEMPLATE - COMPREHENSIVE FEATURE AUDIT.md\" -Force)",
       "Bash(git rm:*)",
-      "Bash(git status:*)"
+      "Bash(git status:*)",
+      "Bash(git stash:*)",
+      "Bash(git -C C:UsersmhobbWebstormProjectsfullstack-template status)",
+      "Bash(cd:*)"
     ]
   }
 }
