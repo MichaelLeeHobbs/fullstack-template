@@ -248,7 +248,7 @@ The `apiRateLimiter` (100 req/min) is defined but never applied. Only auth-speci
 
 ### Security
 - ~~**Password validation inconsistency**: Registration requires uppercase + number, but password reset (`account.schema.ts:12`) and change (`user.schema.ts:9`) only require 8 chars~~
-- **Password policy violates NIST 800-63B Rev 4**: Composition rules (uppercase, number) are explicitly discouraged by NIST. Should use minimum length + breached password checking instead
+- ~~**Password policy violates NIST 800-63B Rev 4**: Composition rules (uppercase, number) are explicitly discouraged by NIST. Should use minimum length + breached password checking instead~~
 - ~~**`optionalAuth` middleware ignores API keys**: Only checks Bearer JWT, silently ignores `X-API-Key`~~
 - ~~**API key creation allows non-admin user assignment**: `api-key.service.ts:80-86` — `userId` override not restricted to admins~~
 - ~~**No `trust proxy` configuration**: `req.ip` behind a load balancer returns the proxy's IP, breaking rate limiting~~

@@ -140,7 +140,7 @@ export function RegisterPage() {
               fullWidth
               margin="normal"
               error={!!errors.password}
-              helperText={errors.password?.message || 'At least 8 characters, one uppercase, one number'}
+              helperText={errors.password?.message || 'At least 8 characters'}
               autoComplete="new-password"
             />
             <TextField

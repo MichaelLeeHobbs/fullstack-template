@@ -10,7 +10,7 @@ describe('Auth Schemas', () => {
     it('should validate a valid registration', () => {
       const result = registerSchema.safeParse({
         email: 'test@example.com',
-        password: 'Password123',
+        password: 'mysecurepassword',
       });
       expect(result.success).toBe(true);
     });
@@ -18,7 +18,7 @@ describe('Auth Schemas', () => {
     it('should reject invalid email', () => {
       const result = registerSchema.safeParse({
         email: 'invalid-email',
-        password: 'Password123',
+        password: 'mysecurepassword',
       });
       expect(result.success).toBe(false);
     });
@@ -26,23 +26,31 @@ describe('Auth Schemas', () => {
     it('should reject short password', () => {
       const result = registerSchema.safeParse({
         email: 'test@example.com',
-        password: 'Pass1',
+        password: 'short',
       });
       expect(result.success).toBe(false);
     });
 
-    it('should reject password without uppercase', () => {
+    it('should accept password without uppercase (NIST 800-63B compliant)', () => {
       const result = registerSchema.safeParse({
         email: 'test@example.com',
         password: 'password123',
       });
-      expect(result.success).toBe(false);
+      expect(result.success).toBe(true);
     });
 
-    it('should reject password without number', () => {
+    it('should accept password without number (NIST 800-63B compliant)', () => {
       const result = registerSchema.safeParse({
         email: 'test@example.com',
-        password: 'PasswordABC',
+        password: 'passwordabc',
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('should reject password exceeding 128 characters', () => {
+      const result = registerSchema.safeParse({
+        email: 'test@example.com',
+        password: 'a'.repeat(129),
       });
       expect(result.success).toBe(false);
     });

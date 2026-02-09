@@ -74,7 +74,7 @@ export function ChangePasswordCard() {
             type="password"
             label="New Password"
             error={!!errors.newPassword}
-            helperText={errors.newPassword?.message || 'At least 8 characters, one uppercase, one number'}
+            helperText={errors.newPassword?.message || 'At least 8 characters'}
             autoComplete="new-password"
           />
           <TextField
