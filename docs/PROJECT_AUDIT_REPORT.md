@@ -293,12 +293,12 @@ The `apiRateLimiter` (100 req/min) is defined but never applied. Only auth-speci
 
 ## Part 3: Low Severity Issues
 
-- No audit logging for login success/failure, password changes, session revocations, or MFA events (all `AUDIT_ACTIONS` are defined but unused)
-- No graceful server shutdown (SIGTERM/SIGINT handlers)
+- ~~No audit logging for login success/failure, password changes, session revocations, or MFA events (all `AUDIT_ACTIONS` are defined but unused)~~
+- ~~No graceful server shutdown (SIGTERM/SIGINT handlers)~~
 - Inconsistent error message matching in controllers (string matching vs error codes)
 - `pino-pretty` is a production dependency (should be devDependency)
 - Compiled `.js`/`.d.ts` artifacts in `test/utils/` not gitignored
-- Test files compiled into production `dist/` (tsconfig includes `*.test.ts`)
+- ~~Test files compiled into production `dist/` (tsconfig includes `*.test.ts`)~~
 - No React ESLint plugins (`eslint-plugin-react-hooks`, `eslint-plugin-jsx-a11y`)
 - No code splitting / lazy loading for routes (entire admin bundle downloaded for non-admin users)
 - Hardcoded "App Name" and "v0.1.0" scattered across frontend
@@ -397,13 +397,13 @@ The `apiRateLimiter` (100 req/min) is defined but never applied. Only auth-speci
 | **Background job queue** (BullMQ + Redis) | High | Medium | Needed for email, cleanup, async processing |
 | **Billing/Subscriptions** (Stripe) | Very High | Medium-High | The #1 differentiator for SaaS templates |
 | **Multi-tenancy** (teams/orgs) | Very High | High | Critical for B2B SaaS |
-| **Notification system** (in-app + email) | High | Medium | In-app notification center with preferences |
+| ~~**Notification system** (in-app + email)~~ | ~~High~~ | ~~Medium~~ | ~~In-app notification center with preferences~~ |
 | **File upload pipeline** (presigned URLs) | High | Medium | S3/MinIO infrastructure already exists |
 | **i18n** | Medium-High | Medium | Must be built in early — painful to retrofit |
 | **Feature flags** (advanced) | Medium-High | Low-Medium | DB-backed flags exist; need user targeting + percentage rollout |
 | **Outbound webhooks** | Medium-High | Medium | Standard SaaS integration pattern |
 | **Full-text search** | Medium | Low | PostgreSQL FTS requires no extra infrastructure |
-| **Real-time** (WebSocket/SSE) | High | Medium-High | Live notifications, collaborative features |
+| ~~**Real-time** (WebSocket/SSE)~~ | ~~High~~ | ~~Medium-High~~ | ~~Live notifications, collaborative features~~ |
 | **AI integration patterns** | Very High | Medium-High | Fastest-growing category; LLM wrapper + streaming |
 
 ---
@@ -450,7 +450,7 @@ The `apiRateLimiter` (100 req/min) is defined but never applied. Only auth-speci
 27. Social OAuth (Google, GitHub)
 28. ~~Background job queue (BullMQ + Redis) — implemented with pg-boss (PostgreSQL-backed)~~
 29. Stripe billing integration
-30. In-app notification system
+30. ~~In-app notification system~~
 31. File upload pipeline with presigned URLs
 32. E2E test suite (Playwright)
 33. Sentry error tracking integration
