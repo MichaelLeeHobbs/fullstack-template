@@ -122,7 +122,7 @@
 | 6.7 | Timezone-aware timestamps | Complete | `timestamp({ withTimezone: true })` |
 | 6.8 | `updatedAt` auto-trigger | Complete | PostgreSQL `BEFORE UPDATE` trigger |
 | 6.9 | Database indexes | Complete | Audit logs, sessions, composite unique on permissions |
-| 6.10 | Reversible migrations (DOWN) | Partial | Drizzle ORM limitation — no built-in down migration support |
+| 6.10 | Reversible migrations (DOWN) | Not Planned | Drizzle ORM has no built-in support; not worth custom tooling |
 | 6.11 | N+1 query optimization | Complete | JOIN queries replace loop patterns |
 
 **Schema tables:** users, sessions, tokens, user_mfa_methods, roles, permissions, user_roles, api_keys, audit_logs, notifications, settings
@@ -225,13 +225,13 @@
 | # | Feature | Status | Notes |
 |---|---------|--------|-------|
 | 13.1 | Vitest framework | Complete | Both API and web packages |
-| 13.2 | Unit tests (backend services) | Partial | ~10 of 15 services have tests; goal is full coverage |
-| 13.3 | Unit tests (backend controllers) | Complete | All controllers tested |
+| 13.2 | Unit tests (backend services) | Complete | All 17 services have unit tests |
+| 13.3 | Unit tests (backend controllers) | Complete | All 10 controllers tested |
 | 13.4 | Integration tests (API) | Complete | Auth + admin flows with supertest |
 | 13.5 | Unit tests (frontend components) | Partial | Limited component test coverage |
 | 13.6 | Test utilities | Complete | Mock DB, mock Express, data factories in `test/utils/` |
 | 13.7 | E2E tests (Playwright) | Planned | Browser-level testing |
-| 13.8 | Test count | — | 199 API + 11 web tests passing |
+| 13.8 | Test count | — | 342 API + 11 web tests passing |
 
 ---
 
@@ -287,7 +287,7 @@
 | User Management | 5 | 0 | 0 | 0 | 5 |
 | Authorization | 7 | 0 | 0 | 0 | 7 |
 | API & Backend | 18 | 0 | 0 | 1 | 19 |
-| Database | 10 | 1 | 0 | 0 | 11 |
+| Database | 10 | 0 | 0 | 1 | 11 |
 | Frontend Core | 14 | 0 | 0 | 0 | 14 |
 | Real-time & Notifications | 8 | 0 | 0 | 0 | 8 |
 | Background Jobs | 5 | 0 | 0 | 0 | 5 |
@@ -298,6 +298,6 @@
 | Documentation | 10 | 0 | 0 | 0 | 10 |
 | Advanced / SaaS | 0 | 1 | 6 | 0 | 7 |
 | Settings & Flags | 5 | 0 | 0 | 0 | 5 |
-| **Total** | **126** | **4** | **14** | **2** | **146** |
+| **Total** | **126** | **3** | **14** | **3** | **146** |
 
-**Completion: 86% complete, 3% partial, 10% planned, 1% not planned**
+**Completion: 86% complete, 2% partial, 10% planned, 2% not planned**
