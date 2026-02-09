@@ -26,12 +26,10 @@ vi.mock('../lib/db.js', () => {
   };
 });
 
-// Mock email service
-vi.mock('./email.service.js', () => ({
-  EmailService: {
-    sendVerificationEmail: vi.fn().mockResolvedValue({ ok: true, value: { messageId: 'mock-id' } }),
-    sendPasswordResetEmail: vi.fn().mockResolvedValue({ ok: true, value: { messageId: 'mock-id' } }),
-  },
+// Mock job queue
+vi.mock('../jobs/index.js', () => ({
+  enqueue: vi.fn().mockResolvedValue(undefined),
+  EMAIL_QUEUES: { VERIFICATION: 'email.verification', PASSWORD_RESET: 'email.password-reset' },
 }));
 
 // Mock logger

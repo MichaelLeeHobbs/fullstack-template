@@ -7,7 +7,8 @@ import app from './app.js';
 import { config } from './config/index.js';
 import logger from './lib/logger.js';
 import { pool } from './lib/db.js';
-import { cleanupExpiredData } from './jobs/cleanup.js';
+import { startQueue, stopQueue } from './lib/queue.js';
+import { registerAllHandlers } from './jobs/index.js';
 
 const PORT = config.PORT;
 
@@ -17,16 +18,20 @@ const server = app.listen(PORT, () => {
   logger.info(`Health check: http://localhost:${PORT}/health`);
 });
 
-// Schedule expired data cleanup (hourly)
-const cleanupInterval = setInterval(cleanupExpiredData, 60 * 60 * 1000);
-setTimeout(cleanupExpiredData, 30_000).unref();
+// Start pgboss job queue
+startQueue()
+  .then((boss) => registerAllHandlers(boss))
+  .catch((err) => {
+    logger.error({ error: err.message }, 'Failed to start pgboss');
+  });
 
 // Graceful shutdown
 function shutdown(signal: string) {
   logger.info({ signal }, 'Received signal, shutting down gracefully');
-  clearInterval(cleanupInterval);
-  server.close(() => {
-    pool.end().then(() => process.exit(0));
+  server.close(async () => {
+    await stopQueue();
+    await pool.end();
+    process.exit(0);
   });
   setTimeout(() => process.exit(1), 10_000).unref();
 }

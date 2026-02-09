@@ -12,7 +12,7 @@ import { users, sessions, emailVerificationTokens, type UserPreferences, ACCOUNT
 import { eq } from 'drizzle-orm';
 import { signAccessToken, signRefreshToken, verifyRefreshToken, signMfaTempToken, verifyMfaTempToken } from '../lib/jwt.js';
 import { PermissionService } from './permission.service.js';
-import { EmailService } from './email.service.js';
+import { enqueue } from '../jobs/index.js';
 import { AccountLockoutService } from './account-lockout.service.js';
 import { MfaService } from './mfa.service.js';
 import { SettingsService } from './settings.service.js';
@@ -105,7 +105,7 @@ export class AuthService {
       });
 
       // External calls after transaction commits
-      await EmailService.sendVerificationEmail(user.email, verificationToken);
+      await enqueue('email.verification', { email: user.email, token: verificationToken });
       const tokens = await this.createTokens(user.id, metadata);
       const permissions = await PermissionService.getUserPermissions(user.id);
 

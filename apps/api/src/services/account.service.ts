@@ -14,7 +14,7 @@ import {
   passwordResetTokens,
 } from '../db/schema/index.js';
 import { eq, and, gt } from 'drizzle-orm';
-import { EmailService } from './email.service.js';
+import { enqueue } from '../jobs/index.js';
 import logger from '../lib/logger.js';
 
 const SALT_ROUNDS = 12;
@@ -47,13 +47,10 @@ export class AccountService {
         expiresAt,
       });
 
-      // Send email
-      const result = await EmailService.sendVerificationEmail(email, token);
-      if (!result.ok) {
-        throw new Error('Failed to send verification email');
-      }
+      // Enqueue email
+      await enqueue('email.verification', { email, token });
 
-      logger.info({ userId, email }, 'Verification email sent');
+      logger.info({ userId, email }, 'Verification email enqueued');
     });
   }
 
@@ -151,13 +148,10 @@ export class AccountService {
         expiresAt,
       });
 
-      // Send email
-      const result = await EmailService.sendPasswordResetEmail(user.email, token);
-      if (!result.ok) {
-        throw new Error('Failed to send password reset email');
-      }
+      // Enqueue email
+      await enqueue('email.password-reset', { email: user.email, token });
 
-      logger.info({ userId: user.id }, 'Password reset email sent');
+      logger.info({ userId: user.id }, 'Password reset email enqueued');
     });
   }
 

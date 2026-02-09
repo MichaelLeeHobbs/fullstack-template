@@ -3,6 +3,7 @@
 // ===========================================
 // Deletes expired sessions, verification tokens, and password reset tokens.
 
+import type { PgBoss } from 'pg-boss';
 import { lt } from 'drizzle-orm';
 import { db } from '../lib/db.js';
 import { sessions, emailVerificationTokens, passwordResetTokens } from '../db/schema/index.js';
@@ -38,4 +39,14 @@ export async function cleanupExpiredData(): Promise<void> {
   } catch (error) {
     logger.error({ error }, 'Expired data cleanup failed');
   }
+}
+
+export async function registerCleanupHandler(boss: PgBoss): Promise<void> {
+  await boss.createQueue('maintenance.cleanup', { retryLimit: 1 });
+
+  boss.work('maintenance.cleanup', async (_jobs) => {
+    await cleanupExpiredData();
+  });
+
+  await boss.schedule('maintenance.cleanup', '0 * * * *');
 }

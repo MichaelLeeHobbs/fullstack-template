@@ -50,11 +50,10 @@ vi.mock('./permission.service.js', () => ({
   },
 }));
 
-// Mock EmailService
-vi.mock('./email.service.js', () => ({
-  EmailService: {
-    sendVerificationEmail: vi.fn().mockResolvedValue({ ok: true, value: { messageId: 'mock-id' } }),
-  },
+// Mock job queue
+vi.mock('../jobs/index.js', () => ({
+  enqueue: vi.fn().mockResolvedValue(undefined),
+  EMAIL_QUEUES: { VERIFICATION: 'email.verification', PASSWORD_RESET: 'email.password-reset' },
 }));
 
 // Mock AccountLockoutService
@@ -90,7 +89,7 @@ import { AuthService } from './auth.service.js';
 import { db } from '../lib/db.js';
 import bcrypt from 'bcrypt';
 import { verifyMfaTempToken } from '../lib/jwt.js';
-import { EmailService } from './email.service.js';
+import { enqueue } from '../jobs/index.js';
 import { AccountLockoutService } from './account-lockout.service.js';
 import { MfaService } from './mfa.service.js';
 import {
@@ -232,7 +231,7 @@ describe('AuthService', () => {
 
       await AuthService.register('test@example.com', 'Password123!');
 
-      expect(EmailService.sendVerificationEmail).toHaveBeenCalledWith('test@example.com', expect.any(String));
+      expect(enqueue).toHaveBeenCalledWith('email.verification', { email: 'test@example.com', token: expect.any(String) });
     });
   });
 
