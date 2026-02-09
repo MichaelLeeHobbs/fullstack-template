@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import { Speed, Security, Code } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
+import { APP_NAME } from '../lib/constants.js';
 
 const features = [
   {
@@ -64,7 +65,7 @@ export function LandingPage() {
               mb: 2,
             }}
           >
-            App Name
+            {APP_NAME}
           </Typography>
           <Typography
             variant="h4"
@@ -194,4 +195,3 @@ export function LandingPage() {
   );
 }
 
-export default LandingPage;

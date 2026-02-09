@@ -11,7 +11,7 @@ interface LoadingSpinnerProps extends BoxProps {
 /**
  * Inline loading spinner
  */
-export function LoadingSpinner({ size = 40, ...props }: LoadingSpinnerProps) {
+export function LoadingSpinner({ size = 40, sx, ...props }: LoadingSpinnerProps) {
   return (
     <Box
       sx={{
@@ -19,7 +19,7 @@ export function LoadingSpinner({ size = 40, ...props }: LoadingSpinnerProps) {
         justifyContent: 'center',
         alignItems: 'center',
         p: 2,
-        ...props.sx,
+        ...sx,
       }}
       {...props}
     >

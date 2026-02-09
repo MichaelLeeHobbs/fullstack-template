@@ -391,5 +391,3 @@ export function UsersPage() {
     </Container>
   );
 }
-
-export default UsersPage;

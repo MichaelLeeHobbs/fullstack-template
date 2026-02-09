@@ -28,6 +28,7 @@ import {
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/auth.store.js';
 import { useThemeStore } from '../../stores/theme.store.js';
+import { APP_NAME } from '../../lib/constants.js';
 import { useLogout } from '../../hooks/useAuth.js';
 import { NotificationBell } from '../ui/NotificationBell.js';
 
@@ -75,6 +76,7 @@ export function TopNav({ onMenuClick, showMenuButton = false }: TopNavProps) {
             edge="start"
             onClick={onMenuClick}
             sx={{ mr: 2 }}
+            aria-label="Open navigation menu"
           >
             <MenuIcon />
           </IconButton>
@@ -91,7 +93,7 @@ export function TopNav({ onMenuClick, showMenuButton = false }: TopNavProps) {
             flexGrow: 1,
           }}
         >
-          App Name
+          {APP_NAME}
         </Typography>
 
         <Tooltip title={mode === 'dark' ? 'Light mode' : 'Dark mode'}>
@@ -107,6 +109,7 @@ export function TopNav({ onMenuClick, showMenuButton = false }: TopNavProps) {
               color="inherit"
               onClick={handleMenuOpen}
               sx={{ ml: 1 }}
+              aria-label="Account menu"
             >
               <AccountCircle />
             </IconButton>

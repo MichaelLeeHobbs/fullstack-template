@@ -187,5 +187,3 @@ export function ServiceAccountsPage() {
     </Container>
   );
 }
-
-export default ServiceAccountsPage;

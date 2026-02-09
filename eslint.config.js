@@ -1,6 +1,8 @@
 // @ts-check
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
+import reactHooks from 'eslint-plugin-react-hooks';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
 
 export default tseslint.config(
   eslint.configs.recommended,
@@ -19,6 +21,25 @@ export default tseslint.config(
       '@typescript-eslint/no-namespace': 'off',
       'no-console': 'warn',
     },
+  },
+  // React Hooks rules (only for web app)
+  {
+    files: ['apps/web/**/*.{ts,tsx}'],
+    plugins: { 'react-hooks': reactHooks },
+    rules: {
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+    },
+  },
+  // JSX accessibility rules (only for web app)
+  {
+    files: ['apps/web/**/*.{ts,tsx}'],
+    plugins: { 'jsx-a11y': jsxA11y },
+    rules: {
+      'jsx-a11y/alt-text': 'warn',
+      'jsx-a11y/anchor-is-valid': 'warn',
+      'jsx-a11y/click-events-have-key-events': 'warn',
+      'jsx-a11y/no-static-element-interactions': 'warn',
+    },
   }
 );
-

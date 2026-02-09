@@ -6,6 +6,7 @@
 
 import { createRequire } from 'module';
 import type { Express } from 'express';
+import { config } from '../config/index.js';
 
 // Use createRequire for CJS interop (same pattern as pino-http in app.ts)
 const require = createRequire(import.meta.url);
@@ -20,7 +21,7 @@ const definition = {
     description: 'REST API for the fullstack template application. Provides authentication, user management, RBAC, API keys, MFA, and admin functionality.',
   },
   servers: [
-    { url: 'http://localhost:3000/api/v1', description: 'Local development' },
+    { url: `http://localhost:${config.PORT}/api/v1`, description: 'Local development' },
   ],
   tags: [
     { name: 'Auth', description: 'Authentication (register, login, logout, refresh)' },

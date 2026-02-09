@@ -5,10 +5,9 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { UserPreferences } from '@fullstack-template/shared';
 
-export interface UserPreferences {
-  theme: 'light' | 'dark' | 'system';
-}
+export type { UserPreferences };
 
 export interface User {
   id: string;

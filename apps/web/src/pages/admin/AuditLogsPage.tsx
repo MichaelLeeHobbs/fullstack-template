@@ -132,5 +132,3 @@ export function AuditLogsPage() {
     </Container>
   );
 }
-
-export default AuditLogsPage;

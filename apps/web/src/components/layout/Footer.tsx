@@ -4,6 +4,7 @@
 // Minimal footer with copyright and version.
 
 import { Box, Typography } from '@mui/material';
+import { APP_NAME, APP_VERSION } from '../../lib/constants.js';
 
 export function Footer() {
   const year = new Date().getFullYear();
@@ -21,7 +22,7 @@ export function Footer() {
       }}
     >
       <Typography variant="body2" color="text.secondary">
-        © {year} App Name • v0.1.0
+        © {year} {APP_NAME} • v{APP_VERSION}
       </Typography>
     </Box>
   );

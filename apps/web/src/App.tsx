@@ -3,6 +3,7 @@
 // ===========================================
 // Root component with providers and routing.
 
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider, CssBaseline } from '@mui/material';
@@ -10,12 +11,13 @@ import { SnackbarProvider } from 'notistack';
 import { SocketProvider } from './providers/SocketProvider.js';
 import { useTheme } from './hooks/useTheme.js';
 import { ErrorBoundary } from './components/ErrorBoundary.js';
+import { PageLoader } from './components/LoadingSpinner.js';
 import { AppLayout } from './components/layout/AppLayout.js';
 import { PublicLayout } from './components/layout/PublicLayout.js';
 import { ProtectedRoute } from './components/ProtectedRoute.js';
 import { AdminRoute } from './components/AdminRoute.js';
 
-// Pages
+// Pages — eagerly loaded (common routes)
 import { LandingPage } from './pages/LandingPage.js';
 import { LoginPage } from './pages/LoginPage.js';
 import { RegisterPage } from './pages/RegisterPage.js';
@@ -24,14 +26,16 @@ import { ResetPasswordPage } from './pages/ResetPasswordPage.js';
 import { VerifyEmailPage } from './pages/VerifyEmailPage.js';
 import { HomePage } from './pages/HomePage.js';
 import { ProfilePage } from './pages/ProfilePage.js';
-import { SettingsPage } from './pages/admin/SettingsPage.js';
-import { UsersPage } from './pages/admin/UsersPage.js';
-import { RolesPage } from './pages/admin/RolesPage.js';
-import { AuditLogsPage } from './pages/admin/AuditLogsPage.js';
-import { ApiKeysPage } from './pages/admin/ApiKeysPage.js';
-import { ServiceAccountsPage } from './pages/admin/ServiceAccountsPage.js';
 import { SessionsPage } from './pages/SessionsPage.js';
 import { NotFoundPage } from './pages/NotFoundPage.js';
+
+// Admin pages — lazy loaded (only admins need these)
+const SettingsPage = lazy(() => import('./pages/admin/SettingsPage.js').then(m => ({ default: m.SettingsPage })));
+const UsersPage = lazy(() => import('./pages/admin/UsersPage.js').then(m => ({ default: m.UsersPage })));
+const RolesPage = lazy(() => import('./pages/admin/RolesPage.js').then(m => ({ default: m.RolesPage })));
+const AuditLogsPage = lazy(() => import('./pages/admin/AuditLogsPage.js').then(m => ({ default: m.AuditLogsPage })));
+const ApiKeysPage = lazy(() => import('./pages/admin/ApiKeysPage.js').then(m => ({ default: m.ApiKeysPage })));
+const ServiceAccountsPage = lazy(() => import('./pages/admin/ServiceAccountsPage.js').then(m => ({ default: m.ServiceAccountsPage })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -68,15 +72,15 @@ function AppWithTheme() {
               <Route path="/sessions" element={<SessionsPage />} />
             </Route>
 
-            {/* Admin pages */}
+            {/* Admin pages (lazy loaded) */}
             <Route element={<AdminRoute />}>
               <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
-              <Route path="/admin/users" element={<UsersPage />} />
-              <Route path="/admin/roles" element={<RolesPage />} />
-              <Route path="/admin/settings" element={<SettingsPage />} />
-              <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
-              <Route path="/admin/api-keys" element={<ApiKeysPage />} />
-              <Route path="/admin/service-accounts" element={<ServiceAccountsPage />} />
+              <Route path="/admin/users" element={<Suspense fallback={<PageLoader />}><UsersPage /></Suspense>} />
+              <Route path="/admin/roles" element={<Suspense fallback={<PageLoader />}><RolesPage /></Suspense>} />
+              <Route path="/admin/settings" element={<Suspense fallback={<PageLoader />}><SettingsPage /></Suspense>} />
+              <Route path="/admin/audit-logs" element={<Suspense fallback={<PageLoader />}><AuditLogsPage /></Suspense>} />
+              <Route path="/admin/api-keys" element={<Suspense fallback={<PageLoader />}><ApiKeysPage /></Suspense>} />
+              <Route path="/admin/service-accounts" element={<Suspense fallback={<PageLoader />}><ServiceAccountsPage /></Suspense>} />
             </Route>
           </Route>
 

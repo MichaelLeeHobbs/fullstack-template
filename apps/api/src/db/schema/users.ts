@@ -3,16 +3,9 @@
 // ===========================================
 
 import { pgTable, uuid, varchar, timestamp, boolean, jsonb, index, integer } from 'drizzle-orm/pg-core';
+import type { UserPreferences } from '@fullstack-template/shared';
 
-// ===========================================
-// User Preferences Type
-// ===========================================
-// Stored as JSONB for extensibility
-
-export interface UserPreferences {
-  theme: 'light' | 'dark' | 'system';
-  // Future: language, timezone, notifications, etc.
-}
+export type { UserPreferences };
 
 export const defaultPreferences: UserPreferences = {
   theme: 'system',

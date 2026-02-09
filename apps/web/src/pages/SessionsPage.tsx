@@ -145,5 +145,3 @@ export function SessionsPage() {
     </Container>
   );
 }
-
-export default SessionsPage;

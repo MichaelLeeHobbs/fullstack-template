@@ -444,5 +444,3 @@ export function RolesPage() {
     </Container>
   );
 }
-
-export default RolesPage;

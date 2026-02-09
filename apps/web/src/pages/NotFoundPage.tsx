@@ -38,5 +38,3 @@ export function NotFoundPage() {
     </Container>
   );
 }
-
-export default NotFoundPage;

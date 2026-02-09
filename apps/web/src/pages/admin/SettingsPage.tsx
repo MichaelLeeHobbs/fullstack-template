@@ -223,5 +223,3 @@ function SettingCard({ setting, onUpdate, isUpdating }: SettingCardProps) {
   );
 }
 
-export default SettingsPage;
-

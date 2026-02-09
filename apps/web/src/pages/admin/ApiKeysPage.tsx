@@ -342,5 +342,3 @@ export function ApiKeysPage() {
     </Container>
   );
 }
-
-export default ApiKeysPage;

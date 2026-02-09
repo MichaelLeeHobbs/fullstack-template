@@ -837,6 +837,11 @@ coverage*[.json, .xml, .info]
 ### Windows reserved names (accidental redirects)
 nul
 
+# Test utility compiled artifacts (source is .ts, not committed as .js)
+apps/api/test/utils/*.js
+apps/api/test/utils/*.d.ts
+apps/api/test/utils/*.d.ts.map
+
 ### macOS template
 # General
 .DS_Store

@@ -296,22 +296,22 @@ The `apiRateLimiter` (100 req/min) is defined but never applied. Only auth-speci
 - ~~No audit logging for login success/failure, password changes, session revocations, or MFA events (all `AUDIT_ACTIONS` are defined but unused)~~
 - ~~No graceful server shutdown (SIGTERM/SIGINT handlers)~~
 - Inconsistent error message matching in controllers (string matching vs error codes)
-- `pino-pretty` is a production dependency (should be devDependency)
-- Compiled `.js`/`.d.ts` artifacts in `test/utils/` not gitignored
+- ~~`pino-pretty` is a production dependency (should be devDependency)~~
+- ~~Compiled `.js`/`.d.ts` artifacts in `test/utils/` not gitignored~~
 - ~~Test files compiled into production `dist/` (tsconfig includes `*.test.ts`)~~
-- No React ESLint plugins (`eslint-plugin-react-hooks`, `eslint-plugin-jsx-a11y`)
-- No code splitting / lazy loading for routes (entire admin bundle downloaded for non-admin users)
-- Hardcoded "App Name" and "v0.1.0" scattered across frontend
-- Missing `aria-label` on multiple interactive elements
-- `LoadingSpinner` props spread overwrites merged `sx`
-- `Header` component is unused dead code
-- Dual export pattern (named + default) inconsistency across pages
-- `ProfilePage` is ~715 lines with 14 useState hooks — needs decomposition
-- `UserPreferences` type duplicated between store and API
-- Drizzle config reads from compiled JS (fragile coupling)
-- Swagger docs hardcoded to localhost
-- No `engines` enforcement (`.npmrc` with `engine-strict=true`)
-- Dependency version pinning inconsistent (mix of `^` and exact)
+- ~~No React ESLint plugins (`eslint-plugin-react-hooks`, `eslint-plugin-jsx-a11y`)~~
+- ~~No code splitting / lazy loading for routes (entire admin bundle downloaded for non-admin users)~~
+- ~~Hardcoded "App Name" and "v0.1.0" scattered across frontend~~
+- ~~Missing `aria-label` on multiple interactive elements~~
+- ~~`LoadingSpinner` props spread overwrites merged `sx`~~
+- ~~`Header` component is unused dead code~~
+- ~~Dual export pattern (named + default) inconsistency across pages~~
+- ~~`ProfilePage` is ~715 lines with 14 useState hooks — needs decomposition~~
+- ~~`UserPreferences` type duplicated between store and API~~
+- ~~Drizzle config reads from compiled JS (fragile coupling)~~
+- ~~Swagger docs hardcoded to localhost~~
+- ~~No `engines` enforcement (`.npmrc` with `engine-strict=true`)~~
+- ~~Dependency version pinning inconsistent (mix of `^` and exact)~~
 - Migrations not reversible (no DOWN scripts)
 
 ---
