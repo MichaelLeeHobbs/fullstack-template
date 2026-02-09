@@ -13,4 +13,5 @@ export * from './roles.js';
 export * from './user-roles.js';
 export * from './api-keys.js';
 export * from './user-mfa-methods.js';
+export * from './notifications.js';
 

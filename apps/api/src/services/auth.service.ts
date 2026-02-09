@@ -16,6 +16,7 @@ import { enqueue } from '../jobs/index.js';
 import { AccountLockoutService } from './account-lockout.service.js';
 import { MfaService } from './mfa.service.js';
 import { SettingsService } from './settings.service.js';
+import { NotificationService } from './notification.service.js';
 import type { MfaMethod } from '../db/schema/index.js';
 
 const SALT_ROUNDS = 12;
@@ -185,6 +186,17 @@ export class AuthService {
 
       // Get user permissions
       const permissions = await PermissionService.getUserPermissions(user.id);
+
+      // Fire-and-forget login notification
+      if (metadata?.ipAddress) {
+        NotificationService.create({
+          userId: user.id,
+          title: 'New sign-in detected',
+          body: `A sign-in occurred from IP ${metadata.ipAddress}.`,
+          type: 'info',
+          category: 'security',
+        }).catch(() => {});
+      }
 
       return {
         user: {

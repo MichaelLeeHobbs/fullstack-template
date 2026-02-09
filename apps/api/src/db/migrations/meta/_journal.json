@@ -43,6 +43,13 @@
       "when": 1770597513461,
       "tag": "0005_wooden_wilson_fisk",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1770603127160,
+      "tag": "0006_dry_starhawk",
+      "breakpoints": true
     }
   ]
 }

@@ -9,6 +9,8 @@ import logger from './lib/logger.js';
 import { pool } from './lib/db.js';
 import { startQueue, stopQueue } from './lib/queue.js';
 import { registerAllHandlers } from './jobs/index.js';
+import { initializeSocketIO, shutdownSocketIO } from './lib/socket.js';
+import { registerNamespaces } from './socket/index.js';
 
 const PORT = config.PORT;
 
@@ -17,6 +19,10 @@ const server = app.listen(PORT, () => {
   logger.info({ env: config.NODE_ENV }, 'Environment');
   logger.info(`Health check: http://localhost:${PORT}/health`);
 });
+
+// Attach Socket.IO to HTTP server
+const io = initializeSocketIO(server);
+registerNamespaces(io);
 
 // Start pgboss job queue
 startQueue()
@@ -29,6 +35,7 @@ startQueue()
 function shutdown(signal: string) {
   logger.info({ signal }, 'Received signal, shutting down gracefully');
   server.close(async () => {
+    await shutdownSocketIO();
     await stopQueue();
     await pool.end();
     process.exit(0);

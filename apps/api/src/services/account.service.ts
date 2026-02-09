@@ -15,6 +15,7 @@ import {
 } from '../db/schema/index.js';
 import { eq, and, gt } from 'drizzle-orm';
 import { enqueue } from '../jobs/index.js';
+import { NotificationService } from './notification.service.js';
 import logger from '../lib/logger.js';
 
 const SALT_ROUNDS = 12;
@@ -196,6 +197,15 @@ export class AccountService {
       });
 
       logger.info({ userId: tokenRecord.userId }, 'Password reset successful');
+
+      // Fire-and-forget notification
+      NotificationService.create({
+        userId: tokenRecord.userId,
+        title: 'Password changed',
+        body: 'Your password was recently changed. If you did not do this, please contact support immediately.',
+        type: 'warning',
+        category: 'security',
+      }).catch(() => {});
     });
   }
 
@@ -212,6 +222,15 @@ export class AccountService {
         .update(users)
         .set({ isActive: false, updatedAt: new Date() })
         .where(eq(users.id, userId));
+
+      // Fire-and-forget notification
+      NotificationService.create({
+        userId,
+        title: 'Account deactivated',
+        body: 'Your account has been deactivated by an administrator.',
+        type: 'error',
+        category: 'account',
+      }).catch(() => {});
 
       logger.info({ userId }, 'User deactivated');
     });

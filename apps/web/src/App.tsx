@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { SnackbarProvider } from 'notistack';
+import { SocketProvider } from './providers/SocketProvider.js';
 import { useTheme } from './hooks/useTheme.js';
 import { ErrorBoundary } from './components/ErrorBoundary.js';
 import { AppLayout } from './components/layout/AppLayout.js';
@@ -96,7 +97,9 @@ export function App() {
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
           autoHideDuration={4000}
         >
-          <AppWithTheme />
+          <SocketProvider>
+            <AppWithTheme />
+          </SocketProvider>
         </SnackbarProvider>
       </QueryClientProvider>
     </ErrorBoundary>

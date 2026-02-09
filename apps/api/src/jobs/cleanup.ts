@@ -7,6 +7,7 @@ import type { PgBoss } from 'pg-boss';
 import { lt } from 'drizzle-orm';
 import { db } from '../lib/db.js';
 import { sessions, emailVerificationTokens, passwordResetTokens } from '../db/schema/index.js';
+import { NotificationService } from '../services/notification.service.js';
 import logger from '../lib/logger.js';
 
 export async function cleanupExpiredData(): Promise<void> {
@@ -28,11 +29,14 @@ export async function cleanupExpiredData(): Promise<void> {
       .where(lt(passwordResetTokens.expiresAt, now))
       .returning({ id: passwordResetTokens.id });
 
+    const deletedNotifications = await NotificationService.deleteOlderThan(90);
+
     logger.info(
       {
         sessions: deletedSessions.length,
         verificationTokens: deletedVerificationTokens.length,
         resetTokens: deletedResetTokens.length,
+        notifications: deletedNotifications,
       },
       'Expired data cleanup completed',
     );

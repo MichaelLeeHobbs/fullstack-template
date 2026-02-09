@@ -29,6 +29,7 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/auth.store.js';
 import { useThemeStore } from '../../stores/theme.store.js';
 import { useLogout } from '../../hooks/useAuth.js';
+import { NotificationBell } from '../ui/NotificationBell.js';
 
 interface TopNavProps {
   onMenuClick?: () => void;
@@ -101,6 +102,7 @@ export function TopNav({ onMenuClick, showMenuButton = false }: TopNavProps) {
 
         {isAuthenticated ? (
           <>
+            <NotificationBell />
             <IconButton
               color="inherit"
               onClick={handleMenuOpen}

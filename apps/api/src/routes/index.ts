@@ -12,6 +12,7 @@ import roleRoutes from './role.routes.js';
 import apiKeyRoutes from './api-key.routes.js';
 import sessionRoutes from './session.routes.js';
 import mfaRoutes from './mfa.routes.js';
+import notificationRoutes from './notification.routes.js';
 
 const router: IRouter = Router();
 
@@ -24,6 +25,7 @@ router.use('/roles', roleRoutes);
 router.use('/api-keys', apiKeyRoutes);
 router.use('/sessions', sessionRoutes);
 router.use('/mfa', mfaRoutes);
+router.use('/notifications', notificationRoutes);
 
 export default router;
 
