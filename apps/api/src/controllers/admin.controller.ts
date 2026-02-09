@@ -9,6 +9,7 @@ import { AuditService } from '../services/audit.service.js';
 import { AUDIT_ACTIONS } from '../db/schema/audit.js';
 import type { ListUsersQuery, UpdateUserInput, ListAuditLogsQuery } from '../schemas/admin.schema.js';
 import logger from '../lib/logger.js';
+import { isServiceError } from '../lib/service-error.js';
 
 export class AdminController {
   /**
@@ -46,7 +47,7 @@ export class AdminController {
     const result = await AdminService.getUser(id);
 
     if (!result.ok) {
-      if (result.error.message?.includes('not found')) {
+      if (isServiceError(result.error, 'NOT_FOUND')) {
         return void res.status(404).json({
           success: false,
           error: 'User not found',
@@ -89,7 +90,7 @@ export class AdminController {
     const result = await AdminService.updateUser(id, body);
 
     if (!result.ok) {
-      if (result.error.message?.includes('not found')) {
+      if (isServiceError(result.error, 'NOT_FOUND')) {
         return void res.status(404).json({
           success: false,
           error: 'User not found',
@@ -149,13 +150,13 @@ export class AdminController {
     const result = await AdminService.deleteUser(id, adminId);
 
     if (!result.ok) {
-      if (result.error.message?.includes('Cannot delete your own')) {
+      if (isServiceError(result.error, 'SELF_ACTION')) {
         return void res.status(400).json({
           success: false,
           error: result.error.message,
         });
       }
-      if (result.error.message?.includes('not found')) {
+      if (isServiceError(result.error, 'NOT_FOUND')) {
         return void res.status(404).json({
           success: false,
           error: 'User not found',

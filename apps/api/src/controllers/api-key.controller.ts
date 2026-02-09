@@ -16,6 +16,7 @@ import type {
   CreateServiceAccountInput,
 } from '../schemas/api-key.schema.js';
 import logger from '../lib/logger.js';
+import { isServiceError } from '../lib/service-error.js';
 
 export class ApiKeyController {
   // ===========================================
@@ -61,10 +62,10 @@ export class ApiKeyController {
     const result = await ApiKeyService.create(body, userId, isAdmin);
 
     if (!result.ok) {
-      if (result.error.message?.includes('Cannot assign permission')) {
+      if (isServiceError(result.error, 'FORBIDDEN')) {
         return void res.status(403).json({ success: false, error: result.error.message });
       }
-      if (result.error.message?.includes('invalid permission')) {
+      if (isServiceError(result.error, 'INVALID_INPUT')) {
         return void res.status(400).json({ success: false, error: result.error.message });
       }
       logger.error({ error: result.error }, 'Failed to create API key');
@@ -103,7 +104,7 @@ export class ApiKeyController {
     const result = await ApiKeyService.getById(id);
 
     if (!result.ok) {
-      if (result.error.message?.includes('not found')) {
+      if (isServiceError(result.error, 'NOT_FOUND')) {
         return void res.status(404).json({ success: false, error: 'API key not found' });
       }
       return void res.status(500).json({ success: false, error: 'Failed to get API key' });
@@ -129,10 +130,10 @@ export class ApiKeyController {
     const result = await ApiKeyService.setPermissions(id, body.permissionIds, userId, isAdmin);
 
     if (!result.ok) {
-      if (result.error.message?.includes('not found')) {
+      if (isServiceError(result.error, 'NOT_FOUND')) {
         return void res.status(404).json({ success: false, error: 'API key not found' });
       }
-      if (result.error.message?.includes('Cannot assign permission')) {
+      if (isServiceError(result.error, 'FORBIDDEN')) {
         return void res.status(403).json({ success: false, error: result.error.message });
       }
       logger.error({ error: result.error }, 'Failed to set API key permissions');
@@ -155,7 +156,7 @@ export class ApiKeyController {
     const result = await ApiKeyService.revoke(id);
 
     if (!result.ok) {
-      if (result.error.message?.includes('not found')) {
+      if (isServiceError(result.error, 'NOT_FOUND')) {
         return void res.status(404).json({ success: false, error: 'API key not found' });
       }
       logger.error({ error: result.error }, 'Failed to revoke API key');
@@ -178,7 +179,7 @@ export class ApiKeyController {
     const result = await ApiKeyService.delete(id);
 
     if (!result.ok) {
-      if (result.error.message?.includes('not found')) {
+      if (isServiceError(result.error, 'NOT_FOUND')) {
         return void res.status(404).json({ success: false, error: 'API key not found' });
       }
       logger.error({ error: result.error }, 'Failed to delete API key');
@@ -220,7 +221,7 @@ export class ApiKeyController {
     const result = await ServiceAccountService.create(body.email);
 
     if (!result.ok) {
-      if (result.error.message?.includes('already exists')) {
+      if (isServiceError(result.error, 'ALREADY_EXISTS')) {
         return void res.status(409).json({ success: false, error: 'Email already exists' });
       }
       logger.error({ error: result.error }, 'Failed to create service account');
@@ -243,7 +244,7 @@ export class ApiKeyController {
     const result = await ServiceAccountService.delete(id);
 
     if (!result.ok) {
-      if (result.error.message?.includes('not found')) {
+      if (isServiceError(result.error, 'NOT_FOUND')) {
         return void res.status(404).json({ success: false, error: 'Service account not found' });
       }
       logger.error({ error: result.error }, 'Failed to delete service account');

@@ -38,6 +38,7 @@ vi.mock('../lib/logger.js', () => ({
 import { ApiKeyController } from './api-key.controller.js';
 import { ApiKeyService } from '../services/api-key.service.js';
 import { ServiceAccountService } from '../services/service-account.service.js';
+import { ServiceError } from '../lib/service-error.js';
 import { createMockRequest, createMockResponse } from '../../test/utils/index.js';
 
 describe('ApiKeyController', () => {
@@ -80,7 +81,7 @@ describe('ApiKeyController', () => {
     it('should return 400 on error', async () => {
       (ApiKeyService.create as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: false,
-        error: new Error('invalid permission IDs'),
+        error: new ServiceError('INVALID_INPUT', 'invalid permission IDs'),
       });
 
       const req = createMockRequest({
@@ -127,7 +128,7 @@ describe('ApiKeyController', () => {
     it('should return 404 if not found', async () => {
       (ApiKeyService.getById as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: false,
-        error: new Error('API key not found'),
+        error: new ServiceError('NOT_FOUND', 'API key not found'),
       });
 
       const req = createMockRequest({ params: { id: 'k99' } });
@@ -215,7 +216,7 @@ describe('ApiKeyController', () => {
     it('should return 409 for duplicate email', async () => {
       (ServiceAccountService.create as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: false,
-        error: new Error('Email already exists'),
+        error: new ServiceError('ALREADY_EXISTS', 'Email already exists'),
       });
 
       const req = createMockRequest({ body: { email: 'svc@b.com' } });

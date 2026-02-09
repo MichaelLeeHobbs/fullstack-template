@@ -16,6 +16,7 @@ import type {
 } from '../schemas/mfa.schema.js';
 import logger from '../lib/logger.js';
 import { setRefreshTokenCookie } from '../lib/cookies.js';
+import { isServiceError } from '../lib/service-error.js';
 
 export class MfaController {
   static async getMethods(req: Request, res: Response): Promise<void> {
@@ -54,8 +55,8 @@ export class MfaController {
     const result = await MfaService.verifyAndEnableTotp(userId, code);
 
     if (!result.ok) {
-      if (result.error.message === 'Invalid verification code') {
-        res.status(400).json({ success: false, error: 'Invalid verification code' });
+      if (isServiceError(result.error, 'INVALID_INPUT')) {
+        res.status(400).json({ success: false, error: result.error.message });
         return;
       }
       logger.error({ error: result.error }, 'Failed to verify TOTP setup');
@@ -76,7 +77,7 @@ export class MfaController {
     const result = await AuthService.verifyMfaAndLogin(tempToken, method, code, metadata);
 
     if (!result.ok) {
-      if (result.error.message?.includes('Invalid MFA code') || result.error.message?.includes('MFA verification failed')) {
+      if (isServiceError(result.error, 'INVALID_INPUT')) {
         res.status(401).json({ success: false, error: 'Invalid MFA code' });
         return;
       }
@@ -97,8 +98,8 @@ export class MfaController {
     const result = await MfaService.disable(userId, method, code);
 
     if (!result.ok) {
-      if (result.error.message === 'Invalid code') {
-        res.status(400).json({ success: false, error: 'Invalid code' });
+      if (isServiceError(result.error, 'INVALID_INPUT')) {
+        res.status(400).json({ success: false, error: result.error.message });
         return;
       }
       logger.error({ error: result.error }, 'Failed to disable MFA');
@@ -119,8 +120,8 @@ export class MfaController {
     const result = await MfaService.regenerateBackupCodes(userId, method, code);
 
     if (!result.ok) {
-      if (result.error.message === 'Invalid TOTP code') {
-        res.status(400).json({ success: false, error: 'Invalid TOTP code' });
+      if (isServiceError(result.error, 'INVALID_INPUT')) {
+        res.status(400).json({ success: false, error: result.error.message });
         return;
       }
       logger.error({ error: result.error }, 'Failed to regenerate backup codes');

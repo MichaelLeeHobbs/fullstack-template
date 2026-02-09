@@ -4,6 +4,7 @@
 // Handles role CRUD and permission assignment.
 
 import { tryCatch, type Result } from 'stderr-lib';
+import { ServiceError } from '../lib/service-error.js';
 import { db } from '../lib/db.js';
 import {
   roles,
@@ -102,7 +103,7 @@ export class RoleService {
       const [role] = await db.select().from(roles).where(eq(roles.id, id));
 
       if (!role) {
-        throw new Error('Role not found');
+        throw new ServiceError('NOT_FOUND', 'Role not found');
       }
 
       const rolePerms = await db
@@ -142,7 +143,7 @@ export class RoleService {
       // Check if role name already exists
       const [existing] = await db.select().from(roles).where(eq(roles.name, data.name));
       if (existing) {
-        throw new Error('Role with this name already exists');
+        throw new ServiceError('ALREADY_EXISTS', 'Role with this name already exists');
       }
 
       // Transaction: insert role + permissions atomically
@@ -189,18 +190,18 @@ export class RoleService {
       const [existing] = await db.select().from(roles).where(eq(roles.id, id));
 
       if (!existing) {
-        throw new Error('Role not found');
+        throw new ServiceError('NOT_FOUND', 'Role not found');
       }
 
       if (existing.isSystem) {
-        throw new Error('Cannot modify system role');
+        throw new ServiceError('SYSTEM_PROTECTED', 'Cannot modify system role');
       }
 
       // Check name uniqueness if changing name
       if (data.name && data.name !== existing.name) {
         const [nameExists] = await db.select().from(roles).where(eq(roles.name, data.name));
         if (nameExists) {
-          throw new Error('Role with this name already exists');
+          throw new ServiceError('ALREADY_EXISTS', 'Role with this name already exists');
         }
       }
 
@@ -229,11 +230,11 @@ export class RoleService {
       const [existing] = await db.select().from(roles).where(eq(roles.id, id));
 
       if (!existing) {
-        throw new Error('Role not found');
+        throw new ServiceError('NOT_FOUND', 'Role not found');
       }
 
       if (existing.isSystem) {
-        throw new Error('Cannot delete system role');
+        throw new ServiceError('SYSTEM_PROTECTED', 'Cannot delete system role');
       }
 
       // Get all users with this role for cache invalidation
@@ -258,11 +259,11 @@ export class RoleService {
       const [role] = await db.select().from(roles).where(eq(roles.id, roleId));
 
       if (!role) {
-        throw new Error('Role not found');
+        throw new ServiceError('NOT_FOUND', 'Role not found');
       }
 
       if (role.isSystem) {
-        throw new Error('Cannot modify permissions for system role');
+        throw new ServiceError('SYSTEM_PROTECTED', 'Cannot modify permissions for system role');
       }
 
       // Validate all permission IDs exist
@@ -273,7 +274,7 @@ export class RoleService {
           .where(inArray(permissions.id, permissionIds));
 
         if (validPermissions.length !== permissionIds.length) {
-          throw new Error('One or more permission IDs are invalid');
+          throw new ServiceError('INVALID_INPUT', 'One or more permission IDs are invalid');
         }
       }
 
@@ -310,11 +311,11 @@ export class RoleService {
       const [role] = await db.select().from(roles).where(eq(roles.id, roleId));
 
       if (!role) {
-        throw new Error('Role not found');
+        throw new ServiceError('NOT_FOUND', 'Role not found');
       }
 
       if (role.isSystem) {
-        throw new Error('Cannot modify permissions for system role');
+        throw new ServiceError('SYSTEM_PROTECTED', 'Cannot modify permissions for system role');
       }
 
       // Get existing permissions
@@ -353,11 +354,11 @@ export class RoleService {
       const [role] = await db.select().from(roles).where(eq(roles.id, roleId));
 
       if (!role) {
-        throw new Error('Role not found');
+        throw new ServiceError('NOT_FOUND', 'Role not found');
       }
 
       if (role.isSystem) {
-        throw new Error('Cannot modify permissions for system role');
+        throw new ServiceError('SYSTEM_PROTECTED', 'Cannot modify permissions for system role');
       }
 
       await db

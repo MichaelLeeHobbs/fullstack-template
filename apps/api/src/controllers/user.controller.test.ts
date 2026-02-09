@@ -19,6 +19,7 @@ vi.mock('../lib/logger.js', () => ({
 
 import { UserController } from './user.controller.js';
 import { UserService } from '../services/user.service.js';
+import { ServiceError } from '../lib/service-error.js';
 import { createMockRequest, createMockResponse } from '../../test/utils/index.js';
 
 describe('UserController', () => {
@@ -85,7 +86,7 @@ describe('UserController', () => {
     it('should return 400 for incorrect current password', async () => {
       (UserService.changePassword as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: false,
-        error: new Error('Current password is incorrect'),
+        error: new ServiceError('INVALID_CREDENTIALS', 'Current password is incorrect'),
       });
 
       const req = createMockRequest({

@@ -9,6 +9,7 @@ import { AuditService } from '../services/audit.service.js';
 import { AUDIT_ACTIONS } from '../db/schema/audit.js';
 import type { ChangePasswordInput, UpdatePreferencesInput } from '../schemas/user.schema.js';
 import logger from '../lib/logger.js';
+import { isServiceError } from '../lib/service-error.js';
 
 export class UserController {
   /**
@@ -56,9 +57,7 @@ export class UserController {
     const result = await UserService.changePassword(userId, currentPassword, newPassword, req.sessionId);
 
     if (!result.ok) {
-      const errorMsg = result.error.message || 'Failed to change password';
-
-      if (errorMsg.includes('incorrect')) {
+      if (isServiceError(result.error, 'INVALID_CREDENTIALS')) {
         return void res.status(400).json({
           success: false,
           error: 'Current password is incorrect',

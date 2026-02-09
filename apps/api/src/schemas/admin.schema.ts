@@ -7,6 +7,7 @@ import { paginationSchema } from './pagination.schema.js';
 import { sortSchema } from './query.schema.js';
 
 export const listUsersQuerySchema = paginationSchema.merge(sortSchema).extend({
+  sortBy: z.enum(['email', 'createdAt', 'lastLoginAt']).optional(),
   search: z.string().optional(),
   isActive: z
     .enum(['true', 'false'])
@@ -24,6 +25,7 @@ export const updateUserSchema = z.object({
 });
 
 export const listAuditLogsQuerySchema = paginationSchema.merge(sortSchema).extend({
+  sortBy: z.enum(['createdAt', 'action']).optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),
   userId: z.string().uuid().optional(),
 });

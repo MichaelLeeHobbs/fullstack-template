@@ -9,6 +9,7 @@ import { AuditService } from '../services/audit.service.js';
 import { AUDIT_ACTIONS } from '../db/schema/audit.js';
 import type { SessionIdParam } from '../schemas/session.schema.js';
 import logger from '../lib/logger.js';
+import { isServiceError } from '../lib/service-error.js';
 
 export class SessionController {
   static async list(req: Request, res: Response): Promise<void> {
@@ -38,7 +39,7 @@ export class SessionController {
     const result = await SessionService.revokeSession(userId, sessionId);
 
     if (!result.ok) {
-      if (result.error.message === 'Session not found') {
+      if (isServiceError(result.error, 'NOT_FOUND')) {
         res.status(404).json({ success: false, error: 'Session not found' });
         return;
       }

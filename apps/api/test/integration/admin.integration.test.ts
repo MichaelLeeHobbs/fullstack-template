@@ -103,6 +103,7 @@ vi.mock('../../src/services/settings.service.js', () => ({
 import { createAgent } from './setup.js';
 import { AdminService } from '../../src/services/admin.service.js';
 import { PermissionService } from '../../src/services/permission.service.js';
+import { ServiceError } from '../../src/lib/service-error.js';
 import { verifyAccessToken } from '../../src/lib/jwt.js';
 import { db } from '../../src/lib/db.js';
 import { mockSelectChain } from '../utils/index.js';
@@ -207,7 +208,7 @@ describe('Admin Integration Tests', () => {
 
     (AdminService.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: false,
-      error: new Error('User not found'),
+      error: new ServiceError('NOT_FOUND', 'User not found'),
     });
 
     const res = await agent

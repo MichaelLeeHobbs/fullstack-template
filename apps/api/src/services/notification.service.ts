@@ -4,6 +4,7 @@
 // CRUD for notifications with real-time push via Socket.IO.
 
 import { tryCatch, type Result } from 'stderr-lib';
+import { ServiceError } from '../lib/service-error.js';
 import { db } from '../lib/db.js';
 import { notifications, type NewNotification } from '../db/schema/index.js';
 import { eq, and, isNull, desc, count, lt } from 'drizzle-orm';
@@ -108,7 +109,7 @@ export class NotificationService {
         .returning({ id: notifications.id });
 
       if (!updated) {
-        throw new Error('Notification not found');
+        throw new ServiceError('NOT_FOUND', 'Notification not found');
       }
 
       // Push updated unread count
@@ -138,7 +139,7 @@ export class NotificationService {
         .returning({ id: notifications.id });
 
       if (!deleted) {
-        throw new Error('Notification not found');
+        throw new ServiceError('NOT_FOUND', 'Notification not found');
       }
 
       const unreadCount = await this.getUnreadCountInternal(userId);

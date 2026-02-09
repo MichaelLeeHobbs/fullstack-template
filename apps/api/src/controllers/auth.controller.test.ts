@@ -26,6 +26,7 @@ vi.mock('../lib/cookies.js', () => ({
 
 import { AuthController } from './auth.controller.js';
 import { AuthService } from '../services/auth.service.js';
+import { ServiceError } from '../lib/service-error.js';
 import { createMockRequest, createMockResponse } from '../../test/utils/index.js';
 import { setRefreshTokenCookie, clearRefreshTokenCookie } from '../lib/cookies.js';
 
@@ -60,7 +61,7 @@ describe('AuthController', () => {
     it('should return 409 for duplicate email', async () => {
       (AuthService.register as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: false,
-        error: new Error('Email already exists'),
+        error: new ServiceError('ALREADY_EXISTS', 'Email already exists'),
       });
 
       const req = createMockRequest({ body: { email: 'a@b.com', password: 'Pass123!' } });
@@ -142,7 +143,7 @@ describe('AuthController', () => {
     it('should return 429 for ACCOUNT_LOCKED with minutes', async () => {
       (AuthService.login as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: false,
-        error: new Error('ACCOUNT_LOCKED:10'),
+        error: new ServiceError('ACCOUNT_LOCKED', 'Account is locked', { minutesRemaining: 10 }),
       });
 
       const req = createMockRequest({ body: { email: 'a@b.com', password: 'wrong' } });
@@ -157,7 +158,7 @@ describe('AuthController', () => {
     it('should return 429 for ACCOUNT_LOCKED_NOW', async () => {
       (AuthService.login as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: false,
-        error: new Error('ACCOUNT_LOCKED_NOW'),
+        error: new ServiceError('ACCOUNT_LOCKED', 'Account is locked', { lockedNow: true }),
       });
 
       const req = createMockRequest({ body: { email: 'a@b.com', password: 'wrong' } });
@@ -172,7 +173,7 @@ describe('AuthController', () => {
     it('should return 401 for INVALID_CREDENTIALS with remaining attempts', async () => {
       (AuthService.login as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: false,
-        error: new Error('INVALID_CREDENTIALS:3'),
+        error: new ServiceError('INVALID_CREDENTIALS', 'Invalid credentials', { attemptsRemaining: 3 }),
       });
 
       const req = createMockRequest({ body: { email: 'a@b.com', password: 'wrong' } });
@@ -187,7 +188,7 @@ describe('AuthController', () => {
     it('should return 403 for EMAIL_NOT_VERIFIED', async () => {
       (AuthService.login as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: false,
-        error: new Error('EMAIL_NOT_VERIFIED'),
+        error: new ServiceError('EMAIL_NOT_VERIFIED', 'Email not verified'),
       });
 
       const req = createMockRequest({ body: { email: 'a@b.com', password: 'Pass123!' } });
@@ -202,7 +203,7 @@ describe('AuthController', () => {
     it('should return 403 for deactivated account', async () => {
       (AuthService.login as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: false,
-        error: new Error('Account is deactivated'),
+        error: new ServiceError('ACCOUNT_DEACTIVATED', 'Account is deactivated'),
       });
 
       const req = createMockRequest({ body: { email: 'a@b.com', password: 'Pass123!' } });

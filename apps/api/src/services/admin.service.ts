@@ -10,6 +10,7 @@ import { eq, sql } from 'drizzle-orm';
 import { type PaginatedResult, paginationToOffset, buildPaginationResult } from '../lib/pagination.js';
 import { buildOrderBy, buildWhereConditions } from '../lib/query.js';
 import { PermissionService } from './permission.service.js';
+import { ServiceError } from '../lib/service-error.js';
 
 // ===========================================
 // Types
@@ -125,7 +126,7 @@ export class AdminService {
         .where(eq(users.id, userId));
 
       if (!user) {
-        throw new Error('User not found');
+        throw new ServiceError('NOT_FOUND', 'User not found');
       }
 
       return user;
@@ -155,7 +156,7 @@ export class AdminService {
         });
 
       if (!user) {
-        throw new Error('User not found');
+        throw new ServiceError('NOT_FOUND', 'User not found');
       }
 
       // Invalidate permission cache when admin status changes
@@ -173,13 +174,13 @@ export class AdminService {
   static async deleteUser(userId: string, adminId: string): Promise<Result<{ message: string }>> {
     return tryCatch(async () => {
       if (userId === adminId) {
-        throw new Error('Cannot delete your own account');
+        throw new ServiceError('SELF_ACTION', 'Cannot delete your own account');
       }
 
       const result = await db.delete(users).where(eq(users.id, userId));
 
       if (result.rowCount === 0) {
-        throw new Error('User not found');
+        throw new ServiceError('NOT_FOUND', 'User not found');
       }
 
       return { message: 'User deleted successfully' };

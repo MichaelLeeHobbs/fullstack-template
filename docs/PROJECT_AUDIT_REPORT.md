@@ -261,7 +261,7 @@ The `apiRateLimiter` (100 req/min) is defined but never applied. Only auth-speci
 - ~~**`feature.registration_enabled` setting is never checked**: Registration can't be disabled~~
 - ~~**`feature.email_verification_required` setting is never checked**: Setting exists but isn't used~~
 - ~~**`app.maintenance_mode` setting is never checked**: No middleware reads it~~
-- **`sortBy` query parameter not validated against allowlist at schema level**
+- ~~**`sortBy` query parameter not validated against allowlist at schema level**~~
 - ~~**`SettingsController.get` fetches ALL settings to find one**: Should query by key directly~~
 - ~~**No UUID validation on `:id` path parameters** for most admin routes~~
 - ~~**Permission cache not invalidated when `isAdmin` changes**~~
@@ -287,7 +287,7 @@ The `apiRateLimiter` (100 req/min) is defined but never applied. Only auth-speci
 - ~~**Missing composite unique constraint on `permissions(resource, action)`**~~
 - ~~**No `CHECK` constraint on `users.accountType`**~~
 - ~~**`audit_logs.details` uses VARCHAR(1000)** — should be TEXT~~
-- **Seed script not wrapped in a transaction**
+- ~~**Seed script not wrapped in a transaction**~~
 
 ---
 
@@ -295,7 +295,7 @@ The `apiRateLimiter` (100 req/min) is defined but never applied. Only auth-speci
 
 - ~~No audit logging for login success/failure, password changes, session revocations, or MFA events (all `AUDIT_ACTIONS` are defined but unused)~~
 - ~~No graceful server shutdown (SIGTERM/SIGINT handlers)~~
-- Inconsistent error message matching in controllers (string matching vs error codes)
+- ~~Inconsistent error message matching in controllers (string matching vs error codes)~~
 - ~~`pino-pretty` is a production dependency (should be devDependency)~~
 - ~~Compiled `.js`/`.d.ts` artifacts in `test/utils/` not gitignored~~
 - ~~Test files compiled into production `dist/` (tsconfig includes `*.test.ts`)~~

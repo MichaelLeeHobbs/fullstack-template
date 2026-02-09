@@ -282,7 +282,7 @@ describe('AuthService', () => {
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
-        expect(result.error.message).toContain('INVALID_CREDENTIALS');
+        expect(result.error).toHaveProperty('code', 'INVALID_CREDENTIALS');
       }
       expect(AccountLockoutService.recordFailedAttempt).toHaveBeenCalledWith(loginUser.id);
     });
@@ -310,7 +310,8 @@ describe('AuthService', () => {
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
-        expect(result.error.message).toBe('ACCOUNT_LOCKED:10');
+        expect(result.error).toHaveProperty('code', 'ACCOUNT_LOCKED');
+        expect((result.error as any).details?.minutesRemaining).toBe(10);
       }
     });
 
@@ -326,7 +327,8 @@ describe('AuthService', () => {
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
-        expect(result.error.message).toBe('ACCOUNT_LOCKED_NOW');
+        expect(result.error).toHaveProperty('code', 'ACCOUNT_LOCKED');
+        expect((result.error as any).details?.lockedNow).toBe(true);
       }
     });
 
@@ -342,7 +344,8 @@ describe('AuthService', () => {
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
-        expect(result.error.message).toBe('INVALID_CREDENTIALS:3');
+        expect(result.error).toHaveProperty('code', 'INVALID_CREDENTIALS');
+        expect((result.error as any).details?.attemptsRemaining).toBe(3);
       }
     });
 
@@ -354,7 +357,7 @@ describe('AuthService', () => {
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
-        expect(result.error.message).toBe('EMAIL_NOT_VERIFIED');
+        expect(result.error).toHaveProperty('code', 'EMAIL_NOT_VERIFIED');
       }
     });
 

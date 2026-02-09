@@ -5,6 +5,7 @@
 
 import bcrypt from 'bcrypt';
 import { tryCatch, type Result } from 'stderr-lib';
+import { ServiceError } from '../lib/service-error.js';
 import { db } from '../lib/db.js';
 import { users, sessions, type UserPreferences, defaultPreferences } from '../db/schema/index.js';
 import { eq, and, ne } from 'drizzle-orm';
@@ -37,7 +38,7 @@ export class UserService {
         .where(eq(users.id, userId));
 
       if (!user) {
-        throw new Error('User not found');
+        throw new ServiceError('NOT_FOUND', 'User not found');
       }
 
       return user;
@@ -60,12 +61,12 @@ export class UserService {
         .where(eq(users.id, userId));
 
       if (!user || !user.passwordHash) {
-        throw new Error('User not found');
+        throw new ServiceError('NOT_FOUND', 'User not found');
       }
 
       const valid = await bcrypt.compare(currentPassword, user.passwordHash);
       if (!valid) {
-        throw new Error('Current password is incorrect');
+        throw new ServiceError('INVALID_CREDENTIALS', 'Current password is incorrect');
       }
 
       const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
@@ -95,7 +96,7 @@ export class UserService {
         .where(eq(users.id, userId));
 
       if (!user) {
-        throw new Error('User not found');
+        throw new ServiceError('NOT_FOUND', 'User not found');
       }
 
       return user.preferences ?? defaultPreferences;
@@ -116,7 +117,7 @@ export class UserService {
         .where(eq(users.id, userId));
 
       if (!user) {
-        throw new Error('User not found');
+        throw new ServiceError('NOT_FOUND', 'User not found');
       }
 
       const currentPrefs = user.preferences ?? defaultPreferences;

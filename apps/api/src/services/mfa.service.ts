@@ -9,6 +9,7 @@ import bcrypt from 'bcrypt';
 import * as OTPAuth from 'otpauth';
 import QRCode from 'qrcode';
 import { tryCatch, type Result } from 'stderr-lib';
+import { ServiceError } from '../lib/service-error.js';
 import { db } from '../lib/db.js';
 import { userMfaMethods, MFA_METHODS, type MfaMethod, type TotpConfig } from '../db/schema/index.js';
 import { eq, and } from 'drizzle-orm';
@@ -148,7 +149,7 @@ export class MfaService {
         ));
 
       if (!record) {
-        throw new Error('TOTP not set up. Please start setup first.');
+        throw new ServiceError('INVALID_INPUT', 'TOTP not set up. Please start setup first.');
       }
 
       const config = record.config as TotpConfig;
@@ -165,7 +166,7 @@ export class MfaService {
 
       const delta = totp.validate({ token: code, window: 1 });
       if (delta === null) {
-        throw new Error('Invalid verification code');
+        throw new ServiceError('INVALID_INPUT', 'Invalid verification code');
       }
 
       // Generate backup codes
@@ -199,7 +200,7 @@ export class MfaService {
       // Verify the code first
       const verifyResult = await this.verify(userId, method, code);
       if (!verifyResult.ok || !verifyResult.value.valid) {
-        throw new Error('Invalid code');
+        throw new ServiceError('INVALID_INPUT', 'Invalid code');
       }
 
       // Delete the MFA record
@@ -228,7 +229,7 @@ export class MfaService {
         ));
 
       if (!record) {
-        throw new Error('MFA method not found or not enabled');
+        throw new ServiceError('NOT_FOUND', 'MFA method not found or not enabled');
       }
 
       const config = record.config as TotpConfig;
@@ -245,7 +246,7 @@ export class MfaService {
 
       const delta = totp.validate({ token: code, window: 1 });
       if (delta === null) {
-        throw new Error('Invalid TOTP code');
+        throw new ServiceError('INVALID_INPUT', 'Invalid TOTP code');
       }
 
       // Generate new backup codes
@@ -283,7 +284,7 @@ export class MfaService {
       ));
 
     if (!record) {
-      throw new Error('TOTP not enabled');
+      throw new ServiceError('NOT_FOUND', 'TOTP not enabled');
     }
 
     const config = record.config as TotpConfig;

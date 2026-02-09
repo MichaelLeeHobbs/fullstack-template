@@ -11,6 +11,7 @@ import { AuditService } from '../services/audit.service.js';
 import { AUDIT_ACTIONS } from '../db/schema/audit.js';
 import type { CreateRoleInput, UpdateRoleInput, SetPermissionsInput, SetUserRolesInput } from '../schemas/role.schema.js';
 import logger from '../lib/logger.js';
+import { isServiceError } from '../lib/service-error.js';
 
 export class RoleController {
   // ===========================================
@@ -92,7 +93,7 @@ export class RoleController {
     const result = await RoleService.getById(id);
 
     if (!result.ok) {
-      if (result.error.message?.includes('not found')) {
+      if (isServiceError(result.error, 'NOT_FOUND')) {
         return void res.status(404).json({
           success: false,
           error: 'Role not found',
@@ -116,7 +117,7 @@ export class RoleController {
     const result = await RoleService.create(req.body as CreateRoleInput);
 
     if (!result.ok) {
-      if (result.error.message?.includes('already exists')) {
+      if (isServiceError(result.error, 'ALREADY_EXISTS')) {
         return void res.status(409).json({
           success: false,
           error: result.error.message,
@@ -153,19 +154,19 @@ export class RoleController {
     const result = await RoleService.update(id, req.body as UpdateRoleInput);
 
     if (!result.ok) {
-      if (result.error.message?.includes('not found')) {
+      if (isServiceError(result.error, 'NOT_FOUND')) {
         return void res.status(404).json({
           success: false,
           error: 'Role not found',
         });
       }
-      if (result.error.message?.includes('system role')) {
+      if (isServiceError(result.error, 'SYSTEM_PROTECTED')) {
         return void res.status(403).json({
           success: false,
           error: result.error.message,
         });
       }
-      if (result.error.message?.includes('already exists')) {
+      if (isServiceError(result.error, 'ALREADY_EXISTS')) {
         return void res.status(409).json({
           success: false,
           error: result.error.message,
@@ -206,13 +207,13 @@ export class RoleController {
     const result = await RoleService.delete(id);
 
     if (!result.ok) {
-      if (result.error.message?.includes('not found')) {
+      if (isServiceError(result.error, 'NOT_FOUND')) {
         return void res.status(404).json({
           success: false,
           error: 'Role not found',
         });
       }
-      if (result.error.message?.includes('system role')) {
+      if (isServiceError(result.error, 'SYSTEM_PROTECTED')) {
         return void res.status(403).json({
           success: false,
           error: result.error.message,
@@ -250,19 +251,19 @@ export class RoleController {
     const result = await RoleService.setPermissions(id, body.permissionIds);
 
     if (!result.ok) {
-      if (result.error.message?.includes('not found')) {
+      if (isServiceError(result.error, 'NOT_FOUND')) {
         return void res.status(404).json({
           success: false,
           error: 'Role not found',
         });
       }
-      if (result.error.message?.includes('system role')) {
+      if (isServiceError(result.error, 'SYSTEM_PROTECTED')) {
         return void res.status(403).json({
           success: false,
           error: result.error.message,
         });
       }
-      if (result.error.message?.includes('invalid')) {
+      if (isServiceError(result.error, 'INVALID_INPUT')) {
         return void res.status(400).json({
           success: false,
           error: result.error.message,
@@ -335,13 +336,13 @@ export class RoleController {
     const result = await UserRoleService.setRoles(userId, body.roleIds);
 
     if (!result.ok) {
-      if (result.error.message?.includes('not found')) {
+      if (isServiceError(result.error, 'NOT_FOUND')) {
         return void res.status(404).json({
           success: false,
           error: result.error.message,
         });
       }
-      if (result.error.message?.includes('invalid')) {
+      if (isServiceError(result.error, 'INVALID_INPUT')) {
         return void res.status(400).json({
           success: false,
           error: result.error.message,

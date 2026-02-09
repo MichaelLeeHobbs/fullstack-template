@@ -7,6 +7,7 @@
 import { randomBytes, createHash } from 'crypto';
 import bcrypt from 'bcrypt';
 import { tryCatch, type Result } from 'stderr-lib';
+import { ServiceError } from '../lib/service-error.js';
 import { db } from '../lib/db.js';
 import { users, sessions, emailVerificationTokens, type UserPreferences, ACCOUNT_TYPES } from '../db/schema/index.js';
 import { eq } from 'drizzle-orm';
@@ -72,7 +73,7 @@ export class AuthService {
       // Check + hash outside transaction (read-only + CPU-bound)
       const [existing] = await db.select().from(users).where(eq(users.email, email.toLowerCase()));
       if (existing) {
-        throw new Error('Email already exists');
+        throw new ServiceError('ALREADY_EXISTS', 'Email already exists');
       }
 
       const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
@@ -136,7 +137,7 @@ export class AuthService {
       // Check account lockout
       const lockResult = await AccountLockoutService.isLocked(user.id);
       if (lockResult.ok && lockResult.value.locked) {
-        throw new Error(`ACCOUNT_LOCKED:${lockResult.value.minutesRemaining}`);
+        throw new ServiceError('ACCOUNT_LOCKED', 'Account is locked', { minutesRemaining: lockResult.value.minutesRemaining });
       }
 
       // Verify password
@@ -144,21 +145,21 @@ export class AuthService {
       if (!valid) {
         const attemptResult = await AccountLockoutService.recordFailedAttempt(user.id);
         if (attemptResult.ok && attemptResult.value.locked) {
-          throw new Error('ACCOUNT_LOCKED_NOW');
+          throw new ServiceError('ACCOUNT_LOCKED', 'Too many failed attempts. Account has been temporarily locked.', { lockedNow: true });
         }
         const remaining = attemptResult.ok ? attemptResult.value.attemptsRemaining : undefined;
-        throw new Error(`INVALID_CREDENTIALS:${remaining ?? ''}`);
+        throw new ServiceError('INVALID_CREDENTIALS', 'Invalid credentials', { attemptsRemaining: remaining });
       }
 
       // Check if email is verified (only when setting is enabled)
       const emailVerificationRequired = await SettingsService.get<boolean>('feature.email_verification_required', false);
       if (emailVerificationRequired && !user.emailVerified) {
-        throw new Error('EMAIL_NOT_VERIFIED');
+        throw new ServiceError('EMAIL_NOT_VERIFIED', 'Email not verified');
       }
 
       // Check if account is active
       if (!user.isActive) {
-        throw new Error('Account is deactivated');
+        throw new ServiceError('ACCOUNT_DEACTIVATED', 'Account is deactivated');
       }
 
       // Reset lockout on successful login
@@ -225,10 +226,10 @@ export class AuthService {
       // Verify MFA code
       const verifyResult = await MfaService.verify(userId, method, code);
       if (!verifyResult.ok) {
-        throw new Error('MFA verification failed');
+        throw new ServiceError('INVALID_INPUT', 'MFA verification failed');
       }
       if (!verifyResult.value.valid) {
-        throw new Error('Invalid MFA code');
+        throw new ServiceError('INVALID_INPUT', 'Invalid MFA code');
       }
 
       // Get user

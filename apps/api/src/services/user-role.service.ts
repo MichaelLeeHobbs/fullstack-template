@@ -4,6 +4,7 @@
 // Handles user-role assignments.
 
 import { tryCatch, type Result } from 'stderr-lib';
+import { ServiceError } from '../lib/service-error.js';
 import { db } from '../lib/db.js';
 import { users, roles, userRoles, type Role } from '../db/schema/index.js';
 import { eq, and, inArray, sql } from 'drizzle-orm';
@@ -71,14 +72,14 @@ export class UserRoleService {
       const [user] = await db.select({ id: users.id }).from(users).where(eq(users.id, userId));
 
       if (!user) {
-        throw new Error('User not found');
+        throw new ServiceError('NOT_FOUND', 'User not found');
       }
 
       // Verify role exists
       const [role] = await db.select({ id: roles.id }).from(roles).where(eq(roles.id, roleId));
 
       if (!role) {
-        throw new Error('Role not found');
+        throw new ServiceError('NOT_FOUND', 'Role not found');
       }
 
       // Check if already assigned
@@ -124,7 +125,7 @@ export class UserRoleService {
       const [user] = await db.select({ id: users.id }).from(users).where(eq(users.id, userId));
 
       if (!user) {
-        throw new Error('User not found');
+        throw new ServiceError('NOT_FOUND', 'User not found');
       }
 
       // Validate all role IDs exist
@@ -135,7 +136,7 @@ export class UserRoleService {
           .where(inArray(roles.id, roleIds));
 
         if (validRoles.length !== roleIds.length) {
-          throw new Error('One or more role IDs are invalid');
+          throw new ServiceError('INVALID_INPUT', 'One or more role IDs are invalid');
         }
       }
 

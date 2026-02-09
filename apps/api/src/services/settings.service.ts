@@ -5,6 +5,7 @@
 // Feature flags, UI config, and other runtime settings.
 
 import { tryCatch, type Result } from 'stderr-lib';
+import { ServiceError } from '../lib/service-error.js';
 import { db } from '../lib/db.js';
 import { systemSettings, type SystemSetting } from '../db/schema/index.js';
 import { eq } from 'drizzle-orm';
@@ -101,7 +102,7 @@ export class SettingsService {
         .from(systemSettings)
         .where(eq(systemSettings.key, key));
 
-      if (!setting) throw new Error('Setting not found');
+      if (!setting) throw new ServiceError('NOT_FOUND', 'Setting not found');
       return setting;
     });
   }

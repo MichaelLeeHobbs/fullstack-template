@@ -6,6 +6,7 @@
 
 import { randomBytes, createHash } from 'crypto';
 import { tryCatch, type Result } from 'stderr-lib';
+import { ServiceError } from '../lib/service-error.js';
 import { db } from '../lib/db.js';
 import { apiKeys, apiKeyPermissions, users, permissions } from '../db/schema/index.js';
 import { eq, and, inArray, count, type SQL } from 'drizzle-orm';
@@ -96,7 +97,7 @@ export class ApiKeyService {
 
         for (const perm of requestedPerms) {
           if (!creatorPerms.has(perm.name)) {
-            throw new Error(`Cannot assign permission '${perm.name}' — you do not have it`);
+            throw new ServiceError('FORBIDDEN', `Cannot assign permission '${perm.name}' — you do not have it`);
           }
         }
       }
@@ -108,7 +109,7 @@ export class ApiKeyService {
           .from(permissions)
           .where(inArray(permissions.id, data.permissionIds));
         if (validPerms.length !== data.permissionIds.length) {
-          throw new Error('One or more invalid permission IDs');
+          throw new ServiceError('INVALID_INPUT', 'One or more invalid permission IDs');
         }
       }
 
@@ -205,7 +206,7 @@ export class ApiKeyService {
   static async getById(id: string): Promise<Result<ApiKeyWithPermissions>> {
     return tryCatch(async () => {
       const [key] = await db.select().from(apiKeys).where(eq(apiKeys.id, id));
-      if (!key) throw new Error('API key not found');
+      if (!key) throw new ServiceError('NOT_FOUND', 'API key not found');
 
       const keyPerms = await this.getKeyPermissions(key.id);
 
@@ -355,7 +356,7 @@ export class ApiKeyService {
         .where(eq(apiKeys.id, id))
         .returning({ id: apiKeys.id });
 
-      if (!key) throw new Error('API key not found');
+      if (!key) throw new ServiceError('NOT_FOUND', 'API key not found');
       return key;
     });
   }
@@ -370,7 +371,7 @@ export class ApiKeyService {
         .where(eq(apiKeys.id, id))
         .returning({ id: apiKeys.id });
 
-      if (!key) throw new Error('API key not found');
+      if (!key) throw new ServiceError('NOT_FOUND', 'API key not found');
       return { deleted: true };
     });
   }
@@ -387,7 +388,7 @@ export class ApiKeyService {
     return tryCatch(async () => {
       // Verify key exists
       const [key] = await db.select().from(apiKeys).where(eq(apiKeys.id, apiKeyId));
-      if (!key) throw new Error('API key not found');
+      if (!key) throw new ServiceError('NOT_FOUND', 'API key not found');
 
       // Validate permission subset for non-admin
       if (!updaterIsAdmin && permissionIds.length > 0) {
@@ -399,7 +400,7 @@ export class ApiKeyService {
 
         for (const perm of requestedPerms) {
           if (!updaterPerms.has(perm.name)) {
-            throw new Error(`Cannot assign permission '${perm.name}' — you do not have it`);
+            throw new ServiceError('FORBIDDEN', `Cannot assign permission '${perm.name}' — you do not have it`);
           }
         }
       }
@@ -411,7 +412,7 @@ export class ApiKeyService {
           .from(permissions)
           .where(inArray(permissions.id, permissionIds));
         if (validPerms.length !== permissionIds.length) {
-          throw new Error('One or more invalid permission IDs');
+          throw new ServiceError('INVALID_INPUT', 'One or more invalid permission IDs');
         }
       }
 

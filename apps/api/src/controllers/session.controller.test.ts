@@ -18,6 +18,7 @@ vi.mock('../lib/logger.js', () => ({
 
 import { SessionController } from './session.controller.js';
 import { SessionService } from '../services/session.service.js';
+import { ServiceError } from '../lib/service-error.js';
 import { createMockRequest, createMockResponse } from '../../test/utils/index.js';
 
 describe('SessionController', () => {
@@ -80,7 +81,7 @@ describe('SessionController', () => {
     it('should return 404 when session not found', async () => {
       (SessionService.revokeSession as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: false,
-        error: new Error('Session not found'),
+        error: new ServiceError('NOT_FOUND', 'Session not found'),
       });
 
       const req = createMockRequest({ user: { id: 'u1' }, sessionId: 's1', params: { id: 's99' } });

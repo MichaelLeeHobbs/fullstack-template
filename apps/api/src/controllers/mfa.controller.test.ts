@@ -33,6 +33,7 @@ vi.mock('../lib/cookies.js', () => ({
 import { MfaController } from './mfa.controller.js';
 import { MfaService } from '../services/mfa.service.js';
 import { AuthService } from '../services/auth.service.js';
+import { ServiceError } from '../lib/service-error.js';
 import { createMockRequest, createMockResponse } from '../../test/utils/index.js';
 import { setRefreshTokenCookie } from '../lib/cookies.js';
 
@@ -115,7 +116,7 @@ describe('MfaController', () => {
     it('should return 400 for invalid verification code', async () => {
       (MfaService.verifyAndEnableTotp as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: false,
-        error: new Error('Invalid verification code'),
+        error: new ServiceError('INVALID_INPUT', 'Invalid verification code'),
       });
 
       const req = createMockRequest({ user: { id: 'u1' }, body: { code: '000000' } });
@@ -146,7 +147,7 @@ describe('MfaController', () => {
     it('should return 401 for invalid MFA code', async () => {
       (AuthService.verifyMfaAndLogin as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: false,
-        error: new Error('Invalid MFA code'),
+        error: new ServiceError('INVALID_INPUT', 'Invalid MFA code'),
       });
 
       const req = createMockRequest({ body: { tempToken: 'temp', method: 'totp', code: 'wrong' } });
@@ -175,7 +176,7 @@ describe('MfaController', () => {
     it('should return 400 for invalid code', async () => {
       (MfaService.disable as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: false,
-        error: new Error('Invalid code'),
+        error: new ServiceError('INVALID_INPUT', 'Invalid code'),
       });
 
       const req = createMockRequest({ user: { id: 'u1' }, body: { method: 'totp', code: 'wrong' } });
@@ -205,7 +206,7 @@ describe('MfaController', () => {
     it('should return 400 for invalid TOTP code', async () => {
       (MfaService.regenerateBackupCodes as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: false,
-        error: new Error('Invalid TOTP code'),
+        error: new ServiceError('INVALID_INPUT', 'Invalid TOTP code'),
       });
 
       const req = createMockRequest({ user: { id: 'u1' }, body: { method: 'totp', code: 'wrong' } });

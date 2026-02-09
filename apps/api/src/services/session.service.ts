@@ -4,6 +4,7 @@
 // Manages active sessions for a user.
 
 import { tryCatch, type Result } from 'stderr-lib';
+import { ServiceError } from '../lib/service-error.js';
 import { db } from '../lib/db.js';
 import { sessions } from '../db/schema/index.js';
 import { eq, and, ne, gt } from 'drizzle-orm';
@@ -52,7 +53,7 @@ export class SessionService {
         .returning({ id: sessions.id });
 
       if (result.length === 0) {
-        throw new Error('Session not found');
+        throw new ServiceError('NOT_FOUND', 'Session not found');
       }
     });
   }

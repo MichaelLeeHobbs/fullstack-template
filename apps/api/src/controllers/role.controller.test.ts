@@ -44,6 +44,7 @@ import { RoleController } from './role.controller.js';
 import { RoleService } from '../services/role.service.js';
 import { UserRoleService } from '../services/user-role.service.js';
 import { PermissionService } from '../services/permission.service.js';
+import { ServiceError } from '../lib/service-error.js';
 import { createMockRequest, createMockResponse } from '../../test/utils/index.js';
 
 describe('RoleController', () => {
@@ -113,7 +114,7 @@ describe('RoleController', () => {
     it('should return 404 if not found', async () => {
       (RoleService.getById as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: false,
-        error: new Error('Role not found'),
+        error: new ServiceError('NOT_FOUND', 'Role not found'),
       });
 
       const req = createMockRequest({ params: { id: 'r99' } });
@@ -142,7 +143,7 @@ describe('RoleController', () => {
     it('should return 409 for duplicate name', async () => {
       (RoleService.create as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: false,
-        error: new Error('Role already exists'),
+        error: new ServiceError('ALREADY_EXISTS', 'Role already exists'),
       });
 
       const req = createMockRequest({ body: { name: 'Admin' } });
@@ -170,7 +171,7 @@ describe('RoleController', () => {
     it('should return 403 for system role', async () => {
       (RoleService.update as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: false,
-        error: new Error('Cannot modify system role'),
+        error: new ServiceError('SYSTEM_PROTECTED', 'Cannot modify system role'),
       });
 
       const req = createMockRequest({ params: { id: 'r1' }, body: { name: 'Hacked' } });
@@ -199,7 +200,7 @@ describe('RoleController', () => {
       (RoleService.getById as ReturnType<typeof vi.fn>).mockResolvedValue({ ok: true, value: { name: 'Super Admin' } });
       (RoleService.delete as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: false,
-        error: new Error('Cannot delete system role'),
+        error: new ServiceError('SYSTEM_PROTECTED', 'Cannot delete system role'),
       });
 
       const req = createMockRequest({ params: { id: 'r1' } });

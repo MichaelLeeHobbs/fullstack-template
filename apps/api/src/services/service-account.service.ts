@@ -4,6 +4,7 @@
 // Manages service accounts — headless users for API key access.
 
 import { tryCatch, type Result } from 'stderr-lib';
+import { ServiceError } from '../lib/service-error.js';
 import { db } from '../lib/db.js';
 import { users, ACCOUNT_TYPES } from '../db/schema/index.js';
 import { eq, and, count, inArray, sql } from 'drizzle-orm';
@@ -29,7 +30,7 @@ export class ServiceAccountService {
         .select()
         .from(users)
         .where(eq(users.email, email.toLowerCase()));
-      if (existing) throw new Error('Email already exists');
+      if (existing) throw new ServiceError('ALREADY_EXISTS', 'Email already exists');
 
       const [user] = await db
         .insert(users)
@@ -115,7 +116,7 @@ export class ServiceAccountService {
         .from(users)
         .where(and(eq(users.id, id), eq(users.accountType, ACCOUNT_TYPES.SERVICE)));
 
-      if (!user) throw new Error('Service account not found');
+      if (!user) throw new ServiceError('NOT_FOUND', 'Service account not found');
 
       await db.delete(users).where(eq(users.id, id));
 

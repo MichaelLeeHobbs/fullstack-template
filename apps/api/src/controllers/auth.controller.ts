@@ -12,6 +12,7 @@ import { AUDIT_ACTIONS } from '../db/schema/audit.js';
 import type { RegisterInput, LoginInput } from '../schemas/auth.schema.js';
 import logger from '../lib/logger.js';
 import { setRefreshTokenCookie, clearRefreshTokenCookie, getRefreshTokenFromCookie } from '../lib/cookies.js';
+import { isServiceError } from '../lib/service-error.js';
 
 export class AuthController {
   static async register(req: Request, res: Response): Promise<void> {
@@ -29,7 +30,7 @@ export class AuthController {
     if (!result.ok) {
       logger.warn({ error: result.error }, 'Registration failed');
 
-      if (result.error.message?.includes('already exists')) {
+      if (isServiceError(result.error, 'ALREADY_EXISTS')) {
         res.status(409).json({ success: false, error: 'Email already registered' });
         return;
       }
@@ -59,25 +60,25 @@ export class AuthController {
       logger.warn({ email, error: result.error.toString() }, 'Login failed');
 
       // Handle account lockout
-      if (result.error.message?.startsWith('ACCOUNT_LOCKED:')) {
-        const minutes = result.error.message.split(':')[1];
-        res.status(429).json({
-          success: false,
-          error: `Account is locked. Try again in ${minutes} minute(s).`,
-        });
-        return;
-      }
-      if (result.error.message === 'ACCOUNT_LOCKED_NOW') {
-        res.status(429).json({
-          success: false,
-          error: 'Too many failed attempts. Account has been temporarily locked.',
-        });
+      if (isServiceError(result.error, 'ACCOUNT_LOCKED')) {
+        const details = result.error.details;
+        if (details?.lockedNow) {
+          res.status(429).json({
+            success: false,
+            error: 'Too many failed attempts. Account has been temporarily locked.',
+          });
+        } else {
+          res.status(429).json({
+            success: false,
+            error: `Account is locked. Try again in ${details?.minutesRemaining} minute(s).`,
+          });
+        }
         return;
       }
 
       // Handle invalid credentials with remaining attempts
-      if (result.error.message?.startsWith('INVALID_CREDENTIALS:')) {
-        const remaining = result.error.message.split(':')[1];
+      if (isServiceError(result.error, 'INVALID_CREDENTIALS')) {
+        const remaining = result.error.details?.attemptsRemaining;
         const msg = remaining
           ? `Invalid email or password. ${remaining} attempt(s) remaining.`
           : 'Invalid email or password';
@@ -86,13 +87,13 @@ export class AuthController {
       }
 
       // Handle email not verified error
-      if (result.error.message === 'EMAIL_NOT_VERIFIED') {
+      if (isServiceError(result.error, 'EMAIL_NOT_VERIFIED')) {
         res.status(403).json({ success: false, error: 'EMAIL_NOT_VERIFIED' });
         return;
       }
 
       // Handle deactivated account
-      if (result.error.message?.includes('deactivated')) {
+      if (isServiceError(result.error, 'ACCOUNT_DEACTIVATED')) {
         res.status(403).json({ success: false, error: 'Account is deactivated' });
         return;
       }

@@ -27,6 +27,7 @@ vi.mock('../lib/logger.js', () => ({
 
 import { AdminController } from './admin.controller.js';
 import { AdminService } from '../services/admin.service.js';
+import { ServiceError } from '../lib/service-error.js';
 import { createMockRequest, createMockResponse } from '../../test/utils/index.js';
 
 describe('AdminController', () => {
@@ -80,7 +81,7 @@ describe('AdminController', () => {
     it('should return 404 if not found', async () => {
       (AdminService.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: false,
-        error: new Error('User not found'),
+        error: new ServiceError('NOT_FOUND', 'User not found'),
       });
 
       const req = createMockRequest({ params: { id: 'u99' } });
@@ -151,7 +152,7 @@ describe('AdminController', () => {
       (AdminService.getUser as ReturnType<typeof vi.fn>).mockResolvedValue({ ok: true, value: { email: 'admin@b.com' } });
       (AdminService.deleteUser as ReturnType<typeof vi.fn>).mockResolvedValue({
         ok: false,
-        error: new Error('Cannot delete your own account'),
+        error: new ServiceError('SELF_ACTION', 'Cannot delete your own account'),
       });
 
       const req = createMockRequest({ params: { id: 'admin-1' }, user: { id: 'admin-1' } });

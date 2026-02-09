@@ -7,6 +7,7 @@ import type { Request, Response } from 'express';
 import { SettingsService } from '../services/settings.service.js';
 import type { UpdateSettingInput } from '../schemas/settings.schema.js';
 import logger from '../lib/logger.js';
+import { isServiceError } from '../lib/service-error.js';
 
 export class SettingsController {
   /**
@@ -62,7 +63,7 @@ export class SettingsController {
 
     const result = await SettingsService.getByKey(key);
     if (!result.ok) {
-      if (result.error.message?.includes('not found')) {
+      if (isServiceError(result.error, 'NOT_FOUND')) {
         return void res.status(404).json({
           success: false,
           error: 'Setting not found',
@@ -95,7 +96,7 @@ export class SettingsController {
     const result = await SettingsService.set(key, body.value);
 
     if (!result.ok) {
-      if (result.error.message?.includes('not found')) {
+      if (isServiceError(result.error, 'NOT_FOUND')) {
         return void res.status(404).json({
           success: false,
           error: 'Setting not found',
