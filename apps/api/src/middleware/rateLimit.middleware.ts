@@ -3,7 +3,7 @@
 // ===========================================
 // Protects against brute force attacks.
 
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 
 // ===========================================
 // Auth Rate Limiter
@@ -77,7 +77,7 @@ export const apiRateLimiter = rateLimit({
 export const apiKeyRateLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 60, // 60 requests per minute per key/IP
-  keyGenerator: (req) => req.apiKeyId || req.ip || 'unknown',
+  keyGenerator: (req) => req.apiKeyId || ipKeyGenerator(req.ip ?? 'unknown'),
   message: {
     success: false,
     error: 'Too many API key requests. Please slow down.',
