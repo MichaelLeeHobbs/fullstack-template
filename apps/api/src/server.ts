@@ -3,6 +3,7 @@
 // ===========================================
 // Starts the Express server with graceful shutdown.
 
+import { Sentry, sentryEnabled } from './lib/sentry.js';
 import app from './app.js';
 import { config } from './config/index.js';
 import logger from './lib/logger.js';
@@ -38,6 +39,7 @@ function shutdown(signal: string) {
     await shutdownSocketIO();
     await stopQueue();
     await pool.end();
+    if (sentryEnabled) await Sentry.close(2000);
     process.exit(0);
   });
   setTimeout(() => process.exit(1), 10_000).unref();

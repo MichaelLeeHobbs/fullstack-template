@@ -65,6 +65,61 @@ export const defaultRoles: RoleDefinition[] = [
     },
     permissions: [], // No special permissions, just authenticated access
   },
+
+  // ===========================================
+  // PKI Admin - Full PKI management
+  // ===========================================
+  {
+    role: {
+      name: 'PKI Admin',
+      description: 'Full PKI management including CA creation and profile management.',
+      isSystem: false,
+    },
+    permissions: [
+      PERMISSIONS.CA_READ,
+      PERMISSIONS.CA_CREATE,
+      PERMISSIONS.CA_UPDATE,
+      PERMISSIONS.CERTIFICATES_READ,
+      PERMISSIONS.CERTIFICATES_ISSUE,
+      PERMISSIONS.CERTIFICATES_REVOKE,
+      PERMISSIONS.CERTIFICATES_RENEW,
+      PERMISSIONS.CERTIFICATES_DOWNLOAD,
+      PERMISSIONS.CSR_READ,
+      PERMISSIONS.CSR_SUBMIT,
+      PERMISSIONS.CSR_APPROVE,
+      PERMISSIONS.CRL_READ,
+      PERMISSIONS.CRL_GENERATE,
+      PERMISSIONS.PROFILES_READ,
+      PERMISSIONS.PROFILES_CREATE,
+      PERMISSIONS.PROFILES_UPDATE,
+      PERMISSIONS.PROFILES_DELETE,
+      PERMISSIONS.PKI_AUDIT_READ,
+    ],
+  },
+
+  // ===========================================
+  // PKI Operator - Day-to-day cert operations
+  // ===========================================
+  {
+    role: {
+      name: 'PKI Operator',
+      description: 'Issue, revoke, and renew certificates. Approve CSRs.',
+      isSystem: false,
+    },
+    permissions: [
+      PERMISSIONS.CA_READ,
+      PERMISSIONS.CERTIFICATES_READ,
+      PERMISSIONS.CERTIFICATES_ISSUE,
+      PERMISSIONS.CERTIFICATES_REVOKE,
+      PERMISSIONS.CERTIFICATES_RENEW,
+      PERMISSIONS.CERTIFICATES_DOWNLOAD,
+      PERMISSIONS.CSR_READ,
+      PERMISSIONS.CSR_APPROVE,
+      PERMISSIONS.CRL_READ,
+      PERMISSIONS.PROFILES_READ,
+      PERMISSIONS.PKI_AUDIT_READ,
+    ],
+  },
 ];
 
 // Role names as constants
@@ -72,6 +127,8 @@ export const ROLES = {
   SUPER_ADMIN: 'Super Admin',
   ADMIN: 'Admin',
   USER: 'User',
+  PKI_ADMIN: 'PKI Admin',
+  PKI_OPERATOR: 'PKI Operator',
 } as const;
 
 export type RoleName = (typeof ROLES)[keyof typeof ROLES];

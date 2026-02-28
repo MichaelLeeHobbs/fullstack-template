@@ -7,6 +7,7 @@
 import { PgBoss } from 'pg-boss';
 import { config } from '../config/index.js';
 import logger from './logger.js';
+import { Sentry, sentryEnabled } from './sentry.js';
 
 let boss: PgBoss | null = null;
 
@@ -21,7 +22,10 @@ export async function startQueue(): Promise<PgBoss> {
     ...(config.DATABASE_SSL ? { ssl: { rejectUnauthorized: false } } : {}),
   });
 
-  boss.on('error', (err: Error) => logger.error({ error: err.message }, 'pgboss error'));
+  boss.on('error', (err: Error) => {
+    logger.error({ error: err.message }, 'pgboss error');
+    if (sentryEnabled) Sentry.captureException(err);
+  });
 
   await boss.start();
   logger.info('pgboss started');

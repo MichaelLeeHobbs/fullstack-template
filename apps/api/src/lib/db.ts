@@ -7,6 +7,7 @@ import pg from 'pg';
 import { config } from '../config/index.js';
 import * as schema from '../db/schema/index.js';
 import logger from './logger.js';
+import { Sentry, sentryEnabled } from './sentry.js';
 
 const pool = new pg.Pool({
   connectionString: config.DATABASE_URL,
@@ -18,6 +19,7 @@ const pool = new pg.Pool({
 
 pool.on('error', (err) => {
   logger.error({ error: err.message }, 'Unexpected database pool error');
+  if (sentryEnabled) Sentry.captureException(err);
 });
 
 export { pool };

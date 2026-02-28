@@ -8,6 +8,7 @@ import { getBoss } from '../lib/queue.js';
 import { registerEmailHandlers, EMAIL_QUEUES } from './email.js';
 import { registerCleanupHandler } from './cleanup.js';
 import { registerNotificationHandler, NOTIFICATION_QUEUES } from './notification.js';
+import { registerCertExpirationHandler } from './cert-expiration.js';
 import type { SendVerificationEmailPayload, SendPasswordResetEmailPayload } from './email.js';
 import type { SendNotificationPayload } from './notification.js';
 
@@ -21,6 +22,7 @@ export async function registerAllHandlers(boss: PgBoss): Promise<void> {
   await registerEmailHandlers(boss);
   await registerCleanupHandler(boss);
   await registerNotificationHandler(boss);
+  await registerCertExpirationHandler(boss);
 }
 
 /**

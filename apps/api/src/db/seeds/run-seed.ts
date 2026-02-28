@@ -19,6 +19,7 @@ import {
 import { defaultSettings } from './settings.js';
 import { defaultPermissions } from './permissions.js';
 import { defaultRoles, ROLES } from './roles.js';
+import { seedCertificateProfiles } from './certificate-profiles.js';
 import logger from '../../lib/logger.js';
 import { and, eq } from 'drizzle-orm';
 import { stderr } from 'stderr-lib';
@@ -265,6 +266,7 @@ async function seed() {
     await seedRoles(tx);
     await seedAdminUser(tx);
     await migrateExistingAdmins(tx);
+    await seedCertificateProfiles(tx);
   });
 
   logger.info('Seeding complete!');

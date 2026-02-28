@@ -15,7 +15,10 @@ import {
   Typography,
   Box,
 } from '@mui/material';
-import { Home, Settings, People, History, Security, VpnKey, ManageAccounts } from '@mui/icons-material';
+import {
+  Home, Settings, People, History, Security, VpnKey, ManageAccounts,
+  Shield, VerifiedUser, Description, Assignment, Policy, GppGood,
+} from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
 import { useAnyPermission } from '../../hooks/usePermission.js';
 import { PERMISSIONS } from '../../types/role.js';
@@ -46,6 +49,13 @@ export function Sidebar({ open, onClose, variant }: SidebarProps) {
   const canViewApiKeys = useAnyPermission([PERMISSIONS.API_KEYS_READ]);
   const canViewServiceAccounts = useAnyPermission([PERMISSIONS.SERVICE_ACCOUNTS_READ]);
 
+  // PKI permissions
+  const canViewPki = useAnyPermission([PERMISSIONS.CA_READ]);
+  const canViewCerts = useAnyPermission([PERMISSIONS.CERTIFICATES_READ]);
+  const canViewCsrs = useAnyPermission([PERMISSIONS.CSR_READ]);
+  const canViewProfiles = useAnyPermission([PERMISSIONS.PROFILES_READ]);
+  const canViewPkiAudit = useAnyPermission([PERMISSIONS.PKI_AUDIT_READ]);
+
   // Main navigation items - expand as features are added
   const navItems: NavItem[] = [{ text: 'Home', icon: <Home />, path: '/home' }];
 
@@ -63,6 +73,16 @@ export function Sidebar({ open, onClose, variant }: SidebarProps) {
     ...(canViewServiceAccounts
       ? [{ text: 'Service Accounts', icon: <ManageAccounts />, path: '/admin/service-accounts' }]
       : []),
+  ];
+
+  // PKI items - shown based on permissions
+  const pkiItems: NavItem[] = [
+    ...(canViewPki ? [{ text: 'Dashboard', icon: <Shield />, path: '/pki' }] : []),
+    ...(canViewPki ? [{ text: 'CAs', icon: <GppGood />, path: '/pki/ca' }] : []),
+    ...(canViewCerts ? [{ text: 'Certificates', icon: <VerifiedUser />, path: '/pki/certificates' }] : []),
+    ...(canViewCsrs ? [{ text: 'Requests', icon: <Description />, path: '/pki/requests' }] : []),
+    ...(canViewProfiles ? [{ text: 'Profiles', icon: <Assignment />, path: '/pki/profiles' }] : []),
+    ...(canViewPkiAudit ? [{ text: 'PKI Audit', icon: <Policy />, path: '/pki/audit' }] : []),
   ];
 
   const renderNavItem = (item: NavItem) => (
@@ -112,6 +132,17 @@ export function Sidebar({ open, onClose, variant }: SidebarProps) {
             </Typography>
           </Box>
           <List>{adminItems.map(renderNavItem)}</List>
+        </>
+      )}
+      {pkiItems.length > 0 && (
+        <>
+          <Divider />
+          <Box sx={{ px: 2, py: 1 }}>
+            <Typography variant="caption" color="text.secondary">
+              PKI
+            </Typography>
+          </Box>
+          <List>{pkiItems.map(renderNavItem)}</List>
         </>
       )}
     </Drawer>

@@ -14,4 +14,14 @@ export * from './user-roles.js';
 export * from './api-keys.js';
 export * from './user-mfa-methods.js';
 export * from './notifications.js';
+export * from './pki-private-keys.js';
+export * from './certificate-authorities.js';
+export * from './certificate-profiles.js';
+export * from './certificates.js';
+export * from './certificate-requests.js';
+export * from './revocations.js';
+export * from './crls.js';
+export * from './user-certificates.js';
+export * from './cert-attach-codes.js';
+export * from './pki-audit-logs.js';
 

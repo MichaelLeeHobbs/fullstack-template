@@ -20,6 +20,7 @@
     "@hookform/resolvers": "5.2.2",
     "@mui/icons-material": "6.3.0",
     "@mui/material": "6.3.0",
+    "@sentry/react": "^10.38.0",
     "@tanstack/react-query": "5.62.8",
     "notistack": "3.0.2",
     "react": "18.3.1",

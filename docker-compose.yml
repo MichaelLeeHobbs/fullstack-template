@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: app
       POSTGRES_PASSWORD: app_dev
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -24,7 +24,7 @@ services:
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: app
-      MINIO_ROOT_PASSWORD: app_dev
+      MINIO_ROOT_PASSWORD: app_dev_password
     ports:
       - "9000:9000"
       - "9001:9001"

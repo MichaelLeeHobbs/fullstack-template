@@ -4,6 +4,7 @@
 // Fetch wrapper with automatic token refresh.
 
 import { useAuthStore } from '../stores/auth.store.js';
+import { Sentry, sentryEnabled } from '../lib/sentry.js';
 
 const API_URL = '/api/v1';
 
@@ -110,7 +111,22 @@ export async function apiFetch<T>(
   const data = await response.json();
 
   if (!response.ok) {
-    throw new ApiError(response.status, data.error || 'Request failed');
+    const apiError = new ApiError(response.status, data.error || 'Request failed');
+
+    if (sentryEnabled) {
+      if (response.status >= 500) {
+        Sentry.captureException(apiError, { extra: { path } });
+      } else if (response.status >= 400) {
+        Sentry.addBreadcrumb({
+          category: 'api',
+          level: 'warning',
+          message: `${response.status} ${path}`,
+          data: { status: response.status, error: data.error },
+        });
+      }
+    }
+
+    throw apiError;
   }
 
   return data.data as T;

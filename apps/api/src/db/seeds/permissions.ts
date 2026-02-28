@@ -144,6 +144,138 @@ export const defaultPermissions: NewPermission[] = [
     resource: 'service_accounts',
     action: 'delete',
   },
+
+  // ===========================================
+  // Certificate Authorities
+  // ===========================================
+  {
+    name: 'ca:read',
+    description: 'View certificate authorities',
+    resource: 'ca',
+    action: 'read',
+  },
+  {
+    name: 'ca:create',
+    description: 'Create certificate authorities',
+    resource: 'ca',
+    action: 'create',
+  },
+  {
+    name: 'ca:update',
+    description: 'Update, suspend, or retire certificate authorities',
+    resource: 'ca',
+    action: 'update',
+  },
+
+  // ===========================================
+  // Certificates
+  // ===========================================
+  {
+    name: 'certificates:read',
+    description: 'View certificates',
+    resource: 'certificates',
+    action: 'read',
+  },
+  {
+    name: 'certificates:issue',
+    description: 'Issue new certificates',
+    resource: 'certificates',
+    action: 'issue',
+  },
+  {
+    name: 'certificates:revoke',
+    description: 'Revoke certificates',
+    resource: 'certificates',
+    action: 'revoke',
+  },
+  {
+    name: 'certificates:renew',
+    description: 'Renew certificates',
+    resource: 'certificates',
+    action: 'renew',
+  },
+  {
+    name: 'certificates:download',
+    description: 'Download certificates and keys',
+    resource: 'certificates',
+    action: 'download',
+  },
+
+  // ===========================================
+  // Certificate Signing Requests
+  // ===========================================
+  {
+    name: 'csr:read',
+    description: 'View certificate signing requests',
+    resource: 'csr',
+    action: 'read',
+  },
+  {
+    name: 'csr:submit',
+    description: 'Submit certificate signing requests',
+    resource: 'csr',
+    action: 'submit',
+  },
+  {
+    name: 'csr:approve',
+    description: 'Approve or reject certificate signing requests',
+    resource: 'csr',
+    action: 'approve',
+  },
+
+  // ===========================================
+  // Certificate Revocation Lists
+  // ===========================================
+  {
+    name: 'crl:read',
+    description: 'View certificate revocation lists',
+    resource: 'crl',
+    action: 'read',
+  },
+  {
+    name: 'crl:generate',
+    description: 'Generate certificate revocation lists',
+    resource: 'crl',
+    action: 'generate',
+  },
+
+  // ===========================================
+  // Certificate Profiles
+  // ===========================================
+  {
+    name: 'profiles:read',
+    description: 'View certificate profiles',
+    resource: 'profiles',
+    action: 'read',
+  },
+  {
+    name: 'profiles:create',
+    description: 'Create certificate profiles',
+    resource: 'profiles',
+    action: 'create',
+  },
+  {
+    name: 'profiles:update',
+    description: 'Update certificate profiles',
+    resource: 'profiles',
+    action: 'update',
+  },
+  {
+    name: 'profiles:delete',
+    description: 'Delete certificate profiles',
+    resource: 'profiles',
+    action: 'delete',
+  },
+
+  // ===========================================
+  // PKI Audit
+  // ===========================================
+  {
+    name: 'pki_audit:read',
+    description: 'View PKI audit logs',
+    resource: 'pki_audit',
+    action: 'read',
+  },
 ];
 
 // Permission names as constants for type-safe usage
@@ -167,6 +299,26 @@ export const PERMISSIONS = {
   SERVICE_ACCOUNTS_CREATE: 'service_accounts:create',
   SERVICE_ACCOUNTS_UPDATE: 'service_accounts:update',
   SERVICE_ACCOUNTS_DELETE: 'service_accounts:delete',
+
+  // PKI
+  CA_READ: 'ca:read',
+  CA_CREATE: 'ca:create',
+  CA_UPDATE: 'ca:update',
+  CERTIFICATES_READ: 'certificates:read',
+  CERTIFICATES_ISSUE: 'certificates:issue',
+  CERTIFICATES_REVOKE: 'certificates:revoke',
+  CERTIFICATES_RENEW: 'certificates:renew',
+  CERTIFICATES_DOWNLOAD: 'certificates:download',
+  CSR_READ: 'csr:read',
+  CSR_SUBMIT: 'csr:submit',
+  CSR_APPROVE: 'csr:approve',
+  CRL_READ: 'crl:read',
+  CRL_GENERATE: 'crl:generate',
+  PROFILES_READ: 'profiles:read',
+  PROFILES_CREATE: 'profiles:create',
+  PROFILES_UPDATE: 'profiles:update',
+  PROFILES_DELETE: 'profiles:delete',
+  PKI_AUDIT_READ: 'pki_audit:read',
 } as const;
 
 export type PermissionName = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];

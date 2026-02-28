@@ -71,6 +71,12 @@ const configSchema = z.object({
   AWS_ACCESS_KEY_ID: z.string().optional(),
   AWS_SECRET_ACCESS_KEY: z.string().optional(),
 
+  // Sentry (optional)
+  SENTRY_DSN: z.string().url().optional(),
+  SENTRY_TRACES_SAMPLE_RATE: z.coerce.number().min(0).max(1).default(0.1),
+
+  // PKI / Certificate Login
+  TRUSTED_PROXY_IP: z.string().optional(),
 });
 
 const result = configSchema.safeParse(process.env);

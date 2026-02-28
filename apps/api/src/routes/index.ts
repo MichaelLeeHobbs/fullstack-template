@@ -13,6 +13,11 @@ import apiKeyRoutes from './api-key.routes.js';
 import sessionRoutes from './session.routes.js';
 import mfaRoutes from './mfa.routes.js';
 import notificationRoutes from './notification.routes.js';
+import caRoutes from './ca.routes.js';
+import certificateProfileRoutes from './certificate-profile.routes.js';
+import certificateRoutes from './certificate.routes.js';
+import csrRoutes from './csr.routes.js';
+import certLoginRoutes from './cert-login.routes.js';
 
 const router: IRouter = Router();
 
@@ -26,6 +31,11 @@ router.use('/api-keys', apiKeyRoutes);
 router.use('/sessions', sessionRoutes);
 router.use('/mfa', mfaRoutes);
 router.use('/notifications', notificationRoutes);
+router.use('/ca', caRoutes);
+router.use('/profiles', certificateProfileRoutes);
+router.use('/certificates', certificateRoutes);
+router.use('/certificates/requests', csrRoutes);
+router.use('/', certLoginRoutes);
 
 export default router;
 

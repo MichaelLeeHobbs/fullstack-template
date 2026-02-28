@@ -226,7 +226,7 @@ LOG_LEVEL=debug
 # S3 / MinIO
 S3_ENDPOINT=http://localhost:9000
 S3_ACCESS_KEY=app
-S3_SECRET_KEY=app_dev
+S3_SECRET_KEY=app_dev_password
 S3_BUCKET=app-assets
 S3_REGION=us-east-1
 ```

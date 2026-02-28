@@ -228,10 +228,10 @@
 | 13.2 | Unit tests (backend services) | Complete | All 17 services have unit tests |
 | 13.3 | Unit tests (backend controllers) | Complete | All 10 controllers tested |
 | 13.4 | Integration tests (API) | Complete | Auth + admin flows with supertest |
-| 13.5 | Unit tests (frontend components) | Partial | Limited component test coverage |
+| 13.5 | Unit tests (frontend components) | Complete | Stores, hooks, and components covered (13 test files) |
 | 13.6 | Test utilities | Complete | Mock DB, mock Express, data factories in `test/utils/` |
 | 13.7 | E2E tests (Playwright) | Planned | Browser-level testing |
-| 13.8 | Test count | — | 342 API + 11 web tests passing |
+| 13.8 | Test count | — | 342 API + 70 web tests passing |
 
 ---
 

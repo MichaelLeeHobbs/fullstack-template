@@ -6,6 +6,7 @@
 import { Component, type ReactNode } from 'react';
 import { Box, Container, Typography, Button } from '@mui/material';
 import { ErrorOutline } from '@mui/icons-material';
+import { Sentry, sentryEnabled } from '../lib/sentry.js';
 
 interface Props {
   children: ReactNode;
@@ -28,8 +29,12 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('ErrorBoundary caught:', error, errorInfo);
-    // TODO: Send to error tracking service in production
+    if (sentryEnabled) {
+      Sentry.withScope((scope) => {
+        scope.setExtra('componentStack', errorInfo.componentStack);
+        Sentry.captureException(error);
+      });
+    }
   }
 
   handleReset = () => {
