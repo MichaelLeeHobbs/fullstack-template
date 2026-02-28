@@ -30,7 +30,18 @@
       "Bash(grep:*)",
       "Bash(xargs:*)",
       "Bash(git check-ignore:*)",
-      "Bash(npm pkg:*)"
+      "Bash(npm pkg:*)",
+      "Bash(test:*)",
+      "Bash(npx vitest:*)",
+      "Bash(node -e:*)",
+      "WebFetch(domain:www.ssl.com)",
+      "WebFetch(domain:docs.keyfactor.com)",
+      "Bash(head:*)",
+      "Bash(docker compose:*)",
+      "Bash(gh repo:*)",
+      "Bash(cp:*)",
+      "Bash(rm:*)",
+      "Bash(wc:*)"
     ]
   }
 }
