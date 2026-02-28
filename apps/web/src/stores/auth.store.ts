@@ -5,18 +5,9 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { UserPreferences } from '@fullstack-template/shared';
+import type { User, UserPreferences } from '@fullstack-template/shared';
 
-export type { UserPreferences };
-
-export interface User {
-  id: string;
-  email: string;
-  isAdmin: boolean;
-  preferences: UserPreferences;
-  permissions: string[];
-  createdAt: string;
-}
+export type { User, UserPreferences };
 
 interface AuthState {
   user: User | null;

@@ -4,7 +4,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { caApi } from '../api/ca.api.js';
-import type { CreateCaInput, UpdateCaInput } from '../types/pki.js';
+import type { CreateCaInput, UpdateCaInput } from '@fullstack-template/shared';
 
 export const caKeys = {
   all: ['ca'] as const,

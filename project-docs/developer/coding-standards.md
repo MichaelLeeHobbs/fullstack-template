@@ -214,6 +214,21 @@ import { users } from '../db/schema/index.js';
 3. Internal absolute paths (`@fullstack-template/shared`)
 4. Relative imports (`./auth.service.js`, `../lib/db.js`)
 
+### Shared Package vs Local Types
+
+Domain types, API response types, and constants shared between frontend and backend must live in `@fullstack-template/shared`:
+
+```typescript
+// GOOD -- import from shared package
+import type { User, Permission, CertificateAuthority } from '@fullstack-template/shared';
+import { PERMISSIONS } from '@fullstack-template/shared';
+
+// BAD -- define locally when the type exists in shared
+interface User { id: string; email: string; ... }
+```
+
+App-specific types that are only used within one package (e.g., component props, store state, Drizzle schema types) should remain local to that package.
+
 ---
 
 ## API Response Format

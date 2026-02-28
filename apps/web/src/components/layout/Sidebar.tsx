@@ -21,7 +21,7 @@ import {
 } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
 import { useAnyPermission } from '../../hooks/usePermission.js';
-import { PERMISSIONS } from '../../types/role.js';
+import { PERMISSIONS } from '@fullstack-template/shared';
 
 const DRAWER_WIDTH = 240;
 

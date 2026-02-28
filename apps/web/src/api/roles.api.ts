@@ -11,7 +11,7 @@ import type {
   UpdateRoleInput,
   SetPermissionsInput,
   SetUserRolesInput,
-} from '../types/role.js';
+} from '@fullstack-template/shared';
 
 export const rolesApi = {
   // ===========================================

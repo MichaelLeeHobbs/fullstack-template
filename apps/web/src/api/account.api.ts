@@ -4,15 +4,10 @@
 // Account-related API calls (verification, password reset).
 
 import { api } from './client.js';
+import type { ForgotPasswordInput, ResetPasswordInput } from '@fullstack-template/shared';
 
-export interface ForgotPasswordInput {
-  email: string;
-}
-
-export interface ResetPasswordInput {
-  token: string;
-  password: string;
-}
+export type { ForgotPasswordInput };
+export type ResetPasswordApiInput = Omit<ResetPasswordInput, 'confirmPassword'>;
 
 export interface VerifyEmailInput {
   token: string;
@@ -33,7 +28,7 @@ export const accountApi = {
   /**
    * Reset password using token from email.
    */
-  resetPassword: (data: ResetPasswordInput) =>
+  resetPassword: (data: ResetPasswordApiInput) =>
     api.post<{ message: string }>('/account/reset-password', data, { skipAuth: true }),
 
   /**

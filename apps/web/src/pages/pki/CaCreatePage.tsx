@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import { useNotification } from '../../hooks/useNotification.js';
 import { useCreateCa, useCaHierarchy } from '../../hooks/useCa.js';
-import type { CreateCaInput } from '../../types/pki.js';
+import type { CreateCaInput } from '@fullstack-template/shared';
 
 const steps = ['CA Type', 'Subject Information', 'Key & Validity', 'Review'];
 

@@ -10,7 +10,7 @@ import type {
   RevokeCertificateInput,
   RenewCertificateInput,
   PaginatedResponse,
-} from '../types/pki.js';
+} from '@fullstack-template/shared';
 
 export const certificatesApi = {
   list: (params?: { page?: number; limit?: number; caId?: string; status?: string; certType?: string; search?: string }) => {

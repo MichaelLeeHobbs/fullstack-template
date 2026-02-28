@@ -9,7 +9,7 @@ import { requirePermission } from '../middleware/permission.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { SettingsController } from '../controllers/settings.controller.js';
 import { AdminController } from '../controllers/admin.controller.js';
-import { PERMISSIONS } from '../db/seeds/permissions.js';
+import { PERMISSIONS } from '@fullstack-template/shared';
 import { listUsersQuerySchema, updateUserSchema, listAuditLogsQuerySchema } from '../schemas/admin.schema.js';
 import { updateSettingSchema } from '../schemas/settings.schema.js';
 import { uuidParamSchema } from '../schemas/query.schema.js';

@@ -4,7 +4,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { csrApi } from '../api/csr.api.js';
-import type { SubmitCsrInput, ApproveCsrInput, RejectCsrInput } from '../types/pki.js';
+import type { SubmitCsrInput, ApproveCsrInput, RejectCsrInput } from '@fullstack-template/shared';
 import { certificateKeys } from './useCertificates.js';
 
 export const csrKeys = {

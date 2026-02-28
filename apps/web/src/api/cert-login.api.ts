@@ -3,7 +3,7 @@
 // ===========================================
 
 import { api } from './client.js';
-import type { UserCertificate, AttachCodeResponse, CertLoginResponse } from '../types/pki.js';
+import type { UserCertificate, AttachCodeResponse, CertLoginResponse } from '@fullstack-template/shared';
 
 export const certLoginApi = {
   login: () => api.post<CertLoginResponse>('/cert-login'),

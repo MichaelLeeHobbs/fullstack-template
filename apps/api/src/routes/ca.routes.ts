@@ -9,7 +9,7 @@ import { requirePermission } from '../middleware/permission.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { CaController } from '../controllers/ca.controller.js';
 import { CrlController } from '../controllers/crl.controller.js';
-import { PERMISSIONS } from '../db/seeds/permissions.js';
+import { PERMISSIONS } from '@fullstack-template/shared';
 import { createCaSchema, updateCaSchema, listCaQuerySchema } from '../schemas/ca.schema.js';
 import { generateCrlSchema, listCrlQuerySchema } from '../schemas/crl.schema.js';
 import { uuidParamSchema } from '../schemas/query.schema.js';

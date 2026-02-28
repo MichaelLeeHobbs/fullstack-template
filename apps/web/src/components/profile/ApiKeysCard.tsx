@@ -31,7 +31,7 @@ import {
 import { Add, Block, ContentCopy, Warning } from '@mui/icons-material';
 import { useMyApiKeys, useCreateApiKey, useRevokeApiKey } from '../../hooks/useApiKeys.js';
 import { useNotification } from '../../hooks/useNotification.js';
-import type { ApiKey, CreateApiKeyInput } from '../../types/api-key.js';
+import type { ApiKey, CreateApiKeyInput } from '@fullstack-template/shared';
 
 export function ApiKeysCard() {
   const notify = useNotification();

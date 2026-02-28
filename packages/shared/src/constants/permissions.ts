@@ -1,46 +1,7 @@
 // ===========================================
-// Role Types
+// Permission Constants (Single Source of Truth)
 // ===========================================
 
-export interface Permission {
-  id: string;
-  name: string;
-  description: string;
-  resource: string;
-  action: string;
-  createdAt: string;
-}
-
-export interface Role {
-  id: string;
-  name: string;
-  description: string | null;
-  isSystem: boolean;
-  permissions: Permission[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateRoleInput {
-  name: string;
-  description?: string;
-  permissionIds?: string[];
-}
-
-export interface UpdateRoleInput {
-  name?: string;
-  description?: string;
-}
-
-export interface SetPermissionsInput {
-  permissionIds: string[];
-}
-
-export interface SetUserRolesInput {
-  roleIds: string[];
-}
-
-// Permission name constants (mirrors backend)
 export const PERMISSIONS = {
   USERS_READ: 'users:read',
   USERS_CREATE: 'users:create',
@@ -61,7 +22,8 @@ export const PERMISSIONS = {
   SERVICE_ACCOUNTS_CREATE: 'service_accounts:create',
   SERVICE_ACCOUNTS_UPDATE: 'service_accounts:update',
   SERVICE_ACCOUNTS_DELETE: 'service_accounts:delete',
-  // PKI permissions
+
+  // PKI
   CA_READ: 'ca:read',
   CA_CREATE: 'ca:create',
   CA_UPDATE: 'ca:update',

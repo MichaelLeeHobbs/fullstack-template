@@ -13,7 +13,7 @@ import { useNotification } from '../../hooks/useNotification.js';
 import { useIssueCertificate } from '../../hooks/useCertificates.js';
 import { useCaHierarchy } from '../../hooks/useCa.js';
 import { useProfileList } from '../../hooks/useCertificateProfiles.js';
-import type { IssueCertificateInput } from '../../types/pki.js';
+import type { IssueCertificateInput } from '@fullstack-template/shared';
 
 const steps = ['CA & Profile', 'Subject Information', 'Key & Validity', 'Review'];
 

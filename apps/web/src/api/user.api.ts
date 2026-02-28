@@ -4,18 +4,9 @@
 // API calls for user profile and preferences.
 
 import { api } from './client.js';
+import type { UserPreferences, UserProfile } from '@fullstack-template/shared';
 
-export interface UserPreferences {
-  theme: 'light' | 'dark' | 'system';
-}
-
-export interface UserProfile {
-  id: string;
-  email: string;
-  isAdmin: boolean;
-  preferences: UserPreferences;
-  createdAt: string;
-}
+export type { UserPreferences, UserProfile };
 
 export const userApi = {
   /**

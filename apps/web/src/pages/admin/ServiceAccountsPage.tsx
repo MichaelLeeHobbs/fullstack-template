@@ -36,7 +36,7 @@ import {
   useCreateServiceAccount,
   useDeleteServiceAccount,
 } from '../../hooks/useApiKeys.js';
-import type { ServiceAccount } from '../../types/api-key.js';
+import type { ServiceAccount } from '@fullstack-template/shared';
 
 export function ServiceAccountsPage() {
   const notify = useNotification();

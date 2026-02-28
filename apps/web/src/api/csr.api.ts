@@ -3,7 +3,7 @@
 // ===========================================
 
 import { api } from './client.js';
-import type { CertificateRequest, SubmitCsrInput, ApproveCsrInput, RejectCsrInput, PaginatedResponse } from '../types/pki.js';
+import type { CertificateRequest, SubmitCsrInput, ApproveCsrInput, RejectCsrInput, PaginatedResponse } from '@fullstack-template/shared';
 
 export const csrApi = {
   list: (params?: { page?: number; limit?: number; status?: string; targetCaId?: string }) => {

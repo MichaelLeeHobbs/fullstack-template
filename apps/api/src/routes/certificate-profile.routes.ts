@@ -8,7 +8,7 @@ import { authenticate } from '../middleware/auth.middleware.js';
 import { requirePermission } from '../middleware/permission.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { CertificateProfileController } from '../controllers/certificate-profile.controller.js';
-import { PERMISSIONS } from '../db/seeds/permissions.js';
+import { PERMISSIONS } from '@fullstack-template/shared';
 import { createProfileSchema, updateProfileSchema, listProfileQuerySchema } from '../schemas/certificate-profile.schema.js';
 import { uuidParamSchema } from '../schemas/query.schema.js';
 

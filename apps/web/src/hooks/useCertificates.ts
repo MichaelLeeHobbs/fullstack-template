@@ -4,7 +4,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { certificatesApi } from '../api/certificates.api.js';
-import type { IssueCertificateInput, RevokeCertificateInput, RenewCertificateInput } from '../types/pki.js';
+import type { IssueCertificateInput, RevokeCertificateInput, RenewCertificateInput } from '@fullstack-template/shared';
 
 export const certificateKeys = {
   all: ['certificates'] as const,

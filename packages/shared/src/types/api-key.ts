@@ -34,16 +34,6 @@ export interface ApiKeyListItem {
   permissionCount: number;
 }
 
-export interface PaginatedApiKeys {
-  data: ApiKeyListItem[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
-
 export interface CreateApiKeyInput {
   name: string;
   permissionIds: string[];

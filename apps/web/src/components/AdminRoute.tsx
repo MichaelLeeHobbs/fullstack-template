@@ -7,7 +7,7 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/auth.store.js';
 import { CircularProgress, Container } from '@mui/material';
-import { PERMISSIONS } from '../types/role.js';
+import { PERMISSIONS } from '@fullstack-template/shared';
 
 // Admin permissions - user needs at least one to access admin routes
 const ADMIN_PERMISSIONS = [

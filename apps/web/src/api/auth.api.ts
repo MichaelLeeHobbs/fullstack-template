@@ -4,33 +4,21 @@
 // Auth-related API calls.
 
 import { api } from './client.js';
-import type { User } from '../stores/auth.store.js';
+import type {
+  User,
+  AuthSuccessResponse,
+  MfaRequiredResponse,
+  AuthResponse,
+  LoginInput,
+  RegisterInput,
+} from '@fullstack-template/shared';
 
-export interface AuthSuccessResponse {
-  user: User;
-  accessToken: string;
-}
+export type { AuthSuccessResponse, MfaRequiredResponse, AuthResponse, LoginInput, RegisterInput };
 
-export interface MfaRequiredResponse {
-  mfaRequired: true;
-  mfaMethods: string[];
-  tempToken: string;
-}
-
-export type AuthResponse = AuthSuccessResponse | MfaRequiredResponse;
-
-export interface LoginInput {
-  email: string;
-  password: string;
-}
-
-export interface RegisterInput {
-  email: string;
-  password: string;
-}
+export type RegisterApiInput = Omit<RegisterInput, 'confirmPassword'>;
 
 export const authApi = {
-  register: (data: RegisterInput) =>
+  register: (data: RegisterApiInput) =>
     api.post<AuthResponse>('/auth/register', data, { skipAuth: true }),
 
   login: (data: LoginInput) =>

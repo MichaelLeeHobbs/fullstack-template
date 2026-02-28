@@ -41,7 +41,7 @@ import { useAuthStore } from '../../stores/auth.store.js';
 import { PageLoader } from '../../components/LoadingSpinner.js';
 import { useRoles, useUserRoles, useSetUserRoles } from '../../hooks/useRoles.js';
 import { usePermission } from '../../hooks/usePermission.js';
-import { PERMISSIONS } from '../../types/role.js';
+import { PERMISSIONS } from '@fullstack-template/shared';
 
 export function UsersPage() {
   const notify = useNotification();

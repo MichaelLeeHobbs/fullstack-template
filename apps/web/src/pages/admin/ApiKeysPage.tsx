@@ -52,8 +52,7 @@ import {
   useDeleteApiKey,
 } from '../../hooks/useApiKeys.js';
 import { usePermissionsGrouped } from '../../hooks/useRoles.js';
-import type { ApiKeyListItem, CreateApiKeyInput } from '../../types/api-key.js';
-import type { Permission } from '../../types/role.js';
+import type { ApiKeyListItem, CreateApiKeyInput, Permission } from '@fullstack-template/shared';
 
 export function ApiKeysPage() {
   const notify = useNotification();

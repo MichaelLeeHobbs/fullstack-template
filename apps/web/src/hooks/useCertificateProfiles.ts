@@ -4,7 +4,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { certificateProfilesApi } from '../api/certificate-profiles.api.js';
-import type { CreateProfileInput, UpdateProfileInput } from '../types/pki.js';
+import type { CreateProfileInput, UpdateProfileInput } from '@fullstack-template/shared';
 
 export const profileKeys = {
   all: ['profiles'] as const,

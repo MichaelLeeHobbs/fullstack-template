@@ -3,7 +3,7 @@
 // ===========================================
 
 import { api } from './client.js';
-import type { CertificateProfile, CreateProfileInput, UpdateProfileInput, PaginatedResponse } from '../types/pki.js';
+import type { CertificateProfile, CreateProfileInput, UpdateProfileInput, PaginatedResponse } from '@fullstack-template/shared';
 
 export const certificateProfilesApi = {
   list: (params?: { page?: number; limit?: number; certType?: string }) => {

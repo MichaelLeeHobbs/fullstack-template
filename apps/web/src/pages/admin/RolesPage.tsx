@@ -44,7 +44,7 @@ import {
   usePermissionsGrouped,
   useSetRolePermissions,
 } from '../../hooks/useRoles.js';
-import type { Role, Permission } from '../../types/role.js';
+import type { Role, Permission } from '@fullstack-template/shared';
 
 export function RolesPage() {
   const notify = useNotification();

@@ -9,7 +9,7 @@ import { requirePermission } from '../middleware/permission.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { CertificateController } from '../controllers/certificate.controller.js';
 import { CertificateLifecycleController } from '../controllers/certificate-lifecycle.controller.js';
-import { PERMISSIONS } from '../db/seeds/permissions.js';
+import { PERMISSIONS } from '@fullstack-template/shared';
 import { issueCertificateSchema, listCertificateQuerySchema, downloadCertificateSchema } from '../schemas/certificate.schema.js';
 import { revokeCertificateSchema, renewCertificateSchema } from '../schemas/revocation.schema.js';
 import { uuidParamSchema } from '../schemas/query.schema.js';

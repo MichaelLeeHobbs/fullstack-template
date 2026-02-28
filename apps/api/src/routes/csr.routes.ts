@@ -8,7 +8,7 @@ import { authenticate } from '../middleware/auth.middleware.js';
 import { requirePermission } from '../middleware/permission.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { CsrController } from '../controllers/csr.controller.js';
-import { PERMISSIONS } from '../db/seeds/permissions.js';
+import { PERMISSIONS } from '@fullstack-template/shared';
 import { submitCsrSchema, approveCsrSchema, rejectCsrSchema, listCsrQuerySchema } from '../schemas/csr.schema.js';
 import { uuidParamSchema } from '../schemas/query.schema.js';
 

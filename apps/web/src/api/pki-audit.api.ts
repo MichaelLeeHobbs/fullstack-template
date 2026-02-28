@@ -3,7 +3,7 @@
 // ===========================================
 
 import { api } from './client.js';
-import type { PkiAuditLog, PaginatedResponse } from '../types/pki.js';
+import type { PkiAuditLog, PaginatedResponse } from '@fullstack-template/shared';
 
 export const pkiAuditApi = {
   list: (params?: { page?: number; limit?: number; action?: string; actorId?: string; targetType?: string; targetId?: string }) => {

@@ -10,7 +10,7 @@ import type {
   UpdateRoleInput,
   SetPermissionsInput,
   SetUserRolesInput,
-} from '../types/role.js';
+} from '@fullstack-template/shared';
 
 // ===========================================
 // Query Keys

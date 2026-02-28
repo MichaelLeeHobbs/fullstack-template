@@ -64,16 +64,6 @@ export interface UpdateCaInput {
   ocspUrl?: string;
 }
 
-export interface PaginatedResponse<T> {
-  data: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
-
 // Certificate types
 export interface Certificate {
   id: string;
@@ -261,25 +251,3 @@ export interface CertLoginResponse {
   user: { id: string; email: string };
   accessToken: string;
 }
-
-// PKI Permission constants (mirrors backend)
-export const PKI_PERMISSIONS = {
-  CA_READ: 'ca:read',
-  CA_CREATE: 'ca:create',
-  CA_UPDATE: 'ca:update',
-  CERTIFICATES_READ: 'certificates:read',
-  CERTIFICATES_ISSUE: 'certificates:issue',
-  CERTIFICATES_REVOKE: 'certificates:revoke',
-  CERTIFICATES_RENEW: 'certificates:renew',
-  CERTIFICATES_DOWNLOAD: 'certificates:download',
-  CSR_READ: 'csr:read',
-  CSR_SUBMIT: 'csr:submit',
-  CSR_APPROVE: 'csr:approve',
-  CRL_READ: 'crl:read',
-  CRL_GENERATE: 'crl:generate',
-  PROFILES_READ: 'profiles:read',
-  PROFILES_CREATE: 'profiles:create',
-  PROFILES_UPDATE: 'profiles:update',
-  PROFILES_DELETE: 'profiles:delete',
-  PKI_AUDIT_READ: 'pki_audit:read',
-} as const;

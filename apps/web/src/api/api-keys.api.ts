@@ -6,13 +6,14 @@
 import { api } from './client.js';
 import type {
   ApiKey,
-  PaginatedApiKeys,
+  ApiKeyListItem,
+  PaginatedResponse,
   CreateApiKeyInput,
   CreateApiKeyResponse,
   UpdateApiKeyPermissionsInput,
   ServiceAccount,
   CreateServiceAccountInput,
-} from '../types/api-key.js';
+} from '@fullstack-template/shared';
 
 export const apiKeysApi = {
   // ===========================================
@@ -32,7 +33,7 @@ export const apiKeysApi = {
     if (params?.userId) searchParams.set('userId', params.userId);
     if (params?.isActive !== undefined) searchParams.set('isActive', params.isActive);
     const qs = searchParams.toString();
-    return api.get<PaginatedApiKeys>(`/api-keys${qs ? `?${qs}` : ''}`);
+    return api.get<PaginatedResponse<ApiKeyListItem>>(`/api-keys${qs ? `?${qs}` : ''}`);
   },
 
   get: (id: string) => api.get<ApiKey>(`/api-keys/${id}`),

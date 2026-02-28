@@ -3,7 +3,7 @@
 // ===========================================
 
 import { api } from './client.js';
-import type { CRL, PaginatedResponse } from '../types/pki.js';
+import type { CRL, PaginatedResponse } from '@fullstack-template/shared';
 
 export const crlApi = {
   generate: (caId: string, caPassphrase: string) =>

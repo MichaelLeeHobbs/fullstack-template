@@ -8,7 +8,7 @@ import { authenticate } from '../middleware/auth.middleware.js';
 import { requirePermission } from '../middleware/permission.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { RoleController } from '../controllers/role.controller.js';
-import { PERMISSIONS } from '../db/seeds/permissions.js';
+import { PERMISSIONS } from '@fullstack-template/shared';
 import { createRoleSchema, updateRoleSchema, setPermissionsSchema, setUserRolesSchema } from '../schemas/role.schema.js';
 import { uuidParamSchema } from '../schemas/query.schema.js';
 import { cacheControl } from '../middleware/cache.middleware.js';

@@ -5,7 +5,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { authApi, type LoginInput, type RegisterInput, type AuthSuccessResponse } from '../api/auth.api.js';
+import { authApi, type LoginInput, type RegisterApiInput, type AuthSuccessResponse } from '../api/auth.api.js';
 import { useAuthStore } from '../stores/auth.store.js';
 
 export function useLogin() {
@@ -31,7 +31,7 @@ export function useLogin() {
 
 export function useRegister() {
   return useMutation({
-    mutationFn: (data: RegisterInput) => authApi.register(data),
+    mutationFn: (data: RegisterApiInput) => authApi.register(data),
     // Don't auto-authenticate — user must verify email first.
     // The caller (RegisterPage) handles the success flow.
   });

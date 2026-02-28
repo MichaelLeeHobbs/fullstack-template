@@ -3,7 +3,7 @@
 // ===========================================
 
 import { api } from './client.js';
-import type { CertificateAuthority, CreateCaInput, UpdateCaInput, PaginatedResponse } from '../types/pki.js';
+import type { CertificateAuthority, CreateCaInput, UpdateCaInput, PaginatedResponse } from '@fullstack-template/shared';
 
 export const caApi = {
   list: (params?: { page?: number; limit?: number; status?: string }) => {

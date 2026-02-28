@@ -11,7 +11,7 @@ import {
 import { PageLoader } from '../../components/LoadingSpinner.js';
 import { useNotification } from '../../hooks/useNotification.js';
 import { useProfile, useCreateProfile, useUpdateProfile } from '../../hooks/useCertificateProfiles.js';
-import type { CreateProfileInput } from '../../types/pki.js';
+import type { CreateProfileInput } from '@fullstack-template/shared';
 
 const KEY_USAGE_OPTIONS = [
   'digitalSignature', 'nonRepudiation', 'keyEncipherment', 'dataEncipherment',

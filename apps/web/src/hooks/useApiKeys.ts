@@ -9,7 +9,7 @@ import type {
   CreateApiKeyInput,
   UpdateApiKeyPermissionsInput,
   CreateServiceAccountInput,
-} from '../types/api-key.js';
+} from '@fullstack-template/shared';
 
 // ===========================================
 // Query Keys

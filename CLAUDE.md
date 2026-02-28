@@ -13,7 +13,14 @@ This is a fullstack template for building modern web applications. It can be use
 pnpm monorepo with three packages:
 - `apps/api` - Express backend with Drizzle ORM
 - `apps/web` - React frontend with Vite and Material UI
-- `packages/shared` - Shared types and utilities (`@fullstack-template/shared`)
+- `packages/shared` - Shared types, constants, and validation schemas (`@fullstack-template/shared`)
+
+#### Shared Package (`packages/shared`)
+
+All domain types, API response types, and constants used by both frontend and backend live here. Import from `@fullstack-template/shared` — never duplicate types locally. Structure:
+- `constants/permissions.ts` — `PERMISSIONS` const and `PermissionName` type (single source of truth)
+- `schemas/auth.schema.ts` — Zod form validation schemas (with `confirmPassword` for frontend forms)
+- `types/` — Domain types: `api.ts`, `auth.ts`, `role.ts`, `api-key.ts`, `pki.ts`, `admin.ts`
 
 ## Commands
 

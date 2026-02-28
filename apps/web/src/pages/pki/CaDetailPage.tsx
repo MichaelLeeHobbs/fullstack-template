@@ -14,7 +14,7 @@ import { useNotification } from '../../hooks/useNotification.js';
 import { useCa, useUpdateCa, useSuspendCa, useRetireCa } from '../../hooks/useCa.js';
 import { useCertificateList } from '../../hooks/useCertificates.js';
 import { useCrlLatest, useGenerateCrl } from '../../hooks/useCrl.js';
-import type { UpdateCaInput } from '../../types/pki.js';
+import type { UpdateCaInput } from '@fullstack-template/shared';
 
 const statusColor = (status: string): 'success' | 'warning' | 'error' | 'default' => {
   switch (status) {
