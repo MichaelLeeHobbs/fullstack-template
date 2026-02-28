@@ -828,6 +828,15 @@ apps/api/test/utils/*.js
 apps/api/test/utils/*.d.ts
 apps/api/test/utils/*.d.ts.map
 
+### Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+apps/e2e/.auth/
+apps/e2e/test-results/
+apps/e2e/playwright-report/
+
 ### macOS template
 # General
 .DS_Store
