@@ -12,7 +12,7 @@ This document provides an overview of the testing strategy, tooling, and convent
 %%{init: {'theme': 'dark', 'themeVariables': {'primaryColor': '#1e3a5f', 'primaryTextColor': '#e0e0e0', 'primaryBorderColor': '#4fc3f7', 'lineColor': '#81d4fa', 'secondaryColor': '#2e4057', 'tertiaryColor': '#1a2332', 'noteTextColor': '#e0e0e0', 'noteBkgColor': '#2e4057', 'noteBorderColor': '#4fc3f7'}}}%%
 graph TB
     subgraph Pyramid["Testing Pyramid"]
-        E2E["E2E Tests<br/>(future)"]
+        E2E["E2E Tests<br/>Playwright - apps/e2e/"]
         INT["Integration Tests<br/>Full middleware chain with supertest"]
         UNIT["Unit Tests<br/>Services, controllers, hooks, stores"]
     end
@@ -26,9 +26,9 @@ graph TB
 |-------------|-------------------------------------------------|----------|-----------------|
 | **Unit**    | Individual services, controllers, hooks, stores | Fast     | 80%+ on business logic |
 | **Integration** | Full HTTP request through middleware chain  | Medium   | Key API routes  |
-| **E2E**     | Browser-based user flows (future)              | Slow     | Critical paths  |
+| **E2E**     | Browser-based user flows (Playwright)          | Slow     | Critical paths  |
 
-The majority of tests should be unit tests. Integration tests cover the middleware chain and request validation. E2E tests are optional and should be added for critical user flows.
+The majority of tests should be unit tests. Integration tests cover the middleware chain and request validation. E2E tests cover critical user flows through the full stack (browser, React frontend, Express API, PostgreSQL).
 
 ---
 
@@ -37,6 +37,7 @@ The majority of tests should be unit tests. Integration tests cover the middlewa
 | Tool              | Purpose                          | Package          |
 |-------------------|----------------------------------|------------------|
 | Vitest            | Test runner and assertion library | `vitest`         |
+| Playwright        | Browser E2E testing              | `@playwright/test` |
 | supertest         | HTTP assertions for integration tests | `supertest`  |
 | @testing-library/react | React component testing    | `@testing-library/react` |
 | jsdom             | Browser environment for web tests | `vitest` env   |
@@ -104,6 +105,33 @@ apps/api/test/
     index.ts                    # Barrel export
 ```
 
+### E2E Tests
+
+E2E tests live in a dedicated workspace package:
+
+```
+apps/e2e/
+  playwright.config.ts          # Playwright configuration
+  global-setup.ts               # DB migrate + seed before tests
+  global-teardown.ts            # Cleanup after tests
+  fixtures/
+    test-fixtures.ts            # Custom fixtures (page objects)
+  page-objects/
+    login.page.ts               # Login page selectors and helpers
+    register.page.ts            # Register page selectors and helpers
+    home.page.ts                # Home page selectors
+    nav.component.ts            # Navigation component helpers
+  tests/
+    auth.setup.ts               # Auth setup (login as admin, save storageState)
+    smoke/
+      landing.spec.ts           # Landing page smoke tests
+      health.spec.ts            # API health endpoint test
+    auth/
+      register.spec.ts          # Registration flow tests
+      login.spec.ts             # Login flow tests
+      logout.spec.ts            # Logout flow tests
+```
+
 ---
 
 ## Running Tests
@@ -126,6 +154,14 @@ pnpm test:coverage
 
 # Run a specific test file
 pnpm --filter api vitest run src/services/auth.service.test.ts
+
+# Run Playwright E2E tests (requires Docker running)
+pnpm test:e2e              # Headless (uses ports 3100/5174)
+pnpm test:e2e:headed       # With visible browser
+pnpm test:e2e:ui           # Playwright interactive UI mode
+
+# Install Playwright browsers (first time only)
+pnpm --filter e2e install-browsers
 ```
 
 ---
@@ -208,3 +244,15 @@ const session = createTestSession({ userId: user.id });
 | [Integration Testing](./integration-testing.md)    | Supertest, logger mocks, auth helpers            |
 | [Frontend Testing](./frontend-testing.md)          | Components, hooks, stores, API mocking           |
 | [Test Utilities](./test-utilities.md)              | mock-db, mock-express, factories reference        |
+
+### E2E Testing (Playwright)
+
+E2E tests exercise the full stack: browser -> React frontend -> Express API -> PostgreSQL. They live in `apps/e2e/` and use:
+
+- **Page Object pattern** for encapsulating selectors and actions
+- **Custom fixtures** for injecting page objects into tests
+- **3 Playwright projects**: `auth-setup` (login + save storageState), `chromium` (authenticated tests), `chromium-no-auth` (unauthenticated tests)
+- **Dedicated ports** (API: 3100, Web: 5174) to avoid conflicts with dev servers
+- **Global setup** that runs `db:migrate` + `db:seed` before tests
+
+See `apps/e2e/playwright.config.ts` for full configuration.

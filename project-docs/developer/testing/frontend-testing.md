@@ -615,3 +615,9 @@ afterEach(() => {
   vi.useRealTimers();
 });
 ```
+
+---
+
+## E2E Testing
+
+For full browser-based E2E tests (Playwright), see the `apps/e2e/` package and the [Testing Strategy](./README.md#e2e-testing-playwright) guide. E2E tests complement the frontend unit tests documented here by testing the entire user flow through the real API and database.

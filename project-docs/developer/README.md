@@ -93,12 +93,16 @@ Test strategy and guides:
 pnpm test              # Run all tests
 pnpm test:api          # Run API tests only
 pnpm test:web          # Run web tests only
+pnpm test:e2e          # Run Playwright E2E tests (headless)
+pnpm test:e2e:headed   # Run E2E tests with visible browser
+pnpm test:e2e:ui       # Run E2E tests in Playwright UI mode
 pnpm --filter api test:watch  # Watch mode for API tests
 ```
 
 **Test file locations:**
 - Unit tests: Co-located with source (e.g., `auth.service.test.ts`)
 - Integration tests: `apps/api/test/integration/`
+- E2E tests: `apps/e2e/tests/` (Playwright)
 - Test utilities: `apps/api/test/utils/`
 
 ---
@@ -117,6 +121,7 @@ pnpm dev:web          # Web only (port 5173)
 pnpm build            # Build all packages
 pnpm lint             # Lint all packages
 pnpm test             # Run all tests
+pnpm test:e2e         # Run Playwright E2E tests
 
 # Database
 pnpm db:generate      # Generate migration after schema change

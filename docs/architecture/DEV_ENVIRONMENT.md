@@ -257,6 +257,18 @@ rm -rf packages/*/node_modules
 pnpm install
 ```
 
+### Run E2E Tests
+
+```powershell
+# Requires Docker running (pnpm docker:up)
+pnpm test:e2e            # Headless (uses ports 3100/5174 to avoid conflicts)
+pnpm test:e2e:headed     # With visible browser
+pnpm test:e2e:ui         # Playwright interactive UI mode
+
+# Install Playwright browsers (first time only)
+pnpm --filter e2e install-browsers
+```
+
 ### Update Dependencies
 
 ```powershell

@@ -116,7 +116,8 @@ fullstack-template/
 | `pnpm dev:api`      | Start API only                         |
 | `pnpm dev:web`      | Start web only                         |
 | `pnpm build`        | Build all packages                     |
-| `pnpm test`         | Run all tests                          |
+| `pnpm test`         | Run all unit and integration tests     |
+| `pnpm test:e2e`     | Run Playwright E2E tests               |
 | `pnpm lint`         | Lint all packages                      |
 | `pnpm db:generate`  | Generate migration from schema changes |
 | `pnpm db:migrate`   | Apply pending migrations               |

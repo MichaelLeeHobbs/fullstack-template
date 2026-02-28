@@ -214,6 +214,7 @@ apps/
 | Logging        | Pino                                  |
 | Auth           | JWT + bcrypt                          |
 | State          | Zustand                               |
+| Testing        | Vitest (unit/integration), Playwright (E2E) |
 
 ---
 

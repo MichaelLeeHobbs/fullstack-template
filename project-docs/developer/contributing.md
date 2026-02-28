@@ -126,8 +126,10 @@ Brief description of what this PR does and why.
 
 - [ ] Unit tests added/updated
 - [ ] Integration tests added/updated (if applicable)
+- [ ] E2E tests added/updated (if user-facing flow changed)
 - [ ] Manual testing performed
 - [ ] All existing tests pass (`pnpm test`)
+- [ ] E2E tests pass (`pnpm test:e2e`)
 
 ## Checklist
 
@@ -199,10 +201,12 @@ When reviewing a PR, check for:
 pnpm lint          # Check code style
 pnpm build         # Verify compilation
 pnpm test          # Run all unit and integration tests
+pnpm test:e2e      # Run Playwright E2E tests (requires Docker)
 
 # Run specific test suites
 pnpm test:api      # Backend tests only
 pnpm test:web      # Frontend tests only
+pnpm test:e2e:headed  # E2E with visible browser
 
 # Run tests in watch mode during development
 pnpm --filter api test:watch

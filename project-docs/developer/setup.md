@@ -216,6 +216,14 @@ pnpm test
 
 # Run tests with coverage
 pnpm test:coverage
+
+# Run Playwright E2E tests (requires Docker running)
+pnpm test:e2e              # Headless (uses ports 3100/5174 to avoid conflicts)
+pnpm test:e2e:headed       # With visible browser
+pnpm test:e2e:ui           # Playwright interactive UI mode
+
+# Install Playwright browsers (first time only)
+pnpm --filter e2e install-browsers
 ```
 
 ---

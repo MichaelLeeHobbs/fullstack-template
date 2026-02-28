@@ -38,6 +38,9 @@ pnpm lint             # Lint all packages
 pnpm test             # Run all tests
 pnpm test:api         # Run API tests only
 pnpm test:web         # Run web tests only
+pnpm test:e2e         # Run Playwright E2E tests (requires Docker)
+pnpm test:e2e:headed  # Run E2E tests with visible browser
+pnpm test:e2e:ui      # Run E2E tests in Playwright UI mode
 pnpm --filter api test:watch  # Watch mode for API tests
 
 # Database (requires Docker running)
@@ -152,7 +155,7 @@ enum Status { Active, Inactive }
 | Error Handling | stderr-lib (`tryCatch`, `stderr`) |
 | Auth | JWT + bcrypt |
 | State | Zustand |
-| Testing | Vitest |
+| Testing | Vitest (unit/integration), Playwright (E2E) |
 | Logging | Pino (never use console.log) |
 
 ## Environment

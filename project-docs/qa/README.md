@@ -118,6 +118,7 @@ graph TB
     subgraph "Automated Tests"
         UNIT[Unit Tests<br/>Vitest - Co-located]
         INT[Integration Tests<br/>Vitest - test/integration/]
+        E2E[E2E Tests<br/>Playwright - apps/e2e/]
     end
 
     subgraph "Manual Test Cases"
@@ -131,8 +132,10 @@ graph TB
     US --> TC
     US --> UNIT
     US --> INT
+    US --> E2E
     TC -.->|validates| UNIT
     TC -.->|validates| INT
+    TC -.->|validates| E2E
 ```
 
 ---
@@ -145,6 +148,8 @@ graph TB
 pnpm test              # Run all tests
 pnpm test:api          # Run API tests only
 pnpm test:web          # Run web tests only
+pnpm test:e2e          # Run Playwright E2E tests (requires Docker)
+pnpm test:e2e:headed   # E2E with visible browser
 pnpm --filter api test:watch  # Watch mode for API tests
 ```
 
@@ -163,7 +168,7 @@ pnpm --filter api test:watch  # Watch mode for API tests
 Each test case links back to:
 - **User stories** in [`../stories/`](../stories/README.md) via `US-{AREA}-NNN` IDs
 - **API endpoints** documented in [`../api/endpoints/`](../api/endpoints/)
-- **Automated tests** in `apps/api/src/**/*.test.ts` and `apps/api/test/integration/`
+- **Automated tests** in `apps/api/src/**/*.test.ts`, `apps/api/test/integration/`, and `apps/e2e/tests/`
 
 ---
 

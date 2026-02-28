@@ -76,7 +76,7 @@ This document defines the features included in this fullstack template.
 - Request ID tracking
 - Pagination support
 - Validation middleware (Zod v4)
-- Comprehensive test suite (unit, integration)
+- Comprehensive test suite (unit, integration, E2E with Playwright)
 - API reference documentation
 - Deployment guide and production checklist
 
@@ -100,5 +100,6 @@ A feature is complete when:
 2. Frontend UI implemented
 3. Unit tests pass
 4. Integration tests pass (API)
-5. No TypeScript errors
+5. E2E tests pass for affected user flows
+6. No TypeScript errors
 6. No ESLint warnings

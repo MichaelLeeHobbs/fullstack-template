@@ -29,6 +29,8 @@ The pipeline runs four validation stages in order. Each stage must pass before t
 3. **Test** -- Unit and integration tests with Vitest
 4. **Build** -- Production build of all packages
 
+An optional **E2E** stage can be added after the build stage to run Playwright browser tests against the full stack.
+
 ---
 
 ## GitHub Actions Workflow
@@ -290,6 +292,67 @@ For CI-driven Docker builds, add these steps to your deployment job:
             your-registry/your-app:${{ github.sha }}
             your-registry/your-app:latest
 ```
+
+---
+
+## E2E Tests (Optional Stage)
+
+To add Playwright E2E tests to the pipeline, add a separate job that runs after the main CI job:
+
+```yaml
+  e2e:
+    name: E2E Tests
+    needs: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: app
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app_dev
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U app -d app"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://app:app_dev@localhost:5433/app
+      JWT_SECRET: ci-test-secret-key-minimum-32-characters-long
+      LOG_LEVEL: silent
+      EMAIL_PROVIDER: mock
+      CI: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm --filter e2e install-browsers
+
+      - name: Run E2E tests
+        run: pnpm test:e2e
+```
+
+The E2E tests use dedicated ports (API: 3100, Web: 5174) and Playwright's `webServer` config auto-starts both servers. Global setup handles `db:migrate` and `db:seed`.
 
 ---
 
