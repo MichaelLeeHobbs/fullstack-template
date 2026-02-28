@@ -159,9 +159,21 @@ Connection: `postgresql://app:app_dev@localhost:5432/app`
 
 ## Documentation
 
-Detailed docs in `docs/`:
+### Template Docs (`docs/`)
 - `docs/architecture/CORE_PATTERNS.md` - Full architecture patterns
 - `docs/architecture/CODING_STANDARD.md` - TypeScript conventions
 - `docs/architecture/DEV_ENVIRONMENT.md` - Local setup guide
 - `docs/features/README.md` - Included features
 - `docs/AI_README.md` - Extended AI agent instructions
+
+### Project Docs (`project-docs/`)
+- `project-docs/architecture/adr/` - Architecture Decision Records (13 ADRs)
+- `project-docs/architecture/c4/` - C4 model diagrams (context, containers, components)
+- `project-docs/architecture/design/` - Design docs (data model ERD, API guidelines, CA system)
+- `project-docs/api/` - API endpoint reference, authentication guide, error codes
+- `project-docs/developer/` - Setup, coding standards, contributing, CI/CD, testing guides
+- `project-docs/operations/` - Deployment, monitoring, incidents, database operations
+- `project-docs/security/` - Threat model, auth security, data protection, audit report
+- `project-docs/product/` - Feature tracker, changelog, admin guide
+- `project-docs/stories/` - User stories (42 stories across 9 feature areas)
+- `project-docs/qa/` - QA test cases (140 cases across 9 feature areas)

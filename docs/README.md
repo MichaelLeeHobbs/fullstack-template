@@ -1,43 +1,72 @@
-# Fullstack Template Documentation
+# Template Documentation
 
-> Documentation for the fullstack application template.
+> Core documentation for the fullstack application template -- architecture, patterns, and feature specifications.
 
 ---
 
 ## Quick Links
 
 ### Getting Started
+
 - **[Getting Started Guide](./GETTING_STARTED.md)** - Start here! Setup and first steps
 - [Dev Environment](./architecture/DEV_ENVIRONMENT.md) - Detailed local setup
 - [Template Features](./features/README.md) - What's included
 - [AI Agent Instructions](./AI_README.md) - Instructions for AI assistants
 
 ### API
+
 - Interactive API docs available at `/api/docs` (Swagger/OpenAPI)
 
-### Deployment
-- **[Deployment Guide](./DEPLOYMENT.md)** - Build, configure, and deploy to production
-- **[Production Checklist](./PRODUCTION_CHECKLIST.md)** - Pre-launch checklist
+---
 
-### Architecture
-- [Tech Stack](./architecture/TECH_STACK.md) - Frameworks and libraries
-- [Dev Environment](./architecture/DEV_ENVIRONMENT.md) - Local development setup
-- [Coding Standard](./architecture/CODING_STANDARD.md) - TypeScript conventions
-- [Core Patterns](./architecture/CORE_PATTERNS.md) - Code organization
-- [Data Model](./architecture/DATA_MODEL.md) - Database schema (Drizzle)
-- [Permissions](./architecture/PERMISSIONS.md) - Auth and authorization
-- [Configuration](./architecture/CONFIG.md) - Environment variables
+## Architecture
 
-### Features (Included)
+Core patterns and conventions that define how the template works.
 
-| Feature                                            | Description                 |
-|----------------------------------------------------|-----------------------------|
-| [Project Setup](features/000_setup.md)             | Monorepo, tooling, database |
-| [Core Services](features/001_core-services.md)     | Email, storage              |
-| [Core Frontend](features/002_core-frontend.md)     | Layout, navigation, theme   |
-| [System Settings](features/003_system-settings.md) | Runtime configuration       |
-| [User Auth](features/004_user-auth.md)             | Registration, login, JWT    |
-| [User Admin](features/005_user-admin.md)           | User management, admin UI   |
+| Document | Description |
+|----------|-------------|
+| [Tech Stack](./architecture/TECH_STACK.md) | Frameworks, libraries, and runtime |
+| [Dev Environment](./architecture/DEV_ENVIRONMENT.md) | Local development setup |
+| [Coding Standard](./architecture/CODING_STANDARD.md) | TypeScript conventions and rules |
+| [Core Patterns](./architecture/CORE_PATTERNS.md) | Router -> Controller -> Service -> Model |
+| [Data Model](./architecture/DATA_MODEL.md) | Database schema (Drizzle ORM) |
+| [Permissions](./architecture/PERMISSIONS.md) | RBAC and authorization model |
+| [Configuration](./architecture/CONFIG.md) | Environment variables and config |
+
+---
+
+## Features (Included)
+
+Feature specifications describing what is built into the template.
+
+| # | Feature | Description | Status |
+|---|---------|-------------|--------|
+| 00 | [Project Setup](features/000_setup.md) | Monorepo, tooling, database | Complete |
+| 00b | [Core Services](features/001_core-services.md) | Email, storage | Complete |
+| 00c | [Core Frontend](features/002_core-frontend.md) | Layout, navigation, theme | Complete |
+| 00d | [System Settings](features/003_system-settings.md) | Runtime configuration | Complete |
+| 01a | [User Auth](features/004_user-auth.md) | Registration, login, JWT, MFA | Complete |
+| 01b | [User Admin](features/005_user-admin.md) | User management, RBAC, admin UI | Complete |
+
+---
+
+## Enterprise / Project Documentation
+
+For deployment, security, operations, API reference, user stories, and QA test cases, see the **project-level documentation**:
+
+**[project-docs/](../project-docs/README.md)** - Enterprise documentation hub
+
+| Section | Description | Link |
+|---------|-------------|------|
+| Architecture | ADRs, C4 diagrams, design docs | [project-docs/architecture/](../project-docs/architecture/README.md) |
+| API Reference | Endpoints, auth, error codes, pagination | [project-docs/api/](../project-docs/api/README.md) |
+| Developer | Setup, standards, contributing, CI/CD, testing | [project-docs/developer/](../project-docs/developer/README.md) |
+| Operations | Deployment, monitoring, incidents, database | [project-docs/operations/](../project-docs/operations/README.md) |
+| Security | Audit, threat model, policies, data protection | [project-docs/security/](../project-docs/security/README.md) |
+| Product | Feature tracker, changelog, admin guide | [project-docs/product/](../project-docs/product/README.md) |
+| Project | Roadmap, SLAs/SLOs | [project-docs/project/](../project-docs/project/README.md) |
+| User Stories | 42 stories across 9 areas | [project-docs/stories/](../project-docs/stories/README.md) |
+| QA | ~140 test cases across 9 areas | [project-docs/qa/](../project-docs/qa/README.md) |
 
 ---
 
@@ -45,13 +74,11 @@
 
 ```
 docs/
-├── README.md              # This file
-├── AI_README.md           # Instructions for AI agents
-├── DEPLOYMENT.md          # Deployment guide
-├── GETTING_STARTED.md     # Quick start guide
-├── PRODUCTION_CHECKLIST.md# Pre-launch checklist
+├── README.md                  # This file - template docs hub
+├── AI_README.md               # Instructions for AI agents
+├── GETTING_STARTED.md         # Quick start guide
 │
-├── architecture/          # System design & patterns
+├── architecture/              # System design & patterns
 │   ├── TECH_STACK.md
 │   ├── DEV_ENVIRONMENT.md
 │   ├── CODING_STANDARD.md
@@ -60,8 +87,8 @@ docs/
 │   ├── PERMISSIONS.md
 │   └── CONFIG.md
 │
-└── features/              # Feature specifications
-    ├── README.md          # Template feature list
+└── features/                  # Feature specifications
+    ├── README.md              # Template feature list
     ├── 000_setup.md
     ├── 001_core-services.md
     ├── 002_core-frontend.md
@@ -76,8 +103,8 @@ docs/
 
 ### Status Indicators
 
-| Status      | Meaning     |
-|-------------|-------------|
-| Complete    | Done and tested |
+| Status | Meaning |
+|--------|---------|
+| Complete | Done and tested |
 | In Progress | Currently implementing |
-| Planned     | Not started |
+| Planned | Not started |

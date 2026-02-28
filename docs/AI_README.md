@@ -56,6 +56,19 @@ Read these documents before starting work:
 | `docs/architecture/TECH_STACK.md`      | Libraries and frameworks                             |
 | `docs/architecture/DATA_MODEL.md`      | Database schema (Drizzle)                            |
 
+### Project Documentation
+
+Enterprise-level docs live in `project-docs/`. Refer to these for operational and project-specific context:
+
+| Document                               | Purpose                                              |
+|----------------------------------------|------------------------------------------------------|
+| `project-docs/api/`                    | API endpoint reference, auth, error codes, pagination |
+| `project-docs/architecture/adr/`       | Architecture Decision Records (why decisions were made) |
+| `project-docs/operations/`             | Deployment, monitoring, incidents, database ops       |
+| `project-docs/security/`              | Security audit, threat model, policies, data protection |
+| `project-docs/stories/`               | User stories (42 across 9 areas)                     |
+| `project-docs/qa/`                    | QA test cases (~140 across 9 areas)                  |
+
 ---
 
 ## Coding Standards Summary
