@@ -128,7 +128,7 @@ Authorization: Bearer <access_token>
 
 ## Related Documentation
 
-- [Core Patterns](../../docs/architecture/CORE_PATTERNS.md) - Router -> Controller -> Service -> Model flow
-- [Permissions](../../docs/architecture/PERMISSIONS.md) - RBAC and authorization model
-- [Configuration](../../docs/architecture/CONFIG.md) - Environment variables including JWT settings
+- [Core Patterns](../../template-docs/architecture/CORE_PATTERNS.md) - Router -> Controller -> Service -> Model flow
+- [Permissions](../../template-docs/architecture/PERMISSIONS.md) - RBAC and authorization model
+- [Configuration](../../template-docs/architecture/CONFIG.md) - Environment variables including JWT settings
 - [OpenAPI/Swagger](http://localhost:3000/api/docs) - Interactive API docs (dev server must be running)

@@ -114,7 +114,7 @@ Key variables:
 
 > **Note**: The Docker Compose file maps PostgreSQL to host port **5433** (not the default 5432) to avoid conflicts with any locally installed PostgreSQL instance. The `.env.example` already reflects this.
 
-For a full list of environment variables and their descriptions, see the `.env.example` file or `docs/architecture/DEV_ENVIRONMENT.md`.
+For a full list of environment variables and their descriptions, see the `.env.example` file or `template-docs/architecture/DEV_ENVIRONMENT.md`.
 
 ---
 
@@ -290,6 +290,6 @@ New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" `
 
 ## Further Reading
 
-- `docs/architecture/DEV_ENVIRONMENT.md` -- detailed environment configuration and pool tuning
-- `docs/architecture/CORE_PATTERNS.md` -- full architecture patterns
-- `docs/architecture/CODING_STANDARD.md` -- TypeScript conventions
+- `template-docs/architecture/DEV_ENVIRONMENT.md` -- detailed environment configuration and pool tuning
+- `template-docs/architecture/CORE_PATTERNS.md` -- full architecture patterns
+- `template-docs/architecture/CODING_STANDARD.md` -- TypeScript conventions

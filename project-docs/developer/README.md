@@ -27,7 +27,7 @@ Step-by-step guide to set up the development environment:
 - IDE configuration (WebStorm, VS Code)
 - Troubleshooting common issues
 
-See also: [Dev Environment](../../docs/architecture/DEV_ENVIRONMENT.md) (template-level reference)
+See also: [Dev Environment](../../template-docs/architecture/DEV_ENVIRONMENT.md) (template-level reference)
 
 ---
 
@@ -44,7 +44,7 @@ Project coding conventions and patterns:
 - Naming conventions (files, variables, types)
 - Import ordering
 
-See also: [Coding Standard](../../docs/architecture/CODING_STANDARD.md) (template-level reference)
+See also: [Coding Standard](../../template-docs/architecture/CODING_STANDARD.md) (template-level reference)
 
 ---
 
@@ -165,7 +165,7 @@ apps/
 
 ## Related Documentation
 
-- [Template Architecture](../../docs/architecture/) - Core patterns, tech stack, data model
-- [Template Features](../../docs/features/) - What is included in the template
-- [AI Agent Instructions](../../docs/AI_README.md) - Guidelines for AI-assisted development
+- [Template Architecture](../../template-docs/architecture/) - Core patterns, tech stack, data model
+- [Template Features](../../template-docs/features/) - What is included in the template
+- [AI Agent Instructions](../../template-docs/AI_README.md) - Guidelines for AI-assisted development
 - [QA Test Cases](../qa/README.md) - Test case reference for QA

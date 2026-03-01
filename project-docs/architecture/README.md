@@ -8,13 +8,13 @@
 
 ## Overview
 
-This section captures the architectural foundations of the project. It complements the template-level architecture docs in [`docs/architecture/`](../../docs/architecture/) with project-specific decisions, C4 model diagrams, and detailed design documents.
+This section captures the architectural foundations of the project. It complements the template-level architecture docs in [`template-docs/architecture/`](../../template-docs/architecture/) with project-specific decisions, C4 model diagrams, and detailed design documents.
 
 | Template Docs (patterns) | Project Docs (decisions) |
 |--------------------------|--------------------------|
-| [Core Patterns](../../docs/architecture/CORE_PATTERNS.md) | [ADRs](./adr/) - Why we chose those patterns |
-| [Data Model](../../docs/architecture/DATA_MODEL.md) | [C4 Diagrams](./c4/) - Visual system models |
-| [Tech Stack](../../docs/architecture/TECH_STACK.md) | [Design Docs](./design/) - Feature-level designs |
+| [Core Patterns](../../template-docs/architecture/CORE_PATTERNS.md) | [ADRs](./adr/) - Why we chose those patterns |
+| [Data Model](../../template-docs/architecture/DATA_MODEL.md) | [C4 Diagrams](./c4/) - Visual system models |
+| [Tech Stack](../../template-docs/architecture/TECH_STACK.md) | [Design Docs](./design/) - Feature-level designs |
 
 ---
 
@@ -111,8 +111,8 @@ graph TB
 
 ## Related Documentation
 
-- [Core Patterns](../../docs/architecture/CORE_PATTERNS.md) - Router, Controller, Service, Model layers
-- [Coding Standard](../../docs/architecture/CODING_STANDARD.md) - TypeScript conventions
-- [Data Model](../../docs/architecture/DATA_MODEL.md) - Database schema reference
-- [Permissions](../../docs/architecture/PERMISSIONS.md) - RBAC and authorization model
-- [Configuration](../../docs/architecture/CONFIG.md) - Environment variable reference
+- [Core Patterns](../../template-docs/architecture/CORE_PATTERNS.md) - Router, Controller, Service, Model layers
+- [Coding Standard](../../template-docs/architecture/CODING_STANDARD.md) - TypeScript conventions
+- [Data Model](../../template-docs/architecture/DATA_MODEL.md) - Database schema reference
+- [Permissions](../../template-docs/architecture/PERMISSIONS.md) - RBAC and authorization model
+- [Configuration](../../template-docs/architecture/CONFIG.md) - Environment variable reference

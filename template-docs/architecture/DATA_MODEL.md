@@ -1,5 +1,7 @@
 # Data Model
 
+> **Note:** For the full enterprise data model including PKI tables, see [project-docs/architecture/design/data-model.md](../../project-docs/architecture/design/data-model.md).
+
 > Database schema documentation for the fullstack template.
 
 ## Overview

@@ -55,7 +55,7 @@ Environment variable reference and configuration:
 - Zod validation schema for env vars
 - Docker and container configuration
 
-See also: [Configuration](../../docs/architecture/CONFIG.md) (template-level reference)
+See also: [Configuration](../../template-docs/architecture/CONFIG.md) (template-level reference)
 
 ---
 
@@ -156,7 +156,7 @@ graph TB
 
 ## Related Documentation
 
-- [Configuration Reference](../../docs/architecture/CONFIG.md) - Environment variables
-- [Dev Environment](../../docs/architecture/DEV_ENVIRONMENT.md) - Local development setup
+- [Configuration Reference](../../template-docs/architecture/CONFIG.md) - Environment variables
+- [Dev Environment](../../template-docs/architecture/DEV_ENVIRONMENT.md) - Local development setup
 - [Security Documentation](../security/README.md) - Security policies and hardening
 - [SLA/SLO](../project/sla-slo.md) - Service level objectives

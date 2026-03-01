@@ -222,14 +222,14 @@ pnpm --filter api test:watch
 - **API changes**: Update relevant endpoint documentation
 - **Schema changes**: Generate migration (`pnpm db:generate`)
 - **Configuration changes**: Update `.env.example` with new variables and comments
-- **Architecture changes**: Update `docs/architecture/` guides
+- **Architecture changes**: Update `template-docs/architecture/` guides
 
 ### Where Documentation Lives
 
 | Content                | Location                              |
 |------------------------|---------------------------------------|
-| Architecture decisions | `docs/architecture/`                  |
-| Feature documentation  | `docs/features/`                      |
+| Architecture decisions | `template-docs/architecture/`                  |
+| Feature documentation  | `template-docs/features/`                      |
 | Developer guides       | `project-docs/developer/`             |
 | API configuration      | `.env.example` (with comments)        |
 | Inline code docs       | JSDoc comments on public interfaces   |

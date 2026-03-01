@@ -116,6 +116,7 @@ export function ForgotPasswordPage() {
               type="email"
               fullWidth
               margin="normal"
+              required
               error={!!errors.email}
               helperText={errors.email?.message}
               autoComplete="email"

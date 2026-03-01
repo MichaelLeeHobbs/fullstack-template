@@ -69,7 +69,7 @@ pie title Feature Implementation Status
 
 ## Related Documentation
 
-- [Template Features](../../docs/features/README.md) - Base template feature specifications
+- [Template Features](../../template-docs/features/README.md) - Base template feature specifications
 - [Roadmap](../project/roadmap.md) - Future development plans
 - [User Stories](../stories/README.md) - Detailed user stories for all features
 - [QA Test Cases](../qa/README.md) - Test coverage for all features

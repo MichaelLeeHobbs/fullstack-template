@@ -169,12 +169,12 @@ Connection: `postgresql://app:app_dev@localhost:5432/app`
 
 ## Documentation
 
-### Template Docs (`docs/`)
-- `docs/architecture/CORE_PATTERNS.md` - Full architecture patterns
-- `docs/architecture/CODING_STANDARD.md` - TypeScript conventions
-- `docs/architecture/DEV_ENVIRONMENT.md` - Local setup guide
-- `docs/features/README.md` - Included features
-- `docs/AI_README.md` - Extended AI agent instructions
+### Template Docs (`template-docs/`)
+- `template-docs/architecture/CORE_PATTERNS.md` - Full architecture patterns
+- `template-docs/architecture/CODING_STANDARD.md` - TypeScript conventions
+- `template-docs/architecture/DEV_ENVIRONMENT.md` - Local setup guide
+- `template-docs/features/README.md` - Included features
+- `template-docs/AI_README.md` - Extended AI agent instructions
 
 ### Project Docs (`project-docs/`)
 - `project-docs/architecture/adr/` - Architecture Decision Records (13 ADRs)

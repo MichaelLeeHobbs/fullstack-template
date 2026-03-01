@@ -102,7 +102,7 @@ fullstack-template/
 ├── packages/
 │   └── shared/              # Shared types & utilities
 │
-├── docs/                    # Documentation
+├── template-docs/           # Documentation
 └── package.json             # Root workspace config
 ```
 
@@ -397,8 +397,8 @@ export function PostsPage() {
 When contributing new features to the template itself:
 
 1. Features should be generic and reusable across projects
-2. Follow existing patterns in `docs/architecture/`
-3. Add documentation to `docs/features/`
+2. Follow existing patterns in `template-docs/architecture/`
+3. Add documentation to `template-docs/features/`
 4. Include tests for new functionality
 
 ---

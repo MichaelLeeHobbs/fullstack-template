@@ -63,8 +63,8 @@ Zooms into the React SPA container to show its internal component architecture. 
 |----------|-------------|
 | [Data Model ERD](../design/data-model.md) | Complete entity-relationship diagram for all 21+ database tables |
 | [API Design Guidelines](../design/api-design-guidelines.md) | REST conventions, response formats, pagination, and authentication |
-| [Core Patterns](../../../docs/architecture/CORE_PATTERNS.md) | Full architecture patterns and coding conventions |
-| [Coding Standard](../../../docs/architecture/CODING_STANDARD.md) | TypeScript conventions and style guide |
+| [Core Patterns](../../../template-docs/architecture/CORE_PATTERNS.md) | Full architecture patterns and coding conventions |
+| [Coding Standard](../../../template-docs/architecture/CODING_STANDARD.md) | TypeScript conventions and style guide |
 
 ## Mermaid Rendering
 

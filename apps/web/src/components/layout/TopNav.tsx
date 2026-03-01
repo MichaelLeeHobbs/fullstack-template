@@ -97,7 +97,7 @@ export function TopNav({ onMenuClick, showMenuButton = false }: TopNavProps) {
         </Typography>
 
         <Tooltip title={mode === 'light' ? 'Dark mode' : mode === 'dark' ? 'System mode' : 'Light mode'}>
-          <IconButton color="inherit" onClick={toggleMode}>
+          <IconButton color="inherit" onClick={toggleMode} aria-label="Toggle theme">
             {mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
           </IconButton>
         </Tooltip>

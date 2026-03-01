@@ -73,7 +73,7 @@ For deployment, security, operations, API reference, user stories, and QA test c
 ## Folder Structure
 
 ```
-docs/
+template-docs/
 ├── README.md                  # This file - template docs hub
 ├── AI_README.md               # Instructions for AI agents
 ├── GETTING_STARTED.md         # Quick start guide

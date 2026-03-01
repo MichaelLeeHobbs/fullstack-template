@@ -1,5 +1,7 @@
 # Coding Standard
 
+> **Note:** For extended coding standards with additional examples, see [project-docs/developer/coding-standards.md](../../project-docs/developer/coding-standards.md).
+
 > Concise TypeScript coding standards for this project.
 
 ---

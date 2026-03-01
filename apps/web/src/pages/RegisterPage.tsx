@@ -116,7 +116,7 @@ export function RegisterPage() {
           </Typography>
 
           {registerMutation.isError && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity="error" role="alert" sx={{ mb: 2 }}>
               {registerMutation.error?.message || 'Registration failed'}
             </Alert>
           )}
@@ -128,6 +128,7 @@ export function RegisterPage() {
               type="email"
               fullWidth
               margin="normal"
+              required
               error={!!errors.email}
               helperText={errors.email?.message}
               autoComplete="email"
@@ -139,6 +140,7 @@ export function RegisterPage() {
               type="password"
               fullWidth
               margin="normal"
+              required
               error={!!errors.password}
               helperText={errors.password?.message || 'At least 8 characters'}
               autoComplete="new-password"
@@ -149,6 +151,7 @@ export function RegisterPage() {
               type="password"
               fullWidth
               margin="normal"
+              required
               error={!!errors.confirmPassword}
               helperText={errors.confirmPassword?.message}
               autoComplete="new-password"

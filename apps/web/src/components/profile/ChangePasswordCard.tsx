@@ -46,7 +46,7 @@ export function ChangePasswordCard() {
       <Divider />
       <CardContent>
         {changePasswordMutation.isError && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert severity="error" role="alert" sx={{ mb: 2 }}>
             {changePasswordMutation.error?.message || 'Failed to change password'}
           </Alert>
         )}
@@ -65,6 +65,7 @@ export function ChangePasswordCard() {
             {...register('currentPassword')}
             type="password"
             label="Current Password"
+            required
             error={!!errors.currentPassword}
             helperText={errors.currentPassword?.message}
             autoComplete="current-password"
@@ -73,6 +74,7 @@ export function ChangePasswordCard() {
             {...register('newPassword')}
             type="password"
             label="New Password"
+            required
             error={!!errors.newPassword}
             helperText={errors.newPassword?.message || 'At least 8 characters'}
             autoComplete="new-password"
@@ -81,6 +83,7 @@ export function ChangePasswordCard() {
             {...register('confirmPassword')}
             type="password"
             label="Confirm New Password"
+            required
             error={!!errors.confirmPassword}
             helperText={errors.confirmPassword?.message}
             autoComplete="new-password"

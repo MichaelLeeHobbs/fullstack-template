@@ -112,6 +112,7 @@ export function Sidebar({ open, onClose, variant }: SidebarProps) {
       variant={variant}
       open={open}
       onClose={onClose}
+      aria-label="Main navigation"
       sx={{
         width: DRAWER_WIDTH,
         flexShrink: 0,

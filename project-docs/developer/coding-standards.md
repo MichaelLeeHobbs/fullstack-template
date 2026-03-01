@@ -387,5 +387,5 @@ const conditions = [
 
 ## Further Reading
 
-- `docs/architecture/CODING_STANDARD.md` -- extended coding standards with compiler configuration details
-- `docs/architecture/CORE_PATTERNS.md` -- full architecture patterns (Router, Controller, Service, Model)
+- `template-docs/architecture/CODING_STANDARD.md` -- extended coding standards with compiler configuration details
+- `template-docs/architecture/CORE_PATTERNS.md` -- full architecture patterns (Router, Controller, Service, Model)

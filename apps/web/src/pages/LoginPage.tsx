@@ -146,7 +146,7 @@ export function LoginPage() {
             </Typography>
 
             {mfaError && (
-              <Alert severity="error" sx={{ mb: 2 }}>
+              <Alert severity="error" role="alert" sx={{ mb: 2 }}>
                 {mfaError}
               </Alert>
             )}
@@ -218,7 +218,7 @@ export function LoginPage() {
           )}
 
           {login.isError && !showVerificationMessage && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity="error" role="alert" sx={{ mb: 2 }}>
               {login.error?.message || 'Login failed'}
             </Alert>
           )}
@@ -230,6 +230,7 @@ export function LoginPage() {
               type="email"
               fullWidth
               margin="normal"
+              required
               error={!!errors.email}
               helperText={errors.email?.message}
               autoComplete="email"
@@ -241,6 +242,7 @@ export function LoginPage() {
               type="password"
               fullWidth
               margin="normal"
+              required
               error={!!errors.password}
               helperText={errors.password?.message}
               autoComplete="current-password"

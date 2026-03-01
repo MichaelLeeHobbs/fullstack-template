@@ -64,7 +64,7 @@ fullstack-template/
 │       ├── package.json
 │       └── tsconfig.json
 │
-├── docs/                     # Documentation (existing)
+├── template-docs/            # Documentation (existing)
 ├── .env.example
 ├── .gitignore
 ├── package.json              # Root workspace

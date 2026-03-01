@@ -123,7 +123,7 @@ export function ResetPasswordPage() {
           </Typography>
 
           {resetPassword.isError && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity="error" role="alert" sx={{ mb: 2 }}>
               {resetPassword.error?.message || 'Failed to reset password. The link may have expired.'}
             </Alert>
           )}
@@ -135,6 +135,7 @@ export function ResetPasswordPage() {
               type="password"
               fullWidth
               margin="normal"
+              required
               error={!!errors.password}
               helperText={errors.password?.message || 'At least 8 characters'}
               autoComplete="new-password"
@@ -146,6 +147,7 @@ export function ResetPasswordPage() {
               type="password"
               fullWidth
               margin="normal"
+              required
               error={!!errors.confirmPassword}
               helperText={errors.confirmPassword?.message}
               autoComplete="new-password"

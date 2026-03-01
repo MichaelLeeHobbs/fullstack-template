@@ -86,7 +86,7 @@ This document defines the features included in this fullstack template.
 
 This template provides the foundation. Add your own features by:
 
-1. Create feature doc in `docs/features/XX_feature-name.md`
+1. Create feature doc in `template-docs/features/XX_feature-name.md`
 2. Implement: Schema -> Service -> Controller -> Routes -> UI
 3. Add tests for new functionality
 

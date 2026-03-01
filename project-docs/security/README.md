@@ -170,7 +170,7 @@ graph TB
 
 ## Related Documentation
 
-- [Permissions Model](../../docs/architecture/PERMISSIONS.md) - RBAC and authorization architecture
+- [Permissions Model](../../template-docs/architecture/PERMISSIONS.md) - RBAC and authorization architecture
 - [Authentication API](../api/authentication.md) - Auth endpoint documentation
 - [Operations](../operations/README.md) - Infrastructure security
 - [Production Checklist](../operations/production-checklist.md) - Security verification steps

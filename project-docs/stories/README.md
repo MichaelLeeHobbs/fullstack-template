@@ -124,4 +124,4 @@ Each user story maps to:
 - [QA Test Cases](../qa/README.md) - Test cases mapped to user stories
 - [Feature Tracker](../product/feature-tracker.md) - Implementation status
 - [API Reference](../api/README.md) - Endpoint documentation
-- [Template Features](../../docs/features/README.md) - Feature specifications
+- [Template Features](../../template-docs/features/README.md) - Feature specifications

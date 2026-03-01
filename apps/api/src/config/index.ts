@@ -5,7 +5,7 @@
 // If validation fails, the app exits immediately.
 //
 // NOTE: Feature flags are stored in the database (system_settings table)
-// and can be managed via Admin UI. See docs/features/003_system-settings.md
+// and can be managed via Admin UI. See template-docs/features/003_system-settings.md
 
 import { config as loadEnv } from 'dotenv';
 import { z } from 'zod/v4';

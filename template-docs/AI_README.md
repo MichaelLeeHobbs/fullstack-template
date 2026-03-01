@@ -49,12 +49,12 @@ Read these documents before starting work:
 
 | Document                               | Purpose                                              |
 |----------------------------------------|------------------------------------------------------|
-| `docs/features/README.md`             | What's included in the template                      |
-| `docs/architecture/DEV_ENVIRONMENT.md` | Local development setup                              |
-| `docs/architecture/CODING_STANDARD.md` | Code conventions, patterns                           |
-| `docs/architecture/CORE_PATTERNS.md`   | Architecture (Router → Controller → Service → Model) |
-| `docs/architecture/TECH_STACK.md`      | Libraries and frameworks                             |
-| `docs/architecture/DATA_MODEL.md`      | Database schema (Drizzle)                            |
+| `template-docs/features/README.md`             | What's included in the template                      |
+| `template-docs/architecture/DEV_ENVIRONMENT.md` | Local development setup                              |
+| `template-docs/architecture/CODING_STANDARD.md` | Code conventions, patterns                           |
+| `template-docs/architecture/CORE_PATTERNS.md`   | Architecture (Router → Controller → Service → Model) |
+| `template-docs/architecture/TECH_STACK.md`      | Libraries and frameworks                             |
+| `template-docs/architecture/DATA_MODEL.md`      | Database schema (Drizzle)                            |
 
 ### Project Documentation
 
@@ -181,7 +181,7 @@ apps/
 
 ### Adding a New Feature
 
-1. Read the feature doc in `docs/features/XX_feature-name.md`
+1. Read the feature doc in `template-docs/features/XX_feature-name.md`
 2. Check dependencies (other features it relies on)
 3. Implement in order: Schema → Service → Controller → Routes → UI
 
@@ -225,7 +225,7 @@ If this is a continuation from a previous chat:
 1. Ask what was accomplished in the previous session
 2. Ask what the current task/goal is
 3. Review any files mentioned as recently modified
-4. Check `docs/features/README.md` for current status
+4. Check `template-docs/features/README.md` for current status
 
 ---
 
@@ -234,6 +234,44 @@ If this is a continuation from a previous chat:
 - **OS**: Windows (use PowerShell commands, `;` not `&&`)
 - **Package Manager**: pnpm
 - **Monorepo**: pnpm workspaces (`apps/api`, `apps/web`, `packages/shared`)
+
+---
+
+## AI Development Cycle
+
+When implementing features, follow this complete cycle:
+
+### 1. Plan
+- Read relevant docs in `template-docs/architecture/`
+- Check `project-docs/stories/` for user stories related to the feature
+- Identify affected layers (Router → Controller → Service → Model)
+
+### 2. Implement
+- Schema changes: `apps/api/src/db/schema/` → run `pnpm db:generate` → `pnpm db:migrate`
+- Service: `apps/api/src/services/` — Return `Result<T>` via `tryCatch()`, never throw
+- Controller: `apps/api/src/controllers/` — Parse request, call service, format response
+- Routes: `apps/api/src/routes/` — Wire up routes with middleware
+- Frontend: Component → Hook → API Client → Backend
+
+### 3. Write Unit Tests
+- Co-locate tests with source: `foo.service.test.ts` next to `foo.service.ts`
+- Use test utilities from `apps/api/test/utils/` (mock-db, mock-express, factories)
+- Test both success and error paths for every service method
+- Run `pnpm test:api` and `pnpm test:web` — all must pass
+
+### 4. Write E2E Tests
+- Add Playwright tests in `apps/e2e/tests/`
+- Test full user workflows (login → action → verify)
+- Run `pnpm test:e2e` with Docker running
+
+### 5. Update Documentation
+- Update `template-docs/features/` if adding a new feature
+- Update `template-docs/architecture/` if changing patterns
+- Update `project-docs/` for API changes, new endpoints
+
+### 6. QA Verification
+- Direct human to run relevant QA test cases from `project-docs/qa/`
+- Reference specific test case IDs when applicable
 
 ---
 

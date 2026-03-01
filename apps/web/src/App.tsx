@@ -3,13 +3,14 @@
 // ===========================================
 // Root component with providers and routing.
 
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { SnackbarProvider } from 'notistack';
 import { SocketProvider } from './providers/SocketProvider.js';
 import { useTheme } from './hooks/useTheme.js';
+import { useAuthStore } from './stores/auth.store.js';
 import { ErrorBoundary } from './components/ErrorBoundary.js';
 import { PageLoader } from './components/LoadingSpinner.js';
 import { AppLayout } from './components/layout/AppLayout.js';
@@ -60,8 +61,67 @@ const queryClient = new QueryClient({
   },
 });
 
+/**
+ * On page reload, accessToken is not persisted (security).
+ * If the user was previously authenticated, attempt a silent refresh
+ * using the httpOnly refresh cookie to get a new accessToken.
+ */
+function useTokenBootstrap() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const setAccessToken = useAuthStore((s) => s.setAccessToken);
+  const clearAuth = useAuthStore((s) => s.clearAuth);
+  const [ready, setReady] = useState(!isAuthenticated || !!accessToken);
+
+  useEffect(() => {
+    if (!isAuthenticated || accessToken) {
+      setReady(true);
+      return;
+    }
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const res = await fetch('/api/v1/auth/refresh', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        });
+
+        if (!cancelled) {
+          if (res.ok) {
+            const data = await res.json();
+            setAccessToken(data.data.accessToken);
+          } else {
+            clearAuth();
+          }
+        }
+      } catch {
+        if (!cancelled) clearAuth();
+      } finally {
+        if (!cancelled) setReady(true);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [isAuthenticated, accessToken, setAccessToken, clearAuth]);
+
+  return ready;
+}
+
 function AppWithTheme() {
   const { theme } = useTheme();
+  const ready = useTokenBootstrap();
+
+  if (!ready) {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <PageLoader />
+      </ThemeProvider>
+    );
+  }
 
   return (
     <ThemeProvider theme={theme}>

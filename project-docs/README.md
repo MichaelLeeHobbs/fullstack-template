@@ -10,10 +10,10 @@ This project uses a two-tier documentation structure:
 
 | Location | Purpose | Audience |
 |----------|---------|----------|
-| [`docs/`](../docs/README.md) | Template-level patterns, architecture, and feature specs | Developers extending the template |
+| [`template-docs/`](../template-docs/README.md) | Template-level patterns, architecture, and feature specs | Developers extending the template |
 | `project-docs/` (this directory) | Enterprise/project-level docs: API reference, operations, security, QA | Full team (dev, ops, QA, product) |
 
-**Template docs** (`docs/`) describe _how the template works_ -- coding standards, core patterns, data model, and feature specifications. They are checked into the template repository and evolve with the codebase.
+**Template docs** (`template-docs/`) describe _how the template works_ -- coding standards, core patterns, data model, and feature specifications. They are checked into the template repository and evolve with the codebase.
 
 **Project docs** (`project-docs/`) describe _how to build, ship, and run your product_ -- API contracts, deployment procedures, security policies, user stories, and test plans. They grow as your project matures beyond the template.
 
@@ -37,7 +37,7 @@ This project uses a two-tier documentation structure:
 
 ## Getting Started
 
-1. **New to the codebase?** Start with the [Getting Started Guide](../docs/GETTING_STARTED.md) and [Template Features](../docs/features/README.md).
+1. **New to the codebase?** Start with the [Getting Started Guide](../template-docs/GETTING_STARTED.md) and [Template Features](../template-docs/features/README.md).
 2. **Building a feature?** Check [User Stories](./stories/README.md) for requirements and [API docs](./api/README.md) for contracts.
 3. **Deploying?** See [Operations](./operations/README.md) for deployment guides and the production checklist.
 4. **Running QA?** See [QA Test Cases](./qa/README.md) for comprehensive test plans.
@@ -141,6 +141,6 @@ project-docs/
 
 ### Cross-References
 
-- Template architecture docs: `../docs/architecture/`
-- Template feature specs: `../docs/features/`
-- AI agent instructions: `../docs/AI_README.md`
+- Template architecture docs: `../template-docs/architecture/`
+- Template feature specs: `../template-docs/features/`
+- AI agent instructions: `../template-docs/AI_README.md`

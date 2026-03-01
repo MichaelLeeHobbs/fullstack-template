@@ -66,10 +66,10 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-      // Don't persist intendedDestination
+      // Only persist user + isAuthenticated — never persist accessToken (XSS risk).
+      // On reload the app bootstraps a fresh accessToken via httpOnly cookie refresh.
       partialize: (state) => ({
         user: state.user,
-        accessToken: state.accessToken,
         isAuthenticated: state.isAuthenticated,
       }),
     }
