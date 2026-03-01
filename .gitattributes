@@ -1,0 +1,16 @@
+# Enforce LF line endings in the repository for all text files.
+# This prevents CRLF/LF warnings on Windows and ensures consistent
+# line endings across all platforms.
+* text=auto eol=lf
+
+# Explicitly mark binary file types
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.pdf binary
