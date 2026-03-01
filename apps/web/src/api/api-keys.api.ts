@@ -51,7 +51,7 @@ export const apiKeysApi = {
   // Service Accounts
   // ===========================================
 
-  listServiceAccounts: () => api.get<ServiceAccount[]>('/api-keys/service-accounts'),
+  listServiceAccounts: () => api.get<PaginatedResponse<ServiceAccount>>('/api-keys/service-accounts'),
 
   createServiceAccount: (data: CreateServiceAccountInput) =>
     api.post<ServiceAccount>('/api-keys/service-accounts', data),

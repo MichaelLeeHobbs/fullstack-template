@@ -223,7 +223,7 @@ export class CaService {
       if (!input.parentCaId) {
         throw new ServiceError('INVALID_INPUT', 'Intermediate CA requires a parentCaId');
       }
-      if (!input.parentPassphrase) {
+      if (!input.parentCaPassphrase) {
         throw new ServiceError('INVALID_INPUT', 'Parent passphrase is required for intermediate CA');
       }
 
@@ -273,7 +273,7 @@ export class CaService {
       try {
         parentKeyPem = await decryptPrivateKey(
           parentPrivateKey.encryptedPrivateKeyPem,
-          input.parentPassphrase,
+          input.parentCaPassphrase,
           parentPrivateKey.kdfSalt,
           parentPrivateKey.kdfIv,
           parentPrivateKey.kdfTag,

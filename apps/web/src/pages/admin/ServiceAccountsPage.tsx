@@ -14,6 +14,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TablePagination,
   Box,
   IconButton,
   Tooltip,
@@ -40,6 +41,8 @@ import type { ServiceAccount } from '@fullstack-template/shared';
 
 export function ServiceAccountsPage() {
   const notify = useNotification();
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(20);
 
   // Data
   const { data: accounts, isLoading } = useServiceAccounts();
@@ -99,12 +102,12 @@ export function ServiceAccountsPage() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {!accounts || accounts.length === 0 ? (
+            {!accounts?.data || accounts.data.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} align="center">No service accounts found</TableCell>
               </TableRow>
             ) : (
-              accounts.map((account) => (
+              accounts.data.map((account) => (
                 <TableRow key={account.id}>
                   <TableCell>{account.email}</TableCell>
                   <TableCell>
@@ -139,6 +142,17 @@ export function ServiceAccountsPage() {
             )}
           </TableBody>
         </Table>
+        {accounts?.pagination && (
+          <TablePagination
+            component="div"
+            count={accounts.pagination.total}
+            page={page}
+            onPageChange={(_, p) => setPage(p)}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+            rowsPerPageOptions={[10, 20, 50]}
+          />
+        )}
       </TableContainer>
 
       {/* Create Dialog */}

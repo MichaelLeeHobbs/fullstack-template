@@ -52,7 +52,17 @@ export class CsrController {
       return void res.status(500).json({ success: false, error: 'Failed to list certificate requests' });
     }
 
-    res.json({ success: true, data: result.value });
+    const { requests, total } = result.value;
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+
+    res.json({
+      success: true,
+      data: {
+        data: requests,
+        pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      },
+    });
   }
 
   /**

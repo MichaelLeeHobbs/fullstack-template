@@ -1,18 +1,15 @@
 import { test, expect } from '../../fixtures/test-fixtures';
 
-// BUG: Service accounts page crashes with React error boundary "Something went wrong"
-// The page component throws an unhandled error during rendering.
-// All tests are marked fixme until the underlying bug is resolved.
 test.describe('Admin Service Accounts', () => {
   test.use({ storageState: '.auth/admin.json' });
 
-  test.fixme('loads service accounts page', async ({ serviceAccountsPage }) => {
+  test('loads service accounts page', async ({ serviceAccountsPage }) => {
     await serviceAccountsPage.goto();
     await expect(serviceAccountsPage.heading).toBeVisible({ timeout: 15000 });
     await expect(serviceAccountsPage.table).toBeVisible({ timeout: 15000 });
   });
 
-  test.fixme('create dialog opens with email field', async ({ serviceAccountsPage, page }) => {
+  test('create dialog opens with email field', async ({ serviceAccountsPage, page }) => {
     await serviceAccountsPage.goto();
     await expect(serviceAccountsPage.heading).toBeVisible({ timeout: 15000 });
     await serviceAccountsPage.createButton.click();
@@ -24,7 +21,7 @@ test.describe('Admin Service Accounts', () => {
   test.describe.serial('Service Account lifecycle', () => {
     const accountEmail = `e2e-svc-${Date.now()}@app.local`;
 
-    test.fixme('create a service account', async ({ serviceAccountsPage, page }) => {
+    test('create a service account', async ({ serviceAccountsPage, page }) => {
       await serviceAccountsPage.goto();
       await expect(serviceAccountsPage.heading).toBeVisible({ timeout: 15000 });
       await serviceAccountsPage.createButton.click();
@@ -35,7 +32,7 @@ test.describe('Admin Service Accounts', () => {
       await expect(serviceAccountsPage.getAccountRow(accountEmail)).toBeVisible({ timeout: 10000 });
     });
 
-    test.fixme('new account shows Active status', async ({ serviceAccountsPage }) => {
+    test('new account shows Active status', async ({ serviceAccountsPage }) => {
       await serviceAccountsPage.goto();
       await expect(serviceAccountsPage.heading).toBeVisible({ timeout: 15000 });
       const row = serviceAccountsPage.getAccountRow(accountEmail);
@@ -43,7 +40,7 @@ test.describe('Admin Service Accounts', () => {
       await expect(row.getByText('Active')).toBeVisible();
     });
 
-    test.fixme('delete with confirmation removes account', async ({ serviceAccountsPage, page }) => {
+    test('delete with confirmation removes account', async ({ serviceAccountsPage, page }) => {
       await serviceAccountsPage.goto();
       await expect(serviceAccountsPage.heading).toBeVisible({ timeout: 15000 });
       const row = serviceAccountsPage.getAccountRow(accountEmail);
@@ -58,7 +55,7 @@ test.describe('Admin Service Accounts', () => {
     });
   });
 
-  test.fixme('cancel delete does not remove account', async ({ serviceAccountsPage, page }) => {
+  test('cancel delete does not remove account', async ({ serviceAccountsPage, page }) => {
     await serviceAccountsPage.goto();
     await expect(serviceAccountsPage.heading).toBeVisible({ timeout: 15000 });
     // Create a temp account first

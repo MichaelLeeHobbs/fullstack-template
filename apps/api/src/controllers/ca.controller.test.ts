@@ -193,7 +193,13 @@ describe('CaController', () => {
       await CaController.list(req, res as any);
 
       expect(res._status).toBe(200);
-      expect(res._json).toEqual({ success: true, data: mockData });
+      expect(res._json).toEqual({
+        success: true,
+        data: {
+          data: mockData.cas,
+          pagination: { page: 1, limit: 20, total: 2, totalPages: 1 },
+        },
+      });
     });
   });
 

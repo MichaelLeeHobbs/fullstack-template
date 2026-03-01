@@ -59,7 +59,17 @@ export class CaController {
       return void res.status(500).json({ success: false, error: 'Failed to list CAs' });
     }
 
-    res.json({ success: true, data: result.value });
+    const { cas, total } = result.value;
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+
+    res.json({
+      success: true,
+      data: {
+        data: cas,
+        pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      },
+    });
   }
 
   /**

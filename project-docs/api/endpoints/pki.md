@@ -4,7 +4,7 @@
 
 Base URL: `/api/v1`
 
-This document covers the Certificate Authority (CA) management, certificate lifecycle, certificate profiles, CSR workflow, and certificate-based login endpoints.
+This document covers the Certificate Authority (CA) management, certificate lifecycle, certificate profiles, CSR workflow, certificate-based login, and PKI audit log endpoints.
 
 ---
 
@@ -27,7 +27,7 @@ Create a new Certificate Authority. If `parentCaId` is provided, creates an inte
 | state | body | string | No | -- | State or province (max 128 chars) |
 | locality | body | string | No | -- | City or locality (max 128 chars) |
 | parentCaId | body | string (UUID) | No | -- | Parent CA ID (creates intermediate CA) |
-| parentPassphrase | body | string | Conditional | -- | Required when `parentCaId` is set |
+| parentCaPassphrase | body | string | Conditional | -- | Required when `parentCaId` is set |
 | passphrase | body | string | Yes | -- | Private key passphrase (min 8 chars) |
 | keyAlgorithm | body | string | No | `rsa` | Key algorithm: `rsa` or `ecdsa` |
 | keySize | body | integer | No | -- | RSA key size (2048-4096) |
@@ -63,7 +63,7 @@ Create a new Certificate Authority. If `parentCaId` is provided, creates an inte
 | Status | Error | Description |
 |--------|-------|-------------|
 | 400 | Validation error | Missing required fields or invalid parameters |
-| 400 | Parent passphrase required | `parentCaId` set but `parentPassphrase` missing |
+| 400 | Parent passphrase required | `parentCaId` set but `parentCaPassphrase` missing |
 | 401 | Unauthorized | Missing or invalid token |
 | 403 | Forbidden | User lacks `ca.create` permission |
 | 404 | Parent CA not found | The specified parent CA does not exist |
@@ -89,23 +89,25 @@ List Certificate Authorities with optional filtering.
 ```json
 {
   "success": true,
-  "data": [
-    {
-      "id": "ca-uuid-...",
-      "name": "My Root CA",
-      "commonName": "My Root CA",
-      "status": "active",
-      "isRoot": true,
-      "keyAlgorithm": "rsa",
-      "certificateCount": 15,
-      "createdAt": "2025-01-15T10:30:00.000Z"
+  "data": {
+    "data": [
+      {
+        "id": "ca-uuid-...",
+        "name": "My Root CA",
+        "commonName": "My Root CA",
+        "status": "active",
+        "isRoot": true,
+        "keyAlgorithm": "rsa",
+        "certificateCount": 15,
+        "createdAt": "2025-01-15T10:30:00.000Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 3,
+      "totalPages": 1
     }
-  ],
-  "meta": {
-    "page": 1,
-    "limit": 20,
-    "total": 3,
-    "totalPages": 1
   }
 }
 ```
@@ -1114,21 +1116,23 @@ List CSRs with filtering and pagination.
 ```json
 {
   "success": true,
-  "data": [
-    {
-      "id": "csr-uuid-...",
-      "status": "pending",
-      "commonName": "api.example.com",
-      "targetCaId": "ca-uuid-...",
-      "submittedBy": "a1b2c3d4-...",
-      "createdAt": "2025-06-01T14:22:00.000Z"
+  "data": {
+    "data": [
+      {
+        "id": "csr-uuid-...",
+        "status": "pending",
+        "commonName": "api.example.com",
+        "targetCaId": "ca-uuid-...",
+        "submittedBy": "a1b2c3d4-...",
+        "createdAt": "2025-06-01T14:22:00.000Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 3,
+      "totalPages": 1
     }
-  ],
-  "meta": {
-    "page": 1,
-    "limit": 20,
-    "total": 3,
-    "totalPages": 1
   }
 }
 ```
@@ -1418,3 +1422,60 @@ Remove a certificate binding from the authenticated user's account.
 |--------|-------|-------------|
 | 401 | Unauthorized | Missing or invalid token |
 | 404 | Not found | Binding does not exist or belongs to another user |
+
+---
+
+## PKI Audit Logs (`/pki-audit`)
+
+### GET /pki-audit
+
+List PKI-specific audit logs with filtering and pagination. Separate from general audit logs due to different fields and retention needs.
+
+**Authentication**: Required
+**Permission**: `pki_audit:read`
+
+| Parameter | Location | Type | Required | Default | Description |
+|-----------|----------|------|----------|---------|-------------|
+| page | query | integer | No | 1 | Page number |
+| limit | query | integer | No | 50 | Items per page (max 100) |
+| action | query | string | No | -- | Filter by action type (e.g., `CA_CREATED`, `CERT_ISSUED`) |
+| targetType | query | string | No | -- | Filter by target type (e.g., `certificate_authority`) |
+| targetId | query | string (UUID) | No | -- | Filter by target entity ID |
+| actorId | query | string (UUID) | No | -- | Filter by actor user ID |
+
+**Success (200)**:
+
+```json
+{
+  "success": true,
+  "data": {
+    "data": [
+      {
+        "id": "log-uuid-...",
+        "action": "CA_CREATED",
+        "actorId": "user-uuid-...",
+        "actorIp": "127.0.0.1",
+        "targetType": "certificate_authority",
+        "targetId": "ca-uuid-...",
+        "details": { "name": "My Root CA", "isRoot": true },
+        "success": true,
+        "errorMessage": null,
+        "createdAt": "2025-06-01T10:30:00.000Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 50,
+      "total": 25,
+      "totalPages": 1
+    }
+  }
+}
+```
+
+**Errors**:
+
+| Status | Error | Description |
+|--------|-------|-------------|
+| 401 | Unauthorized | Missing or invalid token |
+| 403 | Forbidden | User lacks `pki_audit:read` permission |

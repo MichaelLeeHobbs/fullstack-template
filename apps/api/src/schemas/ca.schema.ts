@@ -13,7 +13,7 @@ export const createCaSchema = z.object({
   state: z.string().max(128).optional(),
   locality: z.string().max(128).optional(),
   parentCaId: z.string().uuid().optional(),  // if provided, creates intermediate CA
-  parentPassphrase: z.string().min(1).optional(),  // required when parentCaId is set
+  parentCaPassphrase: z.string().min(1).optional(),  // required when parentCaId is set
   passphrase: z.string().min(8, 'Passphrase must be at least 8 characters'),
   keyAlgorithm: z.enum(['rsa', 'ecdsa']).default('rsa'),
   keySize: z.number().int().min(2048).max(4096).optional(),
@@ -23,8 +23,8 @@ export const createCaSchema = z.object({
   crlDistributionUrl: z.string().url().optional(),
   ocspUrl: z.string().url().optional(),
 }).refine(
-  (data) => !data.parentCaId || data.parentPassphrase,
-  { message: 'Parent passphrase is required when creating an intermediate CA', path: ['parentPassphrase'] }
+  (data) => !data.parentCaId || data.parentCaPassphrase,
+  { message: 'Parent passphrase is required when creating an intermediate CA', path: ['parentCaPassphrase'] }
 );
 
 export const updateCaSchema = z.object({

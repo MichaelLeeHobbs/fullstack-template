@@ -23,13 +23,10 @@ test.describe('Certificate Authorities', () => {
     await expect(caCreatePage.getStepLabel('Review')).toBeVisible();
   });
 
-  // BUG: CA creation wizard completes but CA does not appear in list.
-  // The backend CA creation (key pair generation, certificate signing) may be
-  // failing silently or the API returns success without persisting the CA.
   test.describe.serial('Create Root CA', () => {
     const caName = `E2E Root CA ${Date.now()}`;
 
-    test.fixme('create root CA through wizard', async ({ caCreatePage, page }) => {
+    test('create root CA through wizard', async ({ caCreatePage, page }) => {
       await caCreatePage.goto();
 
       // Step 0: CA Type — Root CA is default, click Next
@@ -51,13 +48,13 @@ test.describe('Certificate Authorities', () => {
       await page.waitForURL(/\/pki\/ca\/(?!create)[^/]+/, { timeout: 30000 });
     });
 
-    test.fixme('new CA appears in list', async ({ caListPage }) => {
+    test('new CA appears in list', async ({ caListPage }) => {
       await caListPage.goto();
       await expect(caListPage.heading).toBeVisible({ timeout: 15000 });
       await expect(caListPage.getCaRow(caName)).toBeVisible({ timeout: 10000 });
     });
 
-    test.fixme('CA row click navigates to detail', async ({ caListPage, page }) => {
+    test('CA row click navigates to detail', async ({ caListPage, page }) => {
       await caListPage.goto();
       await expect(caListPage.heading).toBeVisible({ timeout: 15000 });
       await expect(caListPage.getCaRow(caName)).toBeVisible({ timeout: 10000 });

@@ -18,6 +18,7 @@ import certificateProfileRoutes from './certificate-profile.routes.js';
 import certificateRoutes from './certificate.routes.js';
 import csrRoutes from './csr.routes.js';
 import certLoginRoutes from './cert-login.routes.js';
+import pkiAuditRoutes from './pki-audit.routes.js';
 
 const router: IRouter = Router();
 
@@ -33,8 +34,9 @@ router.use('/mfa', mfaRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/ca', caRoutes);
 router.use('/profiles', certificateProfileRoutes);
-router.use('/certificates', certificateRoutes);
 router.use('/certificates/requests', csrRoutes);
+router.use('/certificates', certificateRoutes);
+router.use('/pki-audit', pkiAuditRoutes);
 router.use('/', certLoginRoutes);
 
 export default router;
