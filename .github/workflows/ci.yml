@@ -76,19 +76,6 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
-      minio:
-        image: minio/minio
-        env:
-          MINIO_ROOT_USER: app
-          MINIO_ROOT_PASSWORD: app_dev_password
-        ports:
-          - 9000:9000
-        options: >-
-          --health-cmd "curl -f http://localhost:9000/minio/health/live || exit 1"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 5
-
     env:
       DATABASE_URL: postgresql://app:app_dev@localhost:5433/app
       JWT_SECRET: ci-test-secret-key-minimum-32-characters-long
@@ -102,6 +89,18 @@ jobs:
       DISABLE_RATE_LIMIT: "true"
 
     steps:
+      - name: Start MinIO
+        run: |
+          docker run -d --name minio \
+            -p 9000:9000 \
+            -e MINIO_ROOT_USER=app \
+            -e MINIO_ROOT_PASSWORD=app_dev_password \
+            minio/minio server /data
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:9000/minio/health/live && break
+            sleep 1
+          done
+
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4

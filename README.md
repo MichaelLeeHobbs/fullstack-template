@@ -170,7 +170,7 @@ Component → Hook (TanStack Query) → API Client → Backend
 
 - **Pages** — Route-level components
 - **Hooks** — Data fetching and mutations via TanStack Query
-- **API Client** — Axios-based HTTP client with auth token injection
+- **API Client** — Fetch-based HTTP client with auth token injection
 - **Stores** — Zustand for global state (auth, theme)
 
 ## Environment Variables
