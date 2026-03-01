@@ -34,7 +34,7 @@ export default defineConfig({
         storageState: '.auth/admin.json',
       },
       dependencies: ['auth-setup'],
-      testIgnore: /auth\/(login|register)\.spec\.ts/,
+      testIgnore: /auth\/(login|register|forgot-password)\.spec\.ts/,
     },
     {
       name: 'chromium-no-auth',
@@ -44,7 +44,7 @@ export default defineConfig({
       dependencies: ['auth-setup'],
       testMatch: [
         /smoke\/.+\.spec\.ts/,
-        /auth\/(login|register)\.spec\.ts/,
+        /auth\/(login|register|forgot-password)\.spec\.ts/,
       ],
     },
   ],
@@ -55,7 +55,7 @@ export default defineConfig({
       url: `http://localhost:${API_PORT}/health`,
       reuseExistingServer: !isCI,
       cwd: '../..',
-      env: { PORT: String(API_PORT) },
+      env: { PORT: String(API_PORT), DISABLE_RATE_LIMIT: 'true' },
       timeout: 30_000,
     },
     {
