@@ -21,6 +21,13 @@ function isDockerRunning(root: string): boolean {
 export default async function globalSetup() {
   const root = getProjectRoot();
 
+  // In CI, services are managed by the workflow (not docker-compose)
+  // and migrations/seeding are run as separate steps before E2E tests
+  if (process.env.CI) {
+    console.log('[e2e] CI detected — skipping docker-compose check and db setup.');
+    return;
+  }
+
   if (!isDockerRunning(root)) {
     throw new Error(
       'Docker services are not running. Start them with: pnpm docker:up',
