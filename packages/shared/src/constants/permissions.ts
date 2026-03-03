@@ -42,6 +42,12 @@ export const PERMISSIONS = {
   PROFILES_UPDATE: 'profiles:update',
   PROFILES_DELETE: 'profiles:delete',
   PKI_AUDIT_READ: 'pki_audit:read',
+
+  // SSO
+  SSO_PROVIDERS_READ: 'sso_providers:read',
+  SSO_PROVIDERS_CREATE: 'sso_providers:create',
+  SSO_PROVIDERS_UPDATE: 'sso_providers:update',
+  SSO_PROVIDERS_DELETE: 'sso_providers:delete',
 } as const;
 
 export type PermissionName = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];

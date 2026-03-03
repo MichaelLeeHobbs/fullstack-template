@@ -279,5 +279,33 @@ export const defaultPermissions: NewPermission[] = [
     resource: 'pki_audit',
     action: 'read',
   },
+
+  // ===========================================
+  // SSO Providers
+  // ===========================================
+  {
+    name: 'sso_providers:read',
+    description: 'View SSO providers',
+    resource: 'sso_providers',
+    action: 'read',
+  },
+  {
+    name: 'sso_providers:create',
+    description: 'Create SSO providers',
+    resource: 'sso_providers',
+    action: 'create',
+  },
+  {
+    name: 'sso_providers:update',
+    description: 'Update SSO providers',
+    resource: 'sso_providers',
+    action: 'update',
+  },
+  {
+    name: 'sso_providers:delete',
+    description: 'Delete SSO providers',
+    resource: 'sso_providers',
+    action: 'delete',
+  },
 ];
 

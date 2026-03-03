@@ -14,6 +14,7 @@ import {
   Typography,
   Alert,
   Link,
+  Divider,
 } from '@mui/material';
 import { Link as RouterLink, Navigate, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
@@ -23,6 +24,7 @@ import { useAuthStore } from '../stores/auth.store.js';
 import { useNotification } from '../hooks/useNotification.js';
 import { accountApi } from '../api/account.api.js';
 import { mfaApi } from '../api/mfa.api.js';
+import { useSsoProviders } from '../hooks/useSso.js';
 
 export function LoginPage() {
   const [showVerificationMessage, setShowVerificationMessage] = useState(false);
@@ -54,6 +56,8 @@ export function LoginPage() {
       password: '',
     },
   });
+
+  const { data: ssoProviders } = useSsoProviders();
 
   const resendVerification = useMutation({
     mutationFn: () => accountApi.resendVerificationPublic({ email: getValues('email') }),
@@ -200,6 +204,26 @@ export function LoginPage() {
           <Typography variant="h5" gutterBottom align="center">
             Login
           </Typography>
+
+          {ssoProviders && ssoProviders.length > 0 && (
+            <>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
+                {ssoProviders.map((p) => (
+                  <Button
+                    key={p.slug}
+                    variant="outlined"
+                    fullWidth
+                    onClick={() => { window.location.href = `/api/v1/sso/${p.slug}/login`; }}
+                  >
+                    Sign in with {p.name}
+                  </Button>
+                ))}
+              </Box>
+              <Divider sx={{ my: 2 }}>
+                <Typography variant="body2" color="text.secondary">or</Typography>
+              </Divider>
+            </>
+          )}
 
           {showVerificationMessage && (
             <Alert severity="warning" sx={{ mb: 2 }}>

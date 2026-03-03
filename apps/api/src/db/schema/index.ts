@@ -24,4 +24,6 @@ export * from './crls.js';
 export * from './user-certificates.js';
 export * from './cert-attach-codes.js';
 export * from './pki-audit-logs.js';
-
+export * from './sso-providers.js';
+export * from './sso-identities.js';
+export * from './sso-auth-codes.js';

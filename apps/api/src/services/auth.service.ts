@@ -318,7 +318,7 @@ export class AuthService {
     });
   }
 
-  private static async createTokens(userId: string, metadata?: SessionMetadata): Promise<AuthTokens> {
+  static async createTokens(userId: string, metadata?: SessionMetadata): Promise<AuthTokens> {
     const refreshToken = signRefreshToken({ userId });
 
     // Store hashed refresh token in database with metadata

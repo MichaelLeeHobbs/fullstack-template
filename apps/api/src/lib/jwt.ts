@@ -62,3 +62,28 @@ export function verifyMfaTempToken(token: string): MfaTempPayload {
   return decoded;
 }
 
+// ===========================================
+// SSO State Token (short-lived, 10 minutes)
+// ===========================================
+
+export interface SsoStatePayload {
+  providerSlug: string;
+  nonce: string;
+  purpose: 'sso';
+  returnUrl?: string;
+}
+
+export function signSsoStateToken(payload: SsoStatePayload): string {
+  return jwt.sign(payload, config.JWT_SECRET, {
+    expiresIn: '10m',
+  });
+}
+
+export function verifySsoStateToken(token: string): SsoStatePayload {
+  const decoded = jwt.verify(token, config.JWT_SECRET) as SsoStatePayload;
+  if (decoded.purpose !== 'sso') {
+    throw new Error('Invalid SSO state token');
+  }
+  return decoded;
+}
+

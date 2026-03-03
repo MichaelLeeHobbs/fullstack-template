@@ -70,5 +70,16 @@ export const defaultSettings: NewSystemSetting[] = [
     category: 'general',
     description: 'Maximum items a user can create',
   },
+
+  // ===========================================
+  // SSO Settings
+  // ===========================================
+  {
+    key: 'feature.sso_enabled',
+    value: 'false',
+    type: 'boolean',
+    category: 'features',
+    description: 'Enable SSO (Single Sign-On) authentication',
+  },
 ];
 

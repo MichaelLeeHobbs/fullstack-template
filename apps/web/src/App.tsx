@@ -29,6 +29,7 @@ import { HomePage } from './pages/HomePage.js';
 import { ProfilePage } from './pages/ProfilePage.js';
 import { SessionsPage } from './pages/SessionsPage.js';
 import { NotFoundPage } from './pages/NotFoundPage.js';
+import { SsoCallbackPage } from './pages/SsoCallbackPage.js';
 
 // Admin pages — lazy loaded (only admins need these)
 const SettingsPage = lazy(() => import('./pages/admin/SettingsPage.js').then(m => ({ default: m.SettingsPage })));
@@ -37,6 +38,7 @@ const RolesPage = lazy(() => import('./pages/admin/RolesPage.js').then(m => ({ d
 const AuditLogsPage = lazy(() => import('./pages/admin/AuditLogsPage.js').then(m => ({ default: m.AuditLogsPage })));
 const ApiKeysPage = lazy(() => import('./pages/admin/ApiKeysPage.js').then(m => ({ default: m.ApiKeysPage })));
 const ServiceAccountsPage = lazy(() => import('./pages/admin/ServiceAccountsPage.js').then(m => ({ default: m.ServiceAccountsPage })));
+const SsoPage = lazy(() => import('./pages/admin/SsoPage.js').then(m => ({ default: m.SsoPage })));
 
 // PKI pages — lazy loaded
 const PkiDashboardPage = lazy(() => import('./pages/pki/PkiDashboardPage.js').then(m => ({ default: m.PkiDashboardPage })));
@@ -136,6 +138,7 @@ function AppWithTheme() {
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/verify-email" element={<VerifyEmailPage />} />
+            <Route path="/sso/callback" element={<SsoCallbackPage />} />
           </Route>
 
           {/* Protected pages (with sidebar) */}
@@ -155,6 +158,7 @@ function AppWithTheme() {
               <Route path="/admin/audit-logs" element={<Suspense fallback={<PageLoader />}><AuditLogsPage /></Suspense>} />
               <Route path="/admin/api-keys" element={<Suspense fallback={<PageLoader />}><ApiKeysPage /></Suspense>} />
               <Route path="/admin/service-accounts" element={<Suspense fallback={<PageLoader />}><ServiceAccountsPage /></Suspense>} />
+              <Route path="/admin/sso" element={<Suspense fallback={<PageLoader />}><SsoPage /></Suspense>} />
 
               {/* PKI routes */}
               <Route path="/pki" element={<Suspense fallback={<PageLoader />}><PkiDashboardPage /></Suspense>} />

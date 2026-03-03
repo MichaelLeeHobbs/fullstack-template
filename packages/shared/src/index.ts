@@ -10,3 +10,5 @@ export * from './types/role.js';
 export * from './types/api-key.js';
 export * from './types/pki.js';
 export * from './types/admin.js';
+export * from './types/sso.js';
+export * from './schemas/sso.schema.js';

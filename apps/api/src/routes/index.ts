@@ -19,6 +19,8 @@ import certificateRoutes from './certificate.routes.js';
 import csrRoutes from './csr.routes.js';
 import certLoginRoutes from './cert-login.routes.js';
 import pkiAuditRoutes from './pki-audit.routes.js';
+import ssoRoutes from './sso.routes.js';
+import ssoAdminRoutes from './sso-admin.routes.js';
 
 const router: IRouter = Router();
 
@@ -37,6 +39,8 @@ router.use('/profiles', certificateProfileRoutes);
 router.use('/certificates/requests', csrRoutes);
 router.use('/certificates', certificateRoutes);
 router.use('/pki-audit', pkiAuditRoutes);
+router.use('/sso', ssoRoutes);
+router.use('/admin/sso', ssoAdminRoutes);
 router.use('/', certLoginRoutes);
 
 export default router;

@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import {
   Home, Settings, People, History, Security, VpnKey, ManageAccounts,
-  Shield, VerifiedUser, Description, Assignment, Policy, GppGood,
+  Shield, VerifiedUser, Description, Assignment, Policy, GppGood, Badge,
 } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
 import { useAnyPermission } from '../../hooks/usePermission.js';
@@ -48,6 +48,7 @@ export function Sidebar({ open, onClose, variant }: SidebarProps) {
   const canViewAuditLogs = useAnyPermission([PERMISSIONS.AUDIT_READ]);
   const canViewApiKeys = useAnyPermission([PERMISSIONS.API_KEYS_READ]);
   const canViewServiceAccounts = useAnyPermission([PERMISSIONS.SERVICE_ACCOUNTS_READ]);
+  const canViewSso = useAnyPermission([PERMISSIONS.SSO_PROVIDERS_READ]);
 
   // PKI permissions
   const canViewPki = useAnyPermission([PERMISSIONS.CA_READ]);
@@ -72,6 +73,9 @@ export function Sidebar({ open, onClose, variant }: SidebarProps) {
       : []),
     ...(canViewServiceAccounts
       ? [{ text: 'Service Accounts', icon: <ManageAccounts />, path: '/admin/service-accounts' }]
+      : []),
+    ...(canViewSso
+      ? [{ text: 'SSO', icon: <Badge />, path: '/admin/sso' }]
       : []),
   ];
 
